@@ -103,6 +103,10 @@ def parse_route(gpx, simplify=False):
                     lon.append(point.longitude)
                     ele.append(point.elevation)
 
+
+    if len(lat) == 0:
+        raise InvalidGpxFile('No track or route in gpx')
+
     if simplify is True:
         lat, lon, ele = uniquify(lat, lon, ele)
 
@@ -424,6 +428,11 @@ def osm_wpt(fpath, plot_gpx=False, lim_dist=0.05, keep_old_wpt=False, gpxoutputn
     overpass_query(lon, lat, query)
     Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist, 'waterfall')
 
+    query = 'node["natural"="waterfall"]'
+    overpass_query(lon, lat, query)
+    Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist, 'waterfall')
+
+
     query = 'node["information"="guidepost"]'
     overpass_query(lon, lat, query)
     Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist, 'guidepost')
@@ -443,6 +452,10 @@ def osm_wpt(fpath, plot_gpx=False, lim_dist=0.05, keep_old_wpt=False, gpxoutputn
     query = 'node["amenity"="drinking_water"]'
     overpass_query(lon, lat, query)
     Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist, 'water')
+
+    query = 'node["amenity"="fountain"]'
+    overpass_query(lon, lat, query)
+    Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist, 'fountain')
 
     query = 'node["tourism"="alpine_hut"]'
     overpass_query(lon, lat, query)

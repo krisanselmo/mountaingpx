@@ -233,12 +233,8 @@
         
 
     
-    var map_init = 2;
-    if (map_init == 1){
-        map_layers = [streets, strava_overlay_b]
-    } else{
-        map_layers = [opentopo, strava_overlay_b, mapyCz_overlay]
-    }
+
+    map_layers = [opentopo, strava_overlay_b, mapyCz_overlay]
 
     var map = new L.map('map', {
         zoom: 12,
@@ -253,14 +249,9 @@
     
 
     
-
-    
-    // var gpx = 'https://dl.dropboxusercontent.com/u/7621819/Grande_Sure.gpx'; // URL to your GPX file or the GPX itself
-    // var gpx = 'https://dl.dropboxusercontent.com/u/7621819/Grande%20Lauziere.gpx';
-    // var gpx = 'https://dl.dropboxusercontent.com/u/7621819/Soleil%20Levens.gpx';
-    // var gpx = 'https://dl.dropboxusercontent.com/u/7621819/Tour%20verdon.gpx';
     {% if outputfile is not none %}
     var gpx = '{{outputfile}}'
+    
     new L.GPX(gpx, {async: true,
         polyline_options: {color:'red', 
             opacity: 1
@@ -270,7 +261,7 @@
             endIconUrl: '{{ url_for('static', filename='img/end.png') }}',
             shadowUrl: '{{ url_for('static', filename='img/pin-shadow.png') }}',
             wptIconUrls: {
-                'guidepost': '{{ url_for('static', filename='img/guidepost.png') }}',     
+                'guidepost': '{{ url_for('static', filename='img/guidepost.png') }}',
                 'peak': '{{ url_for('static', filename='img/peak.png') }}',          
                 'saddle': '{{ url_for('static', filename='img/saddle.png') }}',         
                 'water': '{{ url_for('static', filename='img/water.png') }}',          
@@ -278,7 +269,10 @@
                 'glacier': '{{ url_for('static', filename='img/glacier.png') }}',      
                 'alpine_hut': '{{ url_for('static', filename='img/alpine_hut.png') }}',            
                 'wilderness_hut': '{{ url_for('static', filename='img/wilderness_hut.png') }}',              
-                'viewpoint' : '{{ url_for('static', filename='img/viewpoint.png') }}',           
+                'viewpoint' : '{{ url_for('static', filename='img/viewpoint.png') }}',
+                'toposcope' : '{{ url_for('static', filename='img/toposcope.png') }}',
+                'fountain' : '{{ url_for('static', filename='img/fountain.png') }}',
+                'waterfall': '{{ url_for('static', filename='img/waterfall.png') }}',             
                 'cave': '{{ url_for('static', filename='img/cave.png') }}'              
             },
             iconSize: [33, 50],
