@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+'''
 # Hash 
 # http://pythoncentral.io/hashing-files-with-python/
 
@@ -18,8 +19,34 @@
 # Bug nom du parcours / Get_name() prend les valeurs des wpts
 
 
-# https://en.wikipedia.org/wiki/Map_matching
 
+
+
+################################# HTML
+
+Add info on Elevation -> 'Les données proviennent uniquement du gpx et peuvent être biaisées'
+
+INFO BOX
+    -> Print the number of wpts
+
+
+
+WPTS BOX 
+    -> list items
+
+################################# JS / Leaflet
+
+https://github.com/mpetazzoni/leaflet-gpx/issues/41
+Option to remove gpx layer
+
+################################# CSS
+ Text overflow CSS: 
+ http://stackoverflow.com/questions/802175/truncating-long-strings-with-css-feasible-yet
+
+#### OTHER THINGS
+    ->  https://en.wikipedia.org/wiki/Map_matching
+
+'''
 
 import os
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort

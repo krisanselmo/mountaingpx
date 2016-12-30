@@ -6,8 +6,6 @@ Created on Mon Oct 17 15:28:58 2016
 
 
 TODO:
-    - Add the possibility to query ways with overpass
-            |--> Fix double wpt
     - Keep old WPT (partially functional)
     - Add x kilometers before ending
         Last 2 km
@@ -63,16 +61,6 @@ class Point(object):
                      self.query_name, self.name, self.lat, self.lon, self.ele))
 
 def parse_route(gpx, simplify=False):
-    # A for loop + list.append is the worst thing you can do for building a list (in term of performances). Huge lose of
-    # time:
-    #   - init an empty list
-    #   - then, nested for loop --> catastrophic
-    #   - then .append (get the size of the list + allocate new mem + append + calculate new size... + other deep python
-    #     rubbishes (garbage collection...).
-    # Always use a comprehension list.
-    #   - pre-compiled function
-    #   - simple, one line.
-    #   - CPU and memory efficient
     if not gpx.tracks:
         table = [(point.latitude, point.longitude, point.elevation) for track in gpx.routes for point in track.points]
         lat, lon, ele = [x[0] for x in table], [x[1] for x in table], [x[2] for x in table]
@@ -81,44 +69,17 @@ def parse_route(gpx, simplify=False):
         lat, lon, ele = [x[0] for x in table], [x[1] for x in table], [x[2] for x in table]
 
     if simplify is True:
-        lat2, lon2, ele2 = uniquify(lat, lon, ele)
+        lat, lon, ele = uniquify(lat, lon, ele)
+
+    # if len(lat) == 0:
+    #     raise InvalidGpxFile('No track or route in gpx')
 
     gpx_name = track.name
     print(gpx_name)
     return gpx_name, lat, lon, ele
 
-# def parse_route(gpx, simplify=False):
-#     lat = []
-#     lon = []
-#     ele = []
-
-#     if not gpx.tracks:
-#         for track in gpx.routes:
-#             for point in track.points:
-#                 lat.append(point.latitude)
-#                 lon.append(point.longitude)
-#                 ele.append(point.elevation)
-#     else:
-#         for track in gpx.tracks:
-#             for segment in track.segments:
-#                 for point in segment.points:
-#                     lat.append(point.latitude)
-#                     lon.append(point.longitude)
-#                     ele.append(point.elevation)
-
-
-#     if len(lat) == 0:
-#         raise InvalidGpxFile('No track or route in gpx')
-
-#     if simplify is True:
-#         lat, lon, ele = uniquify(lat, lon, ele)
-
-#     gpx_name = track.name
-#     return(gpx_name, lat, lon, ele)
-    
     
 def uniquify(lat, lon, ele):
-    # J'ai vomi (et pas parce que j'etais content)
     precision = 6
     approx_coord_full = map(lambda x, y, z: ((round(x, precision), round(y, precision)), z), lat, lon, ele)
     in_it = set()
@@ -128,24 +89,34 @@ def uniquify(lat, lon, ele):
     ele = [x[1] for x in res]
     return lat, lon, ele
 
-def macro_type(query_name, tag, key, value):
+def query_value(query_name, tag, key, value):
     if (tag.attrib['k'] == key) and (tag.attrib['v'] == value):
         query_name = value
     return query_name
 
 
-def get_POI_type(tag, query_name):
+def get_wpt_type(tag, query_name):
     """
-    
+    Purpose: Manip un peu foireuse pour récupérer le type de POI 
+    (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
 
+    Return: the waypoint type that will be written into the gpx
     """
 
-    query_name = macro_type(query_name, tag, 'waterway', 'waterfall')
-    query_name = macro_type(query_name, tag, 'natural', 'waterfall')
-
-    # if (tag.attrib['k'] == "tourism") and (tag.attrib['v'] == "viewpoint"):
-    #     if not ((tag.attrib['k'] == "map_type") and (tag.attrib['v'] == "toposcope")):
-    #         query_name = 'viewpoint'
+    query_name = query_value(query_name, tag, 'waterway', 'waterfall')
+    query_name = query_value(query_name, tag, 'natural', 'waterfall')
+    query_name = query_value(query_name, tag, 'tourism', 'viewpoint')
+    query_name = query_value(query_name, tag, 'map_type', 'toposcope')
+    query_name = query_value(query_name, tag, 'amenity', 'fountain')
+    query_name = query_value(query_name, tag, 'tourism', 'alpine_hut')
+    query_name = query_value(query_name, tag, 'tourism', 'wilderness_hut')
+    query_name = query_value(query_name, tag, 'water', 'lake')
+    query_name = query_value(query_name, tag, 'natural', 'glacier')
+    query_name = query_value(query_name, tag, 'natural', 'tree')
+    query_name = query_value(query_name, tag, 'building', 'chapel')
+    query_name = query_value(query_name, tag, 'historic', 'aircraft_wreck') 
+    query_name = query_value(query_name, tag, 'natural', 'saddle')
+    query_name = query_value(query_name, tag, 'natural', 'peak')
 
     if (tag.attrib['k'] == "natural") and (tag.attrib['v'] == "cave_entrance"):
         query_name = 'cave'
@@ -154,27 +125,13 @@ def get_POI_type(tag, query_name):
     if (tag.attrib['k'] == "information") and (tag.attrib['v'] == "guidepost"):
         query_name = 'guidepost' 
     if (tag.attrib['k'] == "ford") and (tag.attrib['v'] == "yes"):
-        query_name = 'ford'     
-
-    query_name = macro_type(query_name, tag, 'tourism', 'viewpoint')
-    query_name = macro_type(query_name, tag, 'map_type', 'toposcope')
-    query_name = macro_type(query_name, tag, 'amenity', 'fountain')
-    query_name = macro_type(query_name, tag, 'tourism', 'alpine_hut')
-    query_name = macro_type(query_name, tag, 'tourism', 'wilderness_hut')
-    query_name = macro_type(query_name, tag, 'water', 'lake')
-    query_name = macro_type(query_name, tag, 'natural', 'glacier')
-    query_name = macro_type(query_name, tag, 'natural', 'tree')
-    query_name = macro_type(query_name, tag, 'building', 'chapel')
-    query_name = macro_type(query_name, tag, 'historic', 'aircraft_wreck') 
-    query_name = macro_type(query_name, tag, 'natural', 'saddle')
-    query_name = macro_type(query_name, tag, 'natural', 'peak')
-
+        query_name = 'ford'  
 
     if (tag.attrib['k'] == "barrier"):
         query_name = 'barrier' 
 
-    # if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "demanding_mountain_hiking"):
-    #     query_name = 'T3' 
+    if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "demanding_mountain_hiking"):
+        query_name = 'T3' 
 
     if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "alpine_hiking"):
         query_name = 'T4' 
@@ -185,8 +142,8 @@ def get_POI_type(tag, query_name):
     if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "difficult_alpine_hiking"):
         query_name = 'T6' 
 
-
     return query_name
+
 
 def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
     tree = ET.parse("Overpass.xml")
@@ -213,7 +170,7 @@ def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
                     has_name = True
                 if tag.attrib['k'] == 'ele':
                     ele = tag.attrib['v']
-                query_name = get_POI_type(tag, query_name)
+                query_name = get_wpt_type(tag, query_name)
 
             if not has_name:
                 name = query_name + str(i_name) # set by default in case proper tag not found
@@ -245,17 +202,14 @@ def get_overpass_way_feature(Pts, index_used, lat, lon, lim_dist):
             if tag.attrib['k'] == 'name':
                 name = tag.attrib['v']
                 has_name = True
-            query_name = get_POI_type(tag, query_name)
+            query_name = get_wpt_type(tag, query_name)
 
         way_id = way.get('id')
         nodes_id = api.WayGet(way_id)
         nodes = api.NodesGet(nodes_id['nd'])
-        lat2 = []
-        lon2 = []
-        for node_id in nodes:
-            lat2.append(nodes[node_id]['lat'])
-            lon2.append(nodes[node_id]['lon'])
-        (match, near_lon, near_lat, index) = find_nearest_way(lon, lat, lon2, lat2, lim_dist)
+
+        lon_lat2 = map(lambda node_id: (nodes[node_id]['lon'], nodes[node_id]['lat']), nodes)
+        match, near_lon, near_lat, index = find_nearest_way(lon, lat, zip(*lon_lat2)[0], zip(*lon_lat2)[1], lim_dist)
 
         if match == 1:
             has_name = False
@@ -419,6 +373,8 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
     # Create first track in our GPX:
     gpx_track = gpxpy.gpx.GPXTrack()
     gpx_track.name = gpx_name
+    gpx_track.link = 'http://localhost:5000/'
+    gpx_track.source = 'Mountain GPX'
     gpx.tracks.append(gpx_track)
     gpx_segment = gpxpy.gpx.GPXTrackSegment()
     gpx_track.segments.append(gpx_segment)
@@ -457,13 +413,6 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
 
     with open(gpxoutputname, 'w') as f:
         f.write(gpx.to_xml())
-
-    # togpx = gpx.to_xml()
-    # tree = ET.parse(togpx)
-    # tree.find('.//creator').text = 'test'
-    # f.write(tree)
-    # f.close()
-    # tree.write(gpxoutputname)
 
 
 def shift(l, n):
@@ -523,12 +472,9 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('node["building"="chapel"]')   # Just in case
     query.append('node["ford"="yes"]')   
 
-
-
-
-    print('Overpass Node start')
+    print('Overpass node - start')
     overpass_query(lon, lat, query)
-    print('Overpass Node done')
+    print('Overpass node - done')
     Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist)
 
     # Ways
@@ -541,11 +487,9 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
 
     # query.append('way["highway"="path"]["sac_scale"]')
 
-
-
-    print('Overpass way start')
+    print('Overpass way - start')
     overpass_query(lon, lat, query)
-    print('Overpass way done')
+    print('Overpass way - done')
     Pts = get_overpass_way_feature(Pts, index_used, lat, lon, lim_dist)
 
 

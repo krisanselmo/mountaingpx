@@ -52,7 +52,10 @@
 
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script> -->
     <!--<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>  -->
-    <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script>
+    <!-- <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script> -->
+    <script src="{{ url_for('static', filename='gpx.js') }}"></script>
+
+
 
     <!-- TEST ELEVATION -->
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
@@ -80,9 +83,11 @@
     <div class="info leaflet-control"><div id="header" class="">
         <div class="title"><span class="title-name"> <b>Mountain GPX</b> </span><sup class="version">beta!</sup></div>
         <div class="header-text">
-            <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing
-            <br> Web client for <a href="http://brouter.de/" target="_blank">BRouter</a> · <i>work in progress</i> ·
-            <a id="about_link" href="#" role="button">about</a> -->
+
+            <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing-->
+            <br> Add <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> waypoints on your GPX
+            <br> <i>work in progress</i>
+            <!-- <a id="about_link" href="#" role="button">about</a> -->
 
             <div id="drop_zone">Drop gpx file here or
 
