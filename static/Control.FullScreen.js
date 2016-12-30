@@ -2,7 +2,7 @@
 
 L.Control.FullScreen = L.Control.extend({
 	options: {
-		position: 'topleft',
+		position: 'topright',
 		title: 'Full Screen',
 		titleCancel: 'Exit Full Screen',
 		forceSeparateButton: false,
