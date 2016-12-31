@@ -1,30 +1,6 @@
 
 <!DOCTYPE html>
-{# 
 
-    https://github.com/brunob/leaflet.fullscreen
-    https://keep.google.com/#NOTE/1481497142074.280328407
-    https://github.com/mpetazzoni/leaflet-gpx
-
-
-    Groupe Layer
-    http://bl.ocks.org/ismyrnow/6123517
-
-
-    - Selectionner les POI à afficher
-    - Option pour enlever les POI sans nom
-
-
-    <!-- https://cornilyon.fr/index.php?article100/stravalib -->
-
-
-    selector
-    https://codepen.io/bseth99/pen/fboKH
-    http://dropdownchecklist.sourceforge.net/
-
-
-
-#}
 <html>
 <head>
     
@@ -81,37 +57,44 @@
 
  <div class="leftpane">
     <div class="info leaflet-control"><div id="header" class="">
-        <div class="title"><span class="title-name"> <b>Mountain GPX</b> </span><sup class="version">beta!</sup></div>
+        <div class="title"><span class="title-name"> <b>Mountain GPX</b> </span><sup class="version">beta!</sup>&nbsp;
+            <a href="{{ url_for('help') }}">
+                <img src="{{ url_for('static', filename='img/help.svg') }}" alt="Help" height="16px" width="16px" />
+            </a>
+        </div>
         <div class="header-text">
 
             <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing-->
             <br> Add <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> waypoints on your GPX
-            <br> <i>work in progress</i>
+            <br> <i> - work in progress - </i>
             <!-- <a id="about_link" href="#" role="button">about</a> -->
 
-            <div id="drop_zone">Drop gpx file here or
+            <!-- <div id="drop_zone">Drop gpx file here or -->
 
                 <form action="?" method=post enctype=multipart/form-data>
 
                     <div class="input-file-container">  
                         <input class="input-file" id="my-file" type="file" name=file>
-                        <label tabindex="0" for="my-file" class="input-file-trigger">select a file...</label>
+                        <label tabindex="0" for="my-file" class="input-file-trigger">select a GPX file...</label>
                     </div>
+
+                        <div id="up_filename"> 
+                            <!-- <p class="file-return"></p> -->
+                        </div>
+
                     <input type=submit value=Upload>
                 </form>
 
 
+                <div class="msg_flsh">  
                 {% with messages = get_flashed_messages() %}
                 {% if messages %}
                 {{ messages[0] }}  {# Pas sur de la notation ici  #}
                 {% endif %}
                 {% endwith %}
+                </div>
 
-
-                <div id="list"> 
-                  <p class="file-return"></p>
-                  
-              </div>
+               
 
 
               
@@ -119,7 +102,7 @@
               
 
 
-          </div>
+          <!-- </div> -->
 
       </div>
   </div>
@@ -142,10 +125,13 @@
     <div class="info leaflet-control">
         <div class="heading">Infos</div>
 
+        
+
         <div class="content">
         <span class="gpx-name"> </span> <br>
         Distance: <span class="gpx-info-dist"> </span> km<br>
-        Elevation: <span class="gpx-info-egain"> </span> m</div>
+        Elevation: <span class="gpx-info-egain"> </span> m<br>
+        Waypoints: <span class="gpx-info-wpt_number"> </span> </div> 
 
     </div>
 
@@ -201,8 +187,8 @@
     }
 
 
-// -------------------
-
+{# ----  Button ----- #}
+    
     document.querySelector("html").classList.add('js');
 
     var fileInput  = document.querySelector( ".input-file" ),  
@@ -219,38 +205,44 @@
        return false;
     });  
     fileInput.addEventListener( "change", function( event ) {  
+        // files = this.value
+        // console.log(files[0])
+        $("#up_filename").html(this.files[0].name);
         // the_return.innerHTML = this.value;  
         // document.getElementById('list').innerHTML = this.value
     });  
 
 
-// -------------------
+{# ----  Drop zone ----- #}
+{# https://www.html5rocks.com/en/tutorials/file/dndfiles/ #}
 
-    function handleFileSelect(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
+    // function handleFileSelect(evt) {
+    //     evt.stopPropagation();
+    //     evt.preventDefault();
 
-    var files = evt.dataTransfer.files; // FileList object.
+    //     var files = evt.dataTransfer.files; // FileList object.
 
-    // files is a FileList of File objects. List some properties.
-    var output = [];
-    f = files[0]
-    output.push('<p><strong>', escape(f.name), '</strong></p>');
-    
-    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-    // the_return = document.querySelector(".file-return");
-  }
+    //     // files is a FileList of File objects. List some properties.
+    //     var output = [];
+    //     output.push(escape(files[0].name));
 
-  function handleDragOver(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-  }
+    //     // document.getElementById('up_filename').innerHTML = output.join('');
+    //     $("#up_filename").html(output.join(''));
 
-  // Setup the dnd listeners.
-  var dropZone = document.getElementById('drop_zone');
-  dropZone.addEventListener('dragover', handleDragOver, false);
-  dropZone.addEventListener('drop', handleFileSelect, false);
+    //     // the_return = document.querySelector(".file-return");
+    // }
+
+    // function handleDragOver(evt) {
+    //     evt.stopPropagation();
+    //     evt.preventDefault();
+    //     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    // }
+
+    // // Setup the dnd listeners.
+    // var dropZone = document.getElementById('drop_zone');
+    //     dropZone.addEventListener('dragover', handleDragOver, false);
+    //     dropZone.addEventListener('drop', handleFileSelect, false);
+
 </script>
 
 
@@ -336,10 +328,12 @@
             attribution: strvAttr
         });
         
-    var lonviaUrl = 'http://tile.lonvia.de/hiking/{z}/{x}/{y}.png',
+    var lonviaUrl = 'http://tile.lonvia.de/{id}/{z}/{x}/{y}.png',
         lonviaAttr = '<a href="http://hiking.waymarkedtrails.org/">waymarkedtrails</a>',
         lonvia_overlay = L.tileLayer(lonviaUrl, {
             zIndex: 2, 
+            id: 'hiking',
+            // id: 'cycling',
             attribution: 
             lonviaAttr
         });
@@ -414,7 +408,8 @@
                 'guidepost': '{{ url_for('static', filename='img/markers/guidepost.png') }}',
                 'lake': '{{ url_for('static', filename='img/markers/lake.png') }}',
                 'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',          
-                'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',         
+                'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',    
+                'toilets' : '{{ url_for('static', filename='img/markers/toilets.png') }}',     
                 'toposcope' : '{{ url_for('static', filename='img/markers/toposcope.png') }}',
                 'tree' : '{{ url_for('static', filename='img/markers/tree.png') }}',
                 'viewpoint' : '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
@@ -438,6 +433,10 @@
         $(".gpx-info-dist").html( dist_m.toFixed(2));
         var elev_gain = e.target.get_elevation_gain()
         $(".gpx-info-egain").html( elev_gain.toFixed(2));
+
+        $(".gpx-info-wpt_number").html(e.target.get_wpt_number());
+
+
         // console.log(e.target.get_elevation_data())
     })
 
@@ -457,12 +456,12 @@
         interpolation: "linear", //see https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-area_interpolate
         hoverNumber: {
             decimalsX: 3, //decimals on distance (always in km)
-            decimalsY: 0, //deciamls on hehttps://www.npmjs.com/package/leaflet.coordinatesight (always in m)
+            decimalsY: 0, //deciamls on https://www.npmjs.com/package/leaflet.coordinatesight (always in m)
             formatter: undefined //custom formatter function may be injected
         },
         xTicks: undefined, //number of ticks in x axis, calculated by default according to width
         yTicks: undefined, //number of ticks on y axis, calculated by default according to height
-        collapsed: false,  //collapsed mode, show chart on click or mouseover
+        collapsed: true,  //collapsed mode, show chart on click or mouseover
         imperial: false    //display imperial units instead of metric
     });
     // el.addTo(map);

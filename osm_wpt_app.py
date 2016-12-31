@@ -2,6 +2,37 @@
 # -*- coding:utf-8 -*-
 
 '''
+
+
+{# 
+
+    https://github.com/brunob/leaflet.fullscreen
+    https://keep.google.com/#NOTE/1481497142074.280328407
+    https://github.com/mpetazzoni/leaflet-gpx
+
+
+    Groupe Layer
+    http://bl.ocks.org/ismyrnow/6123517
+
+
+    - Selectionner les POI à afficher
+
+
+
+    <!-- https://cornilyon.fr/index.php?article100/stravalib -->
+
+
+    selector
+    https://codepen.io/bseth99/pen/fboKH
+    http://dropdownchecklist.sourceforge.net/
+
+
+
+#}
+
+
+
+
 # Hash 
 # http://pythoncentral.io/hashing-files-with-python/
 
@@ -19,17 +50,25 @@
 # Bug nom du parcours / Get_name() prend les valeurs des wpts
 
 
+################################# ICONS
 
+Shelters
 
+historic = ruins
+historic = castle
+amenity = toilets
 
 ################################# HTML
 
+Option pour enlever les POI sans nom
 Add info on Elevation -> 'Les données proviennent uniquement du gpx et peuvent être biaisées'
+
 
 INFO BOX
     -> Print the number of wpts
 
-
+RESPONSIVE
+    -> Si écran petit en largeur, il faut recentrer la map
 
 WPTS BOX 
     -> list items
@@ -39,12 +78,25 @@ WPTS BOX
 https://github.com/mpetazzoni/leaflet-gpx/issues/41
 Option to remove gpx layer
 
+################################# JS / Leaflet / Elevation
+
+    -> Remove comma separator
+    -> Smooth 
+
+var n = 34523453.345
+n.toLocaleString()
+
+
 ################################# CSS
  Text overflow CSS: 
  http://stackoverflow.com/questions/802175/truncating-long-strings-with-css-feasible-yet
 
-#### OTHER THINGS
+################################# OTHER THINGS
     ->  https://en.wikipedia.org/wiki/Map_matching
+
+    -> pourcentage de terrain 
+
+
 
 '''
 
@@ -119,8 +171,8 @@ def main_page(trk_num=None):
                 app.logger.debug(u'osm_wpt script : OK')
                 app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
-                # flash('GPX Error')
-                flash(err)
+                flash('GPX Error')
+                # flash(err)
                 app.logger.warning(u'GPX Error')
                 return redirect(request.url)
     
@@ -137,9 +189,7 @@ def main_page(trk_num=None):
 
 
     # Query string
-    zoom = None
-    lat = None
-    lon = None
+    map_qstr = dict.fromkeys(['zoom', 'lat', 'lon'], None)
 
     # print request.args['msg']
     if request.args.get('map') is not None:
@@ -148,24 +198,22 @@ def main_page(trk_num=None):
         try:
             zoom = int(b[0])
             if zoom > 18:
-                zoom = None
+                map_qstr['zoom'] = None
             if zoom < 0:
-                zoom = None
-            lat = float(b[1])
-            lon = float(b[2])
+                map_qstr['zoom'] = None
+            map_qstr['lat'] = float(b[1])
+            map_qstr['lon'] = float(b[2])
         except:
-            zoom = None
-            lat = None
-            lon = None
+            map_qstr['zoom'] = None
+            map_qstr['lat'] = None
+            map_qstr['lon'] = None
 
 
     layer_name = None
     if request.args.get('layer') is not None:
         layer_num = request.args['layer']
         try:
-
             if int(layer_num)>0 & int(layer_num)<9:
-
                 options = {1 : "opentopo",
                            2 : "mapyCz",
                            3 : "osm",
@@ -178,7 +226,13 @@ def main_page(trk_num=None):
                 layer_name = options[int(layer_num)]
         except:
             layer_name = None
-    return render_template('main.tpl', outputfile=fpath, zoom=zoom, lat=lat, lon=lon, layer_name=layer_name)
+
+    overlay = None        
+    if request.args.get('overlay') is not None:
+        print request.args['overlay']
+
+
+    return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], lon=map_qstr['lon'], layer_name=layer_name)  # TODO 
  
 # -----------------------------------------------------------
 

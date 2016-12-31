@@ -1,9 +1,4 @@
 /*https://www.creativejuiz.fr/blog/tutoriels/input-file-personnalise-css-js*/
-/*body {
-	font-family: "Open sans", "Segoe UI", "Segoe WP", Helvetica, Arial, sans-serif;
-	color: #7F8C9A;
-	background: #FCFDFD;
-}*/
 
 .input-file-container {
 	position: relative;
@@ -15,7 +10,6 @@
 .js .input-file-trigger {
 	display: block;
 	padding: 10px 0px;
-	/*background: #39D2B4;*/
 	background: #960018;
 	color: #fff;
 	font-size: 12pt;
@@ -36,25 +30,19 @@
 .js .input-file-trigger:focus {
 	
 	background: gray; 
-	/*color: #39D2B4; */
-	/*color: #960018;*/
 	color: white; 
-	/*orange #ef6e0b*/
 }
 
 .file-return {
 	margin: 0;
 }
-/*.file-return:not(:empty) {
-	margin: 1em 0;
-}*/
+
 .js .file-return {
 	font-style: italic;
 	font-size: 12pt;
 	font-weight: bold;
 }
 .js .file-return:not(:empty):before {
-	/*content: "Selected file: ";*/
 	font-style: normal;
 	font-weight: normal;
 }

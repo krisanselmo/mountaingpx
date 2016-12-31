@@ -108,6 +108,7 @@ def get_wpt_type(tag, query_name):
     query_name = query_value(query_name, tag, 'tourism', 'viewpoint')
     query_name = query_value(query_name, tag, 'map_type', 'toposcope')
     query_name = query_value(query_name, tag, 'amenity', 'fountain')
+    query_name = query_value(query_name, tag, 'amenity', 'shelter')
     query_name = query_value(query_name, tag, 'tourism', 'alpine_hut')
     query_name = query_value(query_name, tag, 'tourism', 'wilderness_hut')
     query_name = query_value(query_name, tag, 'water', 'lake')
@@ -117,6 +118,10 @@ def get_wpt_type(tag, query_name):
     query_name = query_value(query_name, tag, 'historic', 'aircraft_wreck') 
     query_name = query_value(query_name, tag, 'natural', 'saddle')
     query_name = query_value(query_name, tag, 'natural', 'peak')
+    query_name = query_value(query_name, tag, 'historic', 'ruins')
+    query_name = query_value(query_name, tag, 'historic', 'castle')
+    query_name = query_value(query_name, tag, 'amenity', 'toilets')
+
 
     if (tag.attrib['k'] == "natural") and (tag.attrib['v'] == "cave_entrance"):
         query_name = 'cave'
@@ -466,11 +471,15 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('node["amenity"="fountain"]')
     query.append('node["tourism"="alpine_hut"]')
     query.append('node["tourism"="wilderness_hut"]')
+    query.append('node["amenity"="shelter"]')
     query.append('node["natural"="tree"]["name"]')
     query.append('node["historic"="aircraft_wreck"]["aircraft_wreck"]')
     query.append('node["barrier"]["barrier"]')
     query.append('node["building"="chapel"]')   # Just in case
     query.append('node["ford"="yes"]')   
+    query.append('node["historic"="ruins"]')   
+    query.append('node["historic"="castle"]')   
+    query.append('node["amenity"="toilets"]')   
 
     print('Overpass node - start')
     overpass_query(lon, lat, query)
