@@ -1,90 +1,69 @@
-
 <!DOCTYPE html>
-
 <html>
 <head>
-    
     <title>Mountain GPX</title>
-
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    {# -- CSS -- #}
     <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
     <link rel='stylesheet' id='input_button'  href="{{ url_for('static', filename='button.css') }}" type='text/css' media='all' />
-    <!-- <link rel="stylesheet" href="http://mrmufflon.github.io/Leaflet.Elevation/example/lib/elevation/Leaflet.Elevation-0.0.2.css" /> -->
-    
+    <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
     <link rel='stylesheet' href="{{ url_for('static', filename='cssapp.css') }}" type='text/css'/>
     <style type="text/css"> .fullscreen-icon { background-image: url({{ url_for('static', filename='img/icon-fullscreen.png') }}); }  </style>
-
-
+    {# -- JAVASCRIPT -- #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
-
-    <!-- <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script> -->
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> {# For Elevation #}
     <script src="{{ url_for('static', filename='Control.FullScreen.js') }}"></script>
-    <!-- TODO -->
-    <!-- <script src="{{ url_for('static', filename='map.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='gpx.js') }}"></script>
+    <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script> {# https://github.com/yohanboniface/Leaflet.EditInOSM #}
+    <script src="{{ url_for('static', filename='Flickr.js') }}"></script> {# https://github.com/shurshur/Leaflet.Flickr #}
+    <script src="{{ url_for('static', filename='leaflet.elevation-0.0.4.src.js') }}"> </script>
 
+    {# Other 
+    <!-- <script src="{{ url_for('static', filename='map.js') }}"></script> -->
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script> -->
     <!--<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>  -->
     <!-- <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script> -->
-    <script src="{{ url_for('static', filename='gpx.js') }}"></script>
-
-
-
-    <!-- TEST ELEVATION -->
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <!--<script type="text/javascript" src="http://mrmufflon.github.io/Leaflet.Elevation/example/lib/elevation/Leaflet.Elevation-0.0.2.min.js"> </script> -->
-    <script type="text/javascript" src="{{ url_for('static', filename='leaflet.elevation-0.0.4.src.js') }}"> </script>
-    <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
-
-
-
     <!-- <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"></script> -->
-    <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script> {# https://github.com/yohanboniface/Leaflet.EditInOSM #}
-    <script src="{{ url_for('static', filename='Flickr.js') }}"></script> {# https://github.com/shurshur/Leaflet.Flickr #}
-    
+    #}
+
+    {# Test section #}
+    <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
+    <link rel='stylesheet' href="{{ url_for('static', filename='OverPassLayer.css') }}" type='text/css'/>
+
 </head>
 <body>
 
-<!-- 
-<form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-        <input type=submit value=Upload>
-    </form>
- -->
+<div class="leftpane">
+    {# // BOX \\ #}
+    <div class="info leaflet-control">
+        <div id="header" class="">
+            <div class="title"><span class="title-name"> <b>Mountain GPX</b> </span><sup class="version">beta!</sup>&nbsp;
+                <a href="{{ url_for('help') }}">
+                    <img src="{{ url_for('static', filename='img/help.svg') }}" alt="Help" height="16px" width="16px" />
+                </a>
+            </div>
+            <div class="header-text">
 
- <div class="leftpane">
-    <div class="info leaflet-control"><div id="header" class="">
-        <div class="title"><span class="title-name"> <b>Mountain GPX</b> </span><sup class="version">beta!</sup>&nbsp;
-            <a href="{{ url_for('help') }}">
-                <img src="{{ url_for('static', filename='img/help.svg') }}" alt="Help" height="16px" width="16px" />
-            </a>
-        </div>
-        <div class="header-text">
+                <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing-->
+                <br> Add <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> waypoints on your GPX
+                <br> <i> - work in progress - </i>
+                <!-- <a id="about_link" href="#" role="button">about</a> -->
 
-            <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing-->
-            <br> Add <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> waypoints on your GPX
-            <br> <i> - work in progress - </i>
-            <!-- <a id="about_link" href="#" role="button">about</a> -->
-
-            <!-- <div id="drop_zone">Drop gpx file here or -->
+                <!-- <div id="drop_zone">Drop gpx file here or -->
 
                 <form action="?" method=post enctype=multipart/form-data>
-
                     <div class="input-file-container">  
                         <input class="input-file" id="my-file" type="file" name=file>
                         <label tabindex="0" for="my-file" class="input-file-trigger">select a GPX file...</label>
                     </div>
-
-                        <div id="up_filename"> 
-                            <!-- <p class="file-return"></p> -->
-                        </div>
-
+                    <div id="up_filename"> 
+                        <!-- <p class="file-return"></p> -->
+                    </div>
                     <input type=submit value=Upload>
                 </form>
-
 
                 <div class="msg_flsh">  
                 {% with messages = get_flashed_messages() %}
@@ -93,58 +72,43 @@
                 {% endif %}
                 {% endwith %}
                 </div>
-
-               
-
-
-              
-
-              
-
-
-          <!-- </div> -->
-
-      </div>
-  </div>
-
-
-
-
+            </div>
+        </div>
     </div>
 
     {% if outputfile is not none %}
+    {# // BOX \\ #}
     <div class="info leaflet-control">
         <div class="heading">Download</div>
-        <div class="content"><div class="value"><a href='../{{outputfile}}'>GPX</a>
-        </div></div>
-
-
-        
+        <div class="content">
+            <div class="value"><a href='../{{outputfile}}'>GPX</a></div>
+        </div>
     </div>
 
+    {# // BOX \\ #}
     <div class="info leaflet-control">
         <div class="heading">Infos</div>
-
-        
-
         <div class="content">
-        <span class="gpx-name"> </span> <br>
-        Distance: <span class="gpx-info-dist"> </span> km<br>
-        Elevation: <span class="gpx-info-egain"> </span> m<br>
-        Waypoints: <span class="gpx-info-wpt_number"> </span> </div> 
-
+            <span class="gpx-name"> </span> <br>
+            Distance: <span class="gpx-info-dist"> </span> km<br>
+            Elevation: <span class="gpx-info-egain"> </span> m<br>
+            Waypoints: <span class="gpx-info-wpt_number"> </span>
+        </div> 
     </div>
 
-
+    {# // BOX \\ #}
     <div class="info elevation steelblue-theme leaflet-control">
         <div id="elevation-div"></div>
     </div>
+    {% endif %}
+
+</div>
 
 
 
 <!-- #map > div.leaflet-control-container > div.leaflet-leftpane > div.elevation.steelblue-theme.leaflet-control -->
 
-    {% endif %}
+    
 
 
     <!-- <div class="info leaflet-control">
@@ -153,8 +117,7 @@
     <!-- http://dropdownchecklist.sourceforge.net/ -->
     <!-- </div>   -->
 
-        
- </div>
+
 
 
 
@@ -351,9 +314,7 @@
         });
         
     
-        
-
-    
+    var flickr = new L.Flickr('a06f677e097235ad98d9f0961d44252c',{maxLoad: 25, maxTotal: 250});      
 
 
 
@@ -362,6 +323,13 @@
         map_layers = [opentopo];
     {% else %}
         map_layers = [{{layer_name}}];
+    {% endif %}
+
+
+    {% if overlay_lst is defined %}
+        {% for item in overlay_lst %}
+            map_layers.push({{item}});
+        {% endfor %}
     {% endif %}
 
 
@@ -383,6 +351,56 @@
     }).addTo(map);
 
 
+
+
+    //OverPassAPI overlay
+
+
+    // Exemple avec les ways
+    // https://github.com/simon04/POImap/blob/master/map.js
+
+
+
+    var opl = new L.OverPassLayer({
+      endpoint: "http://api.openstreetmap.fr/oapi/",
+      query: "node(BBOX)['natural'='peak'];out;",
+      minzoom: 14,
+      minZoomIndicatorOptions: {
+        minZoomMessage: ""
+      }
+    });
+    map.addLayer(opl);
+
+
+//   options: {
+//   endpoint: "http://overpass.osm.rambler.ru/cgi/",
+//   query: "node(BBOX)['amenity'='post_box'];out;",
+//   debug: false,
+//   callback: function(data) {
+//     for(var i=0;i<data.elements.length;i++) {
+//       var e = data.elements[i];
+
+//       if (e.id in this.instance._ids) return;
+//       this.instance._ids[e.id] = true;
+//       var pos = new L.LatLng(e.lat, e.lon);
+//       var popup = this.instance._poiInfo(e.tags,e.id);
+//       var color = e.tags.collection_times ? 'green':'red';
+//       var circle = L.circle(pos, 50, {
+//         color: color,
+//         fillColor: '#fa3',
+//         fillOpacity: 0.5
+//       })
+//       .bindPopup(popup);
+//       this.instance.addLayer(circle);
+//     }
+//   },
+//   minZoomIndicatorOptions: {
+//     position: 'topright',
+//     minZoomMessageNoLayer: "no layer assigned",
+//     minZoomMessage: "current Zoom-Level: CURRENTZOOM all data at Level: MINZOOMLEVEL"
+//   }
+// };
+
     
     {% if outputfile is not none %}
     var gpx = '../{{outputfile}}'
@@ -400,20 +418,21 @@
             wptIconUrls: {
                 'alpine_hut': '{{ url_for('static', filename='img/markers/alpine_hut.png') }}',    
                 'barrier': '{{ url_for('static', filename='img/markers/barrier.png') }}',   
-                'cave': '{{ url_for('static', filename='img/markers/cave.png') }}',    
+                'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}',    
                 'chapel': '{{ url_for('static', filename='img/markers/chapel.png') }}', 
                 'ford': '{{ url_for('static', filename='img/markers/ford.png') }}',   
-                'fountain' : '{{ url_for('static', filename='img/markers/fountain.png') }}',
+                'fountain': '{{ url_for('static', filename='img/markers/fountain.png') }}',
                 'glacier': '{{ url_for('static', filename='img/markers/glacier.png') }}',
                 'guidepost': '{{ url_for('static', filename='img/markers/guidepost.png') }}',
                 'lake': '{{ url_for('static', filename='img/markers/lake.png') }}',
                 'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',          
                 'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',    
-                'toilets' : '{{ url_for('static', filename='img/markers/toilets.png') }}',     
-                'toposcope' : '{{ url_for('static', filename='img/markers/toposcope.png') }}',
-                'tree' : '{{ url_for('static', filename='img/markers/tree.png') }}',
-                'viewpoint' : '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
-                'water': '{{ url_for('static', filename='img/markers/water.png') }}',          
+                'toilets': '{{ url_for('static', filename='img/markers/toilets.png') }}',     
+                'toposcope': '{{ url_for('static', filename='img/markers/toposcope.png') }}',
+                'tree': '{{ url_for('static', filename='img/markers/tree.png') }}',
+                'viewpoint': '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
+                'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',   
+                'water': '{{ url_for('static', filename='img/markers/water.png') }}',        
                 'waterfall': '{{ url_for('static', filename='img/markers/waterfall.png') }}',       
                 'wilderness_hut': '{{ url_for('static', filename='img/markers/wilderness_hut.png') }}'         
             },
@@ -436,7 +455,10 @@
 
         $(".gpx-info-wpt_number").html(e.target.get_wpt_number());
 
-
+        if (elev_gain > 1){
+            var container=el.onAdd(map);
+            $("#elevation-div").html(container);
+        }
         // console.log(e.target.get_elevation_data())
     })
 
@@ -475,8 +497,7 @@
     });
     // gpx_overlay.addTo(map);
 
-    var container=el.onAdd(map);
-    $("#elevation-div").html(container);
+   
 
 
 
@@ -507,11 +528,6 @@
         map.setView({lat:46.491, lng:2.197}, 6)
     {% endif  %}
 
-
-  
-
-
-
         
     var baseLayers = {
         "OpenTopoMap": opentopo,
@@ -525,7 +541,7 @@
     };
 
 
-    var flickr = new L.Flickr('a06f677e097235ad98d9f0961d44252c',{maxLoad: 25, maxTotal: 250}); 
+ 
 
    // Add a Wikipedia layer
     // var wiki = new L.layerGroup.wikipediaLayer();
@@ -556,15 +572,6 @@
         
 // --------------------------------
 
-
-
-
-
-
-
-
-
-
 {#
 // create custom icon
     var firefoxIcon = L.icon({
@@ -591,15 +598,8 @@
 #}
 
 
-// map.on('click', function(e) {
-//     alert("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
-// });
-
-
 
 {# QUERY STRING UPDATES #}
-
-
 
 
 function getParameterByName(name, url) {
@@ -619,23 +619,27 @@ function getParameterByName(name, url) {
 
 var qstr_map_val = getParameterByName('map');
 var qstr_layer_val = getParameterByName('layer');
-console.log(qstr_layer_val)
+var qstr_overlay_val = getParameterByName('overlay');
 window.qstr_map = "?map=" + qstr_map_val
 window.qstr_layer = "&layer=" + qstr_layer_val
+window.qstr_overlay = "&overlay=" + qstr_overlay_val
+
 
 map.on('moveend', function(e) {
         lat_new = map.getCenter().lat.toFixed(4)
         lon_new = map.getCenter().lng.toFixed(4)
         zoom_new = map.getZoom().toString()
-        window.qstr_map = "?map=" + zoom_new + '!' + lat_new + '!' + lon_new
+        window.qstr_map = "?map=" + zoom_new + '/' + lat_new + '/' + lon_new
         // console.log(qstr_map)
         var stateObj = {};
-        history.pushState(stateObj, "", window.qstr_map + window.qstr_layer);
+        history.pushState(
+            stateObj, "", 
+            window.qstr_map + window.qstr_layer + window.qstr_overlay
+        );
 });
 
 
 map.on('baselayerchange ', function(e) {
-    console.log(e.name)
     switch(e.name) {
         case "OpenTopoMap":
             layer = 1;
@@ -666,16 +670,80 @@ map.on('baselayerchange ', function(e) {
     }
     var stateObj = {};
     window.qstr_layer = "&layer=" + layer
-    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer);
+    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+});
+
+
+map.on('overlayadd ', function(e) {
+    // console.log(e.name)
+    switch(e.name) {
+        case "Strava Run / Blue":
+            layer = 'A';
+            break;
+        case "Strava Run / Red":
+            layer = 'B';
+            break;
+        case "Strava Bike / Blue":
+            layer = 'C';
+            break;
+        case "Waymarkedtrails":
+            layer = 'D';
+            break;
+        case "Mapy.cz":
+            layer = 'E';
+            break;
+        case "Hillshade":
+            layer = 'F';
+            break;
+        case "Flickr":
+            layer = 'G';
+            break;
+        default:
+            layer = '';
+    }
+    var stateObj = {};
+    window.qstr_overlay = window.qstr_overlay.replace('null','')
+    window.qstr_overlay = window.qstr_overlay.replace('G','')
+    window.qstr_overlay = window.qstr_overlay + layer
+    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+});
+
+map.on('overlayremove ', function(e) {
+    // console.log(e.name)
+    switch(e.name) {
+        case "Strava Run / Blue":
+            overlay = 'A';
+            break;
+        case "Strava Run / Red":
+            overlay = 'B';
+            break;
+        case "Strava Bike / Blue":
+            overlay = 'C';
+            break;
+        case "Waymarkedtrails":
+            overlay = 'D';
+            break;
+        case "Mapy.cz":
+            overlay = 'E';
+            break;
+        case "Hillshade":
+            overlay = 'F';
+            break;
+        case "Flickr":
+            overlay = 'G';
+            break;
+        default:
+            overlay = '';
+    }
+    var stateObj = {};
+    window.qstr_overlay = window.qstr_overlay.replace('null','')
+    window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
+    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
 });
 
 {# END QUERY STRING UPDATES #}
 
 
-
 </script>
-
-<!-- <p id="dist"></p> -->
-
 </body>
 </html>

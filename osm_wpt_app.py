@@ -44,19 +44,20 @@
 # Mettre une icone d'alerte si le nombre de waypoints dépasse la limite de suunto.
 
 
-# Faire icone barriere
-
 # Seuil de distance     / JS + html
-# Bug nom du parcours / Get_name() prend les valeurs des wpts
+
 
 
 ################################# ICONS
 
 Shelters
-
 historic = ruins
 historic = castle
-amenity = toilets
+
+    query.append('node["natural"="volcano"]')
+    query.append('node["natural"="spring"]')
+    query.append('node["man_made"="cairn"]')
+    query.append('way["man_made"="observatory"]')
 
 ################################# HTML
 
@@ -194,20 +195,20 @@ def main_page(trk_num=None):
     # print request.args['msg']
     if request.args.get('map') is not None:
         a = request.args['map']
-        b = a.split('!')
+        b = a.split('/')
         try:
             zoom = int(b[0])
             if zoom > 18:
                 map_qstr['zoom'] = None
             if zoom < 0:
                 map_qstr['zoom'] = None
+            map_qstr['zoom'] = zoom
             map_qstr['lat'] = float(b[1])
             map_qstr['lon'] = float(b[2])
         except:
             map_qstr['zoom'] = None
             map_qstr['lat'] = None
             map_qstr['lon'] = None
-
 
     layer_name = None
     if request.args.get('layer') is not None:
@@ -227,12 +228,24 @@ def main_page(trk_num=None):
         except:
             layer_name = None
 
-    overlay = None        
+    overlay_lst = [] 
     if request.args.get('overlay') is not None:
-        print request.args['overlay']
+        overlay = request.args['overlay']
+        dic = { "A": 'strava_overlay_b',
+                "B": 'strava_overlay_r',
+                "C": 'strava_bike_overlay',
+                "D": 'lonvia_overlay',
+                "E": 'mapyCz_overlay',
+                "F": 'hillshade_overlay',
+                "G": 'flickr',
+        }
+        for k, v in dic.items():
+            if k in overlay:
+                overlay_lst.append(v)
 
-
-    return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], lon=map_qstr['lon'], layer_name=layer_name)  # TODO 
+    print overlay_lst
+    return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
+        lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
  
 # -----------------------------------------------------------
 

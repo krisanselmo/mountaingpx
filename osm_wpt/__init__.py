@@ -23,7 +23,7 @@ import xml.etree.cElementTree as ET
 from math import radians, cos, sin, asin, sqrt
 import numpy as np
 import multiprocessing
-import orderedset as ordset
+# import orderedset as ordset
 
 
 
@@ -89,64 +89,43 @@ def uniquify(lat, lon, ele):
     ele = [x[1] for x in res]
     return lat, lon, ele
 
-def query_value(query_name, tag, key, value):
-    if (tag.attrib['k'] == key) and (tag.attrib['v'] == value):
-        query_name = value
-    return query_name
 
-
-def get_wpt_type(tag, query_name):
+def get_wpt_type(tag_dict, query_name):
     """
-    Purpose: Manip un peu foireuse pour récupérer le type de POI 
+    Purpose: Récupérer le type de POI 
     (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
-
-    Return: the waypoint type that will be written into the gpx
+    Return: the waypoint type that will be written into the gpx file
     """
 
-    query_name = query_value(query_name, tag, 'waterway', 'waterfall')
-    query_name = query_value(query_name, tag, 'natural', 'waterfall')
-    query_name = query_value(query_name, tag, 'tourism', 'viewpoint')
-    query_name = query_value(query_name, tag, 'map_type', 'toposcope')
-    query_name = query_value(query_name, tag, 'amenity', 'fountain')
-    query_name = query_value(query_name, tag, 'amenity', 'shelter')
-    query_name = query_value(query_name, tag, 'tourism', 'alpine_hut')
-    query_name = query_value(query_name, tag, 'tourism', 'wilderness_hut')
-    query_name = query_value(query_name, tag, 'water', 'lake')
-    query_name = query_value(query_name, tag, 'natural', 'glacier')
-    query_name = query_value(query_name, tag, 'natural', 'tree')
-    query_name = query_value(query_name, tag, 'building', 'chapel')
-    query_name = query_value(query_name, tag, 'historic', 'aircraft_wreck') 
-    query_name = query_value(query_name, tag, 'natural', 'saddle')
-    query_name = query_value(query_name, tag, 'natural', 'peak')
-    query_name = query_value(query_name, tag, 'historic', 'ruins')
-    query_name = query_value(query_name, tag, 'historic', 'castle')
-    query_name = query_value(query_name, tag, 'amenity', 'toilets')
+    # OSM node values that it used to identify the waypoint type / Last values have low priority
+    list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 
+        'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
+        'guidepost', 'lake', 'observatory', 'peak', 'ruins', 
+        'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
+        'waterfall', 'wilderness_hut', 'cairn']
+    for q in list_of_OSM_values:
+        if q in tag_dict.values():
+            query_name = q
+            return query_name
 
+    # OSM node keys that it used to identify the waypoint type (typically with someting like "arbitrary_key"="yes")
+    list_of_OSM_key = ['ford', 'barrier']
+    for q in list_of_OSM_key:
+        if q in tag_dict.keys():
+            query_name = q
+            return query_name
 
-    if (tag.attrib['k'] == "natural") and (tag.attrib['v'] == "cave_entrance"):
-        query_name = 'cave'
-    if (tag.attrib['k'] == "amenity") and (tag.attrib['v'] == "drinking_water"):
-        query_name = 'water'
-    if (tag.attrib['k'] == "information") and (tag.attrib['v'] == "guidepost"):
-        query_name = 'guidepost' 
-    if (tag.attrib['k'] == "ford") and (tag.attrib['v'] == "yes"):
-        query_name = 'ford'  
+    # For a particular waypoint type name that is not written in OSM db 
+    OSM_sac_scale = {'demanding_mountain_hiking':'T3 - ',
+        'alpine_hiking':'T4 - ',
+        'demanding_alpine_hiking':'T5 - ',
+        'difficult_alpine_hiking':'T6 - '}
+    for k, v in OSM_sac_scale.items():
+        if k in tag_dict.values():
+            query_name = v
+            return query_name
 
-    if (tag.attrib['k'] == "barrier"):
-        query_name = 'barrier' 
-
-    if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "demanding_mountain_hiking"):
-        query_name = 'T3' 
-
-    if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "alpine_hiking"):
-        query_name = 'T4' 
-
-    if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "demanding_alpine_hiking"):
-        query_name = 'T5' 
-
-    if (tag.attrib['k'] == "sac_scale") and (tag.attrib['v'] == "difficult_alpine_hiking"):
-        query_name = 'T6' 
-
+    # Return the same "query_name" that the input one if type is not found
     return query_name
 
 
@@ -155,12 +134,12 @@ def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
     root = tree.getroot()
     allnodes = root.findall('node')
     i_name = 1
-    query_name = ''
-
+    
     for node in allnodes:
         lat2 = float(node.get('lat'))
         lon2 = float(node.get('lon'))
         node_id = node.get('id')
+        query_name = ''
 
         match, near_lon, near_lat, index, min_dist = find_nearest(lon, lat, lon2, lat2, lim_dist)
         if match:
@@ -169,20 +148,21 @@ def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
             [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon2, lat2, index)
             ele = '' # set default in case proper tag not found
 
+            tag_dict = {}
             for tag in node.findall('tag'):
-                if tag.attrib['k'] == 'name':
-                    name = tag.attrib['v']
-                    has_name = True
-                if tag.attrib['k'] == 'ele':
-                    ele = tag.attrib['v']
-                query_name = get_wpt_type(tag, query_name)
+                tag_dict[tag.attrib['k']] = tag.attrib['v']
 
-            if not has_name:
+            query_name = get_wpt_type(tag_dict, query_name)
+            if 'ele' in tag_dict:
+                ele = tag_dict['ele']
+            if 'name' in tag_dict:
+                name = tag_dict['name']
+                has_name = True
+            else:
                 name = query_name + str(i_name) # set by default in case proper tag not found
                 i_name += 1
 
             # Because only 1 POI is possible per GPS point
-
             if index not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name + " - " + ele)
                 Pt = Point(name, lon_new, lat_new, ele, node_id, index, new_gpx_index, query_name, has_name, min_dist)
@@ -198,16 +178,23 @@ def get_overpass_way_feature(Pts, index_used, lat, lon, lim_dist):
     root = tree.getroot()
     allways = root.findall('way')
     i_name = 1
-    query_name = ''
+    
     api = osmapi.OsmApi()
 
     for way in allways:
+
+        query_name = ''
+
+        tag_dict = {}
+        for tag in way.findall('tag'):
+            tag_dict[tag.attrib['k']] = tag.attrib['v']
 
         for tag in way.findall('tag'):
             if tag.attrib['k'] == 'name':
                 name = tag.attrib['v']
                 has_name = True
-            query_name = get_wpt_type(tag, query_name)
+
+        query_name = get_wpt_type(tag_dict, query_name)
 
         way_id = way.get('id')
         nodes_id = api.WayGet(way_id)
@@ -459,8 +446,9 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     Pts = []
 
     query = []
-    query.append('node["natural" = "saddle"]')
-    query.append('node["natural" = "peak"]')
+    query.append('node["natural"="saddle"]')
+    query.append('node["natural"="peak"]')
+
     query.append('node["waterway"="waterfall"]')
     query.append('node["natural"="waterfall"]')
     query.append('node["information"="guidepost"]')
@@ -474,12 +462,18 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('node["amenity"="shelter"]')
     query.append('node["natural"="tree"]["name"]')
     query.append('node["historic"="aircraft_wreck"]["aircraft_wreck"]')
-    query.append('node["barrier"]["barrier"]')
+    query.append('node["barrier"]["barrier"!="bollard"]')   # A spécifier un peu plus
     query.append('node["building"="chapel"]')   # Just in case
     query.append('node["ford"="yes"]')   
     query.append('node["historic"="ruins"]')   
     query.append('node["historic"="castle"]')   
     query.append('node["amenity"="toilets"]')   
+
+
+    # TO DO RENDU
+    query.append('node["natural"="volcano"]')
+    query.append('node["natural"="spring"]')
+    query.append('node["man_made"="cairn"]')
 
     print('Overpass node - start')
     overpass_query(lon, lat, query)
@@ -494,7 +488,11 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('way["natural"="glacier"]')
     query.append('way["building"="chapel"]')
 
-    # query.append('way["highway"="path"]["sac_scale"]')
+    # TO DO RENDU
+    query.append('way["man_made"="observatory"]')
+    query.append('way["amenity"="shelter"]')
+
+    # query.append('way["highway"="path"]["sac_scale"]["sac_scale"!="mountain_hiking"]["sac_scale"!="hiking"]')
 
     print('Overpass way - start')
     overpass_query(lon, lat, query)

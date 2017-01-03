@@ -83,10 +83,32 @@
                     buildUrl: (config && config.buildUrl) || buildUrl
                 };
             },
+            IGN: function (config) { 
+                var url = 'http://mavisionneuse.ign.fr/visio.html?',
+                    displayName = "IGN ",
+                    buildUrl = function (map) {
+                        return this.url + [ 
+                            'lon=',
+                            map.getCenter().wrap().lng,
+                            '&lat=',
+                            map.getCenter().wrap().lat,
+                            '&zoom=',
+                            map.getZoom(),
+                            '&num=2&mt0=ign-cartes&mt1=osmfr'
+                        ].join('');
+                    };
+                return {
+                    url: (config && config.url) || url,
+                    displayName: (config && config.displayName) || displayName,
+                    buildUrl: (config && config.buildUrl) || buildUrl
+                };
+            },
+
+            // http://mavisionneuse.ign.fr/visio.html?lon=5.743873&lat=45.132802&zoom=9&num=3&mt0=ign-cartes&mt1=osmfr&mt2=google-map
             Josm: function (config) {
                 var url = 'http://127.0.0.1:8111/load_and_zoom',
                     timeout = 1000,
-                    displayName = "JOSM",
+                    displayName = "JOSM ",
                     buildUrl = function (map) {
                         var bounds = map.getBounds();
                         return this.url + L.Util.getParamString({
@@ -162,7 +184,7 @@
             position: "topright",
             zoomThreshold: 0,
             widget: "multiButton",
-            editors: ["id", "josm"]
+            editors: ["id", "josm", "ign"]
         },
 
         initialize: function (options) {
@@ -197,6 +219,8 @@
                     newEditors.push(new _Editors.Id());
                 } else if (editorSmallName === "josm") {
                     newEditors.push(new _Editors.Josm());
+                } else if (editorSmallName === "ign") {
+                    newEditors.push(new _Editors.IGN());
                 } else if (editorSmallName === "potlatch") {
                     newEditors.push(new _Editors.Potlatch());
                 } else {
