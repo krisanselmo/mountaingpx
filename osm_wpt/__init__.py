@@ -15,11 +15,12 @@ TODO:
 
 import gpxpy      # https://github.com/tkrajina/gpxpy
 import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
-import osmapi     # https://github.com/metaodi/osmapi
+# import osmapi     # https://github.com/metaodi/osmapi
 import time
 import sys
 import logging as log
-import xml.etree.cElementTree as ET
+# import xml.etree.cElementTree as ET
+import json
 from math import radians, cos, sin, asin, sqrt
 import numpy as np
 import multiprocessing
@@ -39,8 +40,9 @@ def timeit(f):
 
 
 class Point(object):
-    def __init__(self, name, lon, lat, ele, node_id, index, new_gpx_index, query_name, has_name, min_dist):
+    def __init__(self, name, osmtype, lon, lat, ele, node_id, index, new_gpx_index, query_name, has_name, min_dist):
         self.name = name
+        self.osmtype = osmtype
         self.lat = lat
         self.lon = lon
 
@@ -90,13 +92,14 @@ def uniquify(lat, lon, ele):
     return lat, lon, ele
 
 
-def get_wpt_type(tag_dict, query_name):
+def get_wpt_type(tag_dict):
     """
     Purpose: Récupérer le type de POI 
     (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
     Return: the waypoint type that will be written into the gpx file
     """
 
+    query_name = ''
     # OSM node values that it used to identify the waypoint type / Last values have low priority
     list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 
         'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
@@ -129,30 +132,24 @@ def get_wpt_type(tag_dict, query_name):
     return query_name
 
 
-def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
-    tree = ET.parse("Overpass.xml")
-    root = tree.getroot()
-    allnodes = root.findall('node')
+@timeit
+def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
     i_name = 1
-    
-    for node in allnodes:
-        lat2 = float(node.get('lat'))
-        lon2 = float(node.get('lon'))
-        node_id = node.get('id')
-        query_name = ''
+    for node in response['features']:
+        lat2 = node['geometry']['coordinates'][1]
+        lon2 = node['geometry']['coordinates'][0]
+        
 
         match, near_lon, near_lat, index, min_dist = find_nearest(lon, lat, lon2, lat2, lim_dist)
         if match:
+
             log.debug('Distance to node: ' + '%.2f' % (min_dist * 1e3) + ' m')
             has_name = False
-            [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon2, lat2, index)
             ele = '' # set default in case proper tag not found
-
-            tag_dict = {}
-            for tag in node.findall('tag'):
-                tag_dict[tag.attrib['k']] = tag.attrib['v']
-
-            query_name = get_wpt_type(tag_dict, query_name)
+            [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon2, lat2, index)
+            
+            tag_dict = node['properties']
+            query_name = get_wpt_type(tag_dict)
             if 'ele' in tag_dict:
                 ele = tag_dict['ele']
             if 'name' in tag_dict:
@@ -165,64 +162,49 @@ def get_overpass_feature(Pts, index_used, lat, lon, lim_dist):
             # Because only 1 POI is possible per GPS point
             if index not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name + " - " + ele)
-                Pt = Point(name, lon_new, lat_new, ele, node_id, index, new_gpx_index, query_name, has_name, min_dist)
+                Pt = Point(name, 'node', lon_new, lat_new, ele, node['id'], index, new_gpx_index, query_name, has_name, min_dist)
                 Pts.append(Pt)
                 index_used.append(index)
             else:
                 log.debug('/!\ Node index already used: ' + query_name + " - " + name + " - " + ele)
     return Pts
 
-
-def get_overpass_way_feature(Pts, index_used, lat, lon, lim_dist):
-    tree = ET.parse("Overpass.xml")
-    root = tree.getroot()
-    allways = root.findall('way')
+@timeit
+def get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist):
     i_name = 1
-    
-    api = osmapi.OsmApi()
+    for way in response['features']:
 
-    for way in allways:
+        # TODO -> Améliorer les listes
+        lon2 = []
+        lat2 = []
+        coords = way['geometry']['coordinates']
+        for coord in coords:
+            lon2.append(coord[0])
+            lat2.append(coord[1])
 
-        query_name = ''
-
-        tag_dict = {}
-        for tag in way.findall('tag'):
-            tag_dict[tag.attrib['k']] = tag.attrib['v']
-
-        for tag in way.findall('tag'):
-            if tag.attrib['k'] == 'name':
-                name = tag.attrib['v']
-                has_name = True
-
-        query_name = get_wpt_type(tag_dict, query_name)
-
-        way_id = way.get('id')
-        nodes_id = api.WayGet(way_id)
-        nodes = api.NodesGet(nodes_id['nd'])
-
-        lon_lat2 = map(lambda node_id: (nodes[node_id]['lon'], nodes[node_id]['lat']), nodes)
-        match, near_lon, near_lat, index = find_nearest_way(lon, lat, zip(*lon_lat2)[0], zip(*lon_lat2)[1], lim_dist)
+        match, near_lon, near_lat, index = find_nearest_way(lon, lat, lon2, lat2, lim_dist)
 
         if match == 1:
-            has_name = False
-            [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, near_lon, near_lat, index)
-            name = query_name + str(i_name) # set by default in case proper tag not found
+            
+            tag_dict = way['properties']
+            query_name = get_wpt_type(tag_dict)
             ele = '' # set default in case proper tag not found
+            has_name = False
+            if 'name' in tag_dict:
+                name = tag_dict['name']
+                has_name = True
+            if 'ele' in tag_dict:
+                ele = tag_dict['ele']
 
-            for tag in way.findall('tag'):
-                if tag.attrib['k'] == 'name':
-                    name = tag.attrib['v']
-                    has_name = True
-
+            [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, near_lon, near_lat, index)
             if not has_name:
                 name = query_name + str(i_name) # set by default in case proper tag not found
                 i_name += 1
 
-
             # Because only 1 POI is possible per GPS point
             if index not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name)
-                Pt = Point(name, lon_new, lat_new, ele, nodes_id['nd'][-1], index, new_gpx_index, query_name, has_name, 0) # todo lim dist
+                Pt = Point(name, 'way', lon_new, lat_new, ele, way['id'], index, new_gpx_index, query_name, has_name, 0) # todo lim dist
                 Pts.append(Pt)
                 index_used.append(index)
             else:
@@ -324,7 +306,7 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 
-def overpass_query(lon, lat, query):
+def overpass_query(lon, lat, query, responseformat="geojson"):
     margin = 0.001
     minlon = min(lon) - margin
     maxlon = max(lon) + margin
@@ -332,6 +314,7 @@ def overpass_query(lon, lat, query):
     maxlat = max(lat) + margin
 #    api = overpass.API()
 #   Default : http://overpass-api.de/api/interpreter
+    response = None
     api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
 
     pos_str = str(minlat) + ',' + str(minlon) + ',' +\
@@ -347,9 +330,13 @@ def overpass_query(lon, lat, query):
     i = 1 # index while (max 5)
     while (is_replied != 1) and (i < 5):
         try:
-            response = api.Get(overpass_query_str, responseformat="xml")
-            with open("Overpass.xml", "wb") as f:
-                f.write(response.encode('utf-8'))
+            response = api.Get(overpass_query_str, responseformat="geojson")
+            if responseformat is 'xml':
+                with open("Overpass.xml", "w") as f:
+                    f.write(response.encode('utf-8'))
+            elif responseformat is 'geojson':
+                with open("Overpass.geojson", "w") as f:
+                    json.dump(response, f)
             is_replied = 1
         except Exception as err:
             print(err)
@@ -358,6 +345,7 @@ def overpass_query(lon, lat, query):
             i += 1
             time.sleep(2)
             # print 'MultipleRequestsError'
+    return response
     
 
 def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt=True):
@@ -476,9 +464,9 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('node["man_made"="cairn"]')
 
     print('Overpass node - start')
-    overpass_query(lon, lat, query)
+    response = overpass_query(lon, lat, query)
     print('Overpass node - done')
-    Pts = get_overpass_feature(Pts, index_used, lat, lon, lim_dist)
+    Pts = get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist)
 
     # Ways
     query = []
@@ -495,9 +483,9 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     # query.append('way["highway"="path"]["sac_scale"]["sac_scale"!="mountain_hiking"]["sac_scale"!="hiking"]')
 
     print('Overpass way - start')
-    overpass_query(lon, lat, query)
+    response = overpass_query(lon, lat, query)
     print('Overpass way - done')
-    Pts = get_overpass_way_feature(Pts, index_used, lat, lon, lim_dist)
+    Pts = get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist)
 
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
