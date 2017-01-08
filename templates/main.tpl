@@ -1,3 +1,6 @@
+{# http://jinja.pocoo.org/docs/dev/templates/ #}
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,6 +38,7 @@
 
 </head>
 <body>
+<div style="visibility:hidden; opacity:0" id="dropzone"></div>
 
 <div class="leftpane">
     {# // BOX \\ #}
@@ -48,15 +52,15 @@
             <div class="header-text">
 
                 <!-- 'esc' or 'q' to disable drawing, 'd' to enable drawing-->
-                <br> Add <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> waypoints on your GPX
-                <br> <i> - work in progress - </i>
+                <br> Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database
+                <br> <span class='wip'> - work in progress - </span>
                 <!-- <a id="about_link" href="#" role="button">about</a> -->
 
                 <!-- <div id="drop_zone">Drop gpx file here or -->
 
-                <form action="?" method=post enctype=multipart/form-data>
+                <form action="?" method=post enctype=multipart/form-data id="form_id">
                     <div class="input-file-container">  
-                        <input class="input-file" id="my-file" type="file" name=file>
+                        <input class="input-file" id="my-file" type="file" accept=".gpx" name=file>
                         <label tabindex="0" for="my-file" class="input-file-trigger">select a GPX file...</label>
                     </div>
                     <div id="up_filename"> 
@@ -89,9 +93,9 @@
     <div class="info leaflet-control">
         <div class="heading">Infos</div>
         <div class="content">
-            <span class="gpx-name"> </span> <br>
-            Distance: <span class="gpx-info-dist"> </span> km<br>
-            Elevation: <span class="gpx-info-egain"> </span> m<br>
+            <div class="gpx-name" title="test"></div><br>
+            Distance: <span title="Distance 2d" class="gpx-info-dist"> </span> km<br>
+            Elevation: <span title="Raw elevation data" class="gpx-info-egain"> </span> m<br>
             Waypoints: <span class="gpx-info-wpt_number"> </span>
         </div> 
     </div>
@@ -104,8 +108,8 @@
 
 </div>
 
-
-
+<!-- <a href="#" title="This is some information for our tooltip." class="tooltip"><span title="More">CSS3 Tooltip</span></a> -->
+<!--  -->
 <!-- #map > div.leaflet-control-container > div.leaflet-leftpane > div.elevation.steelblue-theme.leaflet-control -->
 
     
@@ -177,6 +181,70 @@
 
 
 {# ----  Drop zone ----- #}
+
+    var lastTarget = null;
+
+    function isFile(evt) {
+        var dt = evt.dataTransfer;
+
+        for (var i = 0; i < dt.types.length; i++) {
+            if (dt.types[i] === "Files") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    window.addEventListener("dragenter", function (e) {
+        if (isFile(e)) {
+            lastTarget = e.target;
+            document.querySelector("#dropzone").style.visibility = "";
+            document.querySelector("#dropzone").style.opacity = 1;
+        }
+    });
+
+    window.addEventListener("dragleave", function (e) {
+        e.preventDefault();
+        if (e.target === lastTarget) {
+            document.querySelector("#dropzone").style.visibility = "hidden";
+            document.querySelector("#dropzone").style.opacity = 0;
+        }
+    });
+
+    window.addEventListener("dragover", function (e) {
+        e.preventDefault();
+    });
+
+    window.addEventListener("drop", function (e) {
+        e.preventDefault();
+        document.querySelector("#dropzone").style.visibility = "hidden";
+        document.querySelector("#dropzone").style.opacity = 0;
+        // document.querySelector("#textnode").style.fontSize = "42px";
+        if(e.dataTransfer.files.length == 1)
+        {
+            $("#up_filename").html(e.dataTransfer.files[0].name);
+            e.dataTransfer.getData('text/html')
+
+            var formData = new FormData();
+            formData.append('file', e.dataTransfer.files[0]);
+
+            // now post a new XHR request
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                if (xhr.readyState === xhr.DONE) {
+                    if (xhr.status === 200) {
+                        window.location.replace(xhr.responseURL);    
+                    }
+                }
+            };
+            xhr.open('POST', '?', false);
+            xhr.send(formData);
+        }
+        else{
+            $(".msg_flsh").html("Only one file allowed");
+        }
+    });
+
 {# https://www.html5rocks.com/en/tutorials/file/dndfiles/ #}
 
     // function handleFileSelect(evt) {
@@ -270,6 +338,8 @@
             attribution: mapyCzAttr
         });
             
+    // OVERLAY
+
     var stravaUrl = 'https:globalheat.strava.com/tiles/{id}/color{color}/{z}/{x}/{y}.png',
         strvAttr = '<a href="https://www.strava.com/">Strava</a>',
         strava_overlay_b = L.tileLayer(stravaUrl, {
@@ -363,7 +433,7 @@
 
     var opl = new L.OverPassLayer({
       endpoint: "http://api.openstreetmap.fr/oapi/",
-      query: "node(BBOX)['natural'='peak'];out;",
+      query: "node(BBOX)['amenity'='parking'];out;",
       minzoom: 14,
       minZoomIndicatorOptions: {
         minZoomMessage: ""
@@ -418,18 +488,22 @@
             wptIconUrls: {
                 'alpine_hut': '{{ url_for('static', filename='img/markers/alpine_hut.png') }}',    
                 'barrier': '{{ url_for('static', filename='img/markers/barrier.png') }}',   
-                'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}',    
+                'castle': '{{ url_for('static', filename='img/markers/castle.png') }}',    
+                'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}', 
                 'chapel': '{{ url_for('static', filename='img/markers/chapel.png') }}', 
                 'ford': '{{ url_for('static', filename='img/markers/ford.png') }}',   
                 'fountain': '{{ url_for('static', filename='img/markers/fountain.png') }}',
                 'glacier': '{{ url_for('static', filename='img/markers/glacier.png') }}',
-                'guidepost': '{{ url_for('static', filename='img/markers/guidepost.png') }}',
+                'guidepost': '{{ url_for('static', filename='img/markers/guidepost2.png') }}',
                 'lake': '{{ url_for('static', filename='img/markers/lake.png') }}',
+                'observatory': '{{ url_for('static', filename='img/markers/observatory.png') }}',
                 'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',          
                 'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',    
                 'toilets': '{{ url_for('static', filename='img/markers/toilets.png') }}',     
                 'toposcope': '{{ url_for('static', filename='img/markers/toposcope.png') }}',
                 'tree': '{{ url_for('static', filename='img/markers/tree.png') }}',
+                'ruins': '{{ url_for('static', filename='img/markers/ruins.png') }}',
+                'shelter': '{{ url_for('static', filename='img/markers/shelter.png') }}',
                 'viewpoint': '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
                 'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',   
                 'water': '{{ url_for('static', filename='img/markers/water.png') }}',        
@@ -447,7 +521,14 @@
     
     
     gpx_overlay.on('loaded', function(e) {
+        // $(".tooltip").html( e.target.get_name());
+        // $(".gpx-name").append( e.target.get_name());
+
         $(".gpx-name").html( e.target.get_name());
+        $(".gpx-name").attr('title', e.target.get_name());
+        
+
+        // 
         var dist_m = e.target.get_distance() / 1000
         $(".gpx-info-dist").html( dist_m.toFixed(2));
         var elev_gain = e.target.get_elevation_gain()

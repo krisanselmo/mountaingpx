@@ -50,23 +50,16 @@
 
 ################################# ICONS
 
-Shelters
-historic = ruins
-historic = castle
+
 
     query.append('node["natural"="volcano"]')
     query.append('node["natural"="spring"]')
     query.append('node["man_made"="cairn"]')
-    query.append('way["man_made"="observatory"]')
 
 ################################# HTML
 
 Option pour enlever les POI sans nom
-Add info on Elevation -> 'Les données proviennent uniquement du gpx et peuvent être biaisées'
 
-
-INFO BOX
-    -> Print the number of wpts
 
 RESPONSIVE
     -> Si écran petit en largeur, il faut recentrer la map
@@ -74,10 +67,19 @@ RESPONSIVE
 WPTS BOX 
     -> list items
 
+
+
 ################################# JS / Leaflet
 
 https://github.com/mpetazzoni/leaflet-gpx/issues/41
 Option to remove gpx layer
+
+
+OVERPASS sur ways:
+
+http://simon04.github.io/POImap/railway.html
+
+
 
 ################################# JS / Leaflet / Elevation
 
@@ -88,14 +90,20 @@ var n = 34523453.345
 n.toLocaleString()
 
 
-################################# CSS
- Text overflow CSS: 
- http://stackoverflow.com/questions/802175/truncating-long-strings-with-css-feasible-yet
+############################### python
+
+TODO:
+    - Keep old WPT (partially functional)
+    - Add x kilometers before ending
+        Last 2 km
+        Last km
+
 
 ################################# OTHER THINGS
     ->  https://en.wikipedia.org/wiki/Map_matching
 
     -> pourcentage de terrain 
+
 
 
 
@@ -169,15 +177,17 @@ def main_page(trk_num=None):
             try:
                 # TODO: AFFICHER UN LOADING
                 wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=0.05, gpxoutputname=fpath)
-                app.logger.debug(u'osm_wpt script : OK')
-                app.logger.debug(u'waypoints: ' + str(wpts_number))
+                # app.logger.debug(u'osm_wpt script : OK')
+                # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
                 flash('GPX Error')
                 # flash(err)
                 app.logger.warning(u'GPX Error')
                 return redirect(request.url)
     
+            # print(trk_num)
             return redirect(url_for('main_page', trk_num=trk_num))
+            # return redirect(url_for('main_page', trk_num=trk_num))
 
         else:
             flash('Not allowed file type')
@@ -187,7 +197,6 @@ def main_page(trk_num=None):
         fpath = None
     else:
         fpath = OUTPUT_FOLDER + trk_num + '.gpx'
-
 
     # Query string
     map_qstr = dict.fromkeys(['zoom', 'lat', 'lon'], None)
@@ -243,7 +252,7 @@ def main_page(trk_num=None):
             if k in overlay:
                 overlay_lst.append(v)
 
-    print overlay_lst
+    # print overlay_lst
     return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
         lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
  

@@ -5,27 +5,15 @@ Created on Mon Oct 17 15:28:58 2016
 @author: christophe.anselmo@gmail.com
 
 
-TODO:
-    - Keep old WPT (partially functional)
-    - Add x kilometers before ending
-        Last 2 km
-        Last km
-
 """
 
 import gpxpy      # https://github.com/tkrajina/gpxpy
 import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
-# import osmapi     # https://github.com/metaodi/osmapi
 import time
 import sys
 import logging as log
-# import xml.etree.cElementTree as ET
 import json
 from math import radians, cos, sin, asin, sqrt
-import numpy as np
-import multiprocessing
-# import orderedset as ordset
-
 
 
 def timeit(f):
@@ -35,7 +23,6 @@ def timeit(f):
         te = time.time()
         print("function time {} : {} sec".format(f.__name__, te - ts))
         return result
-
     return timed
 
 
@@ -52,7 +39,6 @@ class Point(object):
         self.new_gpx_index = new_gpx_index
         self.has_name = has_name
         self.min_dist = min_dist
-
         try:
             self.ele = float(ele)
         except ValueError:
@@ -139,7 +125,6 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
         lat2 = node['geometry']['coordinates'][1]
         lon2 = node['geometry']['coordinates'][0]
         
-
         match, near_lon, near_lat, index, min_dist = find_nearest(lon, lat, lon2, lat2, lim_dist)
         if match:
 
@@ -169,23 +154,17 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
                 log.debug('/!\ Node index already used: ' + query_name + " - " + name + " - " + ele)
     return Pts
 
+
 @timeit
 def get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist):
     i_name = 1
     for way in response['features']:
 
-        # TODO -> Améliorer les listes
-        lon2 = []
-        lat2 = []
-        coords = way['geometry']['coordinates']
-        for coord in coords:
-            lon2.append(coord[0])
-            lat2.append(coord[1])
-
+        table = [(coord[0], coord[1]) for coord in way['geometry']['coordinates']]
+        lon2, lat2 = [x[0] for x in table], [x[1] for x in table]
         match, near_lon, near_lat, index = find_nearest_way(lon, lat, lon2, lat2, lim_dist)
 
         if match == 1:
-            
             tag_dict = way['properties']
             query_name = get_wpt_type(tag_dict)
             ele = '' # set default in case proper tag not found
@@ -289,6 +268,7 @@ def get_perp(X1, Y1, X2, Y2, X3, Y3):
 #    else:
 #        return X2,Y2,1
 
+
 def haversine(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points
@@ -312,20 +292,17 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     maxlon = max(lon) + margin
     minlat = min(lat) - margin
     maxlat = max(lat) + margin
-#    api = overpass.API()
-#   Default : http://overpass-api.de/api/interpreter
+    #   api = overpass.API()
+    #   Default : http://overpass-api.de/api/interpreter
     response = None
     api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
 
     pos_str = str(minlat) + ',' + str(minlon) + ',' +\
     str(maxlat) + ',' + str(maxlon)
-
     overpass_query_str = '('
     for q in query:
         overpass_query_str += q + '('+ pos_str + '); '
-
     overpass_query_str += ');'
-    # print overpass_query_str
     is_replied = 0
     i = 1 # index while (max 5)
     while (is_replied != 1) and (i < 5):
@@ -359,7 +336,6 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
     gpx_segment = gpxpy.gpx.GPXTrackSegment()
     gpx_track.segments.append(gpx_segment)
 
-
     for i in range(len(lat)):
         if i in index_used:
             pt = filter(lambda pt: pt.index == i, Pts)
@@ -376,12 +352,10 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
         for waypoint in gpx_data.waypoints:
             gpx.waypoints.append(waypoint)
 
-
-
-    all_waypoint = True
+    all_waypoints = True
 
     for Pt in Pts:
-        if Pt.has_name or all_waypoint:
+        if Pt.has_name or all_waypoints:
             #ok = filter(lambda wpt: round(wpt.latitude*1e5) == round(Pt.lat*1e5), gpx_data.waypoints)
             #if len(ok) == 0:
             # log.info(Pt)
@@ -389,8 +363,6 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
             Pt.lat, Pt.lon, elevation=Pt.ele, name=Pt.name,
             symbol=Pt.query_name, type=Pt.query_name))
         
-
-
     with open(gpxoutputname, 'w') as f:
         f.write(gpx.to_xml())
 
@@ -398,12 +370,12 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
 def shift(l, n):
     return l[n:] + l[:n]
 
+
 def change_route(lat, lon, ele, reverse=False, index=None):
     if reverse is True:
         lat = lat[::-1]
         lon = lon[::-1]
         ele = ele[::-1]
-
     if index is not None:
         if index > len(lat):
             print('index number too long')
@@ -411,8 +383,8 @@ def change_route(lat, lon, ele, reverse=False, index=None):
             lat = shift(lat, index)
             lon = shift(lon, index)
             ele = shift(ele, index)
-
     return lat, lon, ele
+
 
 def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     '''
@@ -420,7 +392,7 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     keep_old_wpt (False #defaut)
     '''
 
-    log.basicConfig(filename='osm_wpt.log', level=log.DEBUG)
+    log.basicConfig(filename='osm_wpt.log', level=log.WARNING)
     log.info('Started')
 
     with open(fpath, 'r') as gpx_file:
@@ -433,10 +405,10 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     index_used = []
     Pts = []
 
+    # Nodes
     query = []
     query.append('node["natural"="saddle"]')
     query.append('node["natural"="peak"]')
-
     query.append('node["waterway"="waterfall"]')
     query.append('node["natural"="waterfall"]')
     query.append('node["information"="guidepost"]')
@@ -451,22 +423,19 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('node["natural"="tree"]["name"]')
     query.append('node["historic"="aircraft_wreck"]["aircraft_wreck"]')
     query.append('node["barrier"]["barrier"!="bollard"]')   # A spécifier un peu plus
-    query.append('node["building"="chapel"]')   # Just in case
+    query.append('node["building"="chapel"]')
     query.append('node["ford"="yes"]')   
     query.append('node["historic"="ruins"]')   
     query.append('node["historic"="castle"]')   
     query.append('node["amenity"="toilets"]')   
-
-
-    # TO DO RENDU
     query.append('node["natural"="volcano"]')
     query.append('node["natural"="spring"]')
     query.append('node["man_made"="cairn"]')
-
     print('Overpass node - start')
     response = overpass_query(lon, lat, query)
     print('Overpass node - done')
-    Pts = get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist)
+    if response is not None:
+        Pts = get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist)
 
     # Ways
     query = []
@@ -475,21 +444,20 @@ def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
     query.append('way["water"="lake"]')
     query.append('way["natural"="glacier"]')
     query.append('way["building"="chapel"]')
-
-    # TO DO RENDU
     query.append('way["man_made"="observatory"]')
     query.append('way["amenity"="shelter"]')
 
+    # Paths
     # query.append('way["highway"="path"]["sac_scale"]["sac_scale"!="mountain_hiking"]["sac_scale"!="hiking"]')
 
     print('Overpass way - start')
     response = overpass_query(lon, lat, query)
     print('Overpass way - done')
-    Pts = get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist)
+    if response is not None:
+        Pts = get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist)
 
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
-
     print('Number of gpx points in route : ' + str(len(lat)))
 
     wpts_number = len(index_used)
