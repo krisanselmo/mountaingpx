@@ -24,6 +24,17 @@
     <script src="{{ url_for('static', filename='Flickr.js') }}"></script> {# https://github.com/shurshur/Leaflet.Flickr #}
     <script src="{{ url_for('static', filename='leaflet.elevation-0.0.4.src.js') }}"> </script>
 
+
+    <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>  -->
+
+
+
+    <!-- http://openweathermap.org/hugemaps -->
+    <!-- https://github.com/buche/leaflet-openweathermap -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" />
+    <script type="text/javascript" src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
+
+
     {# Other 
     <!-- <script src="{{ url_for('static', filename='map.js') }}"></script> -->
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script> -->
@@ -283,7 +294,7 @@
 <script>
     
 
-
+    
     
     var opentopoAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
             'Imagery &copy <a href="https://opentopomap.org">OpenTopoMap</a>',
@@ -296,8 +307,13 @@
     var osmAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
             'Imagery &copy <a href="https://opentopomap.org">OpenTopoMap</a>',
         osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: osmAttr,
-            errorTileUrl: "http://b.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution: osmAttr
+        });
+        osmcyclemap = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+            attribution: osmAttr
+        });
+        osmfr = L.tileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+            attribution: osmAttr
         });
 
     var mapboxAttr = 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -374,16 +390,21 @@
     var mapyCz_overlay = L.tileLayer("https://m{s}.mapserver.mapy.cz/hybrid-trail_bike-m/{z}-{x}-{y}", {
             zIndex: 1, 
             subdomains: '1234',
-            attribution: lonviaAttr
+            attribution: '',
         });
 
     var hillshade_overlay = L.tileLayer("http://c.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png", {
             zIndex: 10, 
             opacity: 0.75, 
-            attribution: lonviaAttr
+            minZoom:12,
+            attribution: '<a href="http://nasa.gov/">NASA SRTM</a>',
         });
         
-    
+    var clouds = L.OWM.clouds({showLegend: true, opacity: 0.5});
+    var temp = L.OWM.temperature({showLegend: true, opacity: 0.5});
+    // var temp = L.OWM.current();
+
+
     var flickr = new L.Flickr('a06f677e097235ad98d9f0961d44252c',{maxLoad: 25, maxTotal: 250});      
 
 
@@ -420,7 +441,192 @@
         position:'topright'
     }).addTo(map);
 
+///////////////////////////////////////
 
+{#
+
+    var nodes = {}, ways = {};
+    $(function () {
+      // map = POImap.init();
+      layer = new L.GeoJSON(null, {
+        onEachFeature: function (e, layer) {
+          if (e.properties && e.properties.name) layer.bindPopup(e.properties.name);
+          if (e.properties && e.properties.style) layer.setStyle(e.properties.style);
+        }
+      });
+      map.addLayer(layer);
+      // this.addLayer(m);
+      // map.zoomIn();
+      loadPoi();
+      map.on('moveend', loadPoi);
+    });
+
+    var addedStopLabels = {};
+    function loadPoi() {
+      if (map.getZoom() < 13) {
+        return;
+      }
+
+      var tagsTable = function(tags, type, id) {
+        var r = $('<table>');
+        if (type && id)
+          r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: 'href="//localhost:8111/load_object?objects='+type+id, target: '_blank'}).text('edit')).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
+        for (var key in tags)
+          r.append($('<tr>').append($('<th>').text(key)).append($('<td>').text(tags[key])));
+        return $('<div>').append(r).html();
+      };
+
+      var handleNode = function (n) {
+      };
+
+      var handleWay = function (w) {
+        if (ways[w.id] || !w.tags.sac_scale) return;
+        ways[w.id] = true;
+        var style = {};
+        // style.color = 'yellow'
+        // COLOR : http://www.color-hex.com/color/00007f
+        style.opacity = 0.8;
+        style.color = -1 != $.inArray(w.tags.sac_scale, ['hiking','mountain_hiking',
+          'demanding_mountain_hiking','alpine_hiking','demanding_alpine_hiking','difficult_alpine_hiking']) ? (!w.tags.sac_scale
+          ? 'black'
+          : w.tags.sac_scale == 'hiking'
+          ? 'yellow'
+          : w.tags.sac_scale == 'mountain_hiking'
+          ? 'blue'
+          : w.tags.sac_scale == 'demanding_mountain_hiking'
+          ? '#00007f'
+          : w.tags.sac_scale == 'alpine_hiking'
+          ? 'red'
+          : w.tags.sac_scale == 'demanding_alpine_hiking'
+          ? '#990000'
+          : w.tags.sac_scale == 'difficult_alpine_hiking'
+          ? '#4C0000'
+          : '#d00')
+        : '#20000000';
+        if (w.tags.sac_scale == 'demanding_alpine_hiking' || w.tags.sac_scale == 'demanding_mountain_hiking' )
+        style.svg = {'stroke-dasharray': '6,8'};
+        style.weight = 3;
+        // console.log(style);
+        layer.addData({
+          type: 'Feature',
+          geometry: w.geometry,
+          properties: {name: tagsTable(w.tags, 'w', w.id), style: style}
+        });
+      };
+
+      POImap.loadAndParseOverpassJSON(
+          '//api.openstreetmap.fr/oapi/interpreter?data=[out:json];(way["highway"="path"]["sac_scale"](BBOX);node(w));out;',
+          handleNode, handleWay, null);
+
+    }
+
+
+    // '//www.overpass-api.de/api/interpreter?data=[out:json];(way["highway"="path"]["sac_scale"](BBOX);node(w));out;',
+    // 'http://api.openstreetmap.fr/oapi/interpreter'
+
+
+    var POImap = {};
+
+    POImap.init = function () {
+        var attr_osm = 'Map data &copy; <a href="//openstreetmap.org/">OpenStreetMap</a> contributors',
+            attr_overpass = 'POI via <a href="//www.overpass-api.de/">Overpass API</a>';
+
+        var osm = new L.TileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: [attr_osm, attr_overpass].join(', ')}),
+        transport = new L.TileLayer('//{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png', {opacity: 0.5, attribution: ['<a href="http://blog.gravitystorm.co.uk/2011/04/11/transport-map/">Gravitystorm Transport Map</a>', attr_osm, attr_overpass].join(', ')}),
+        osm_bw = new L.TileLayer('//{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {opacity: 0.5, attribution: [attr_osm, attr_overpass].join(', ')}),
+        osm_no = new L.TileLayer('//{s}.www.toolserver.org/tiles/osm-no-labels/{z}/{x}/{y}.png', {attribution: [attr_osm, attr_overpass].join(', ')});
+
+        map = new L.Map('map', {
+            center: new L.LatLng(45.8501, 6.8670),
+            zoom: 13,
+            layers: osm
+        });
+
+        map.getControl = function () {
+            var ctrl = new L.Control.Layers({
+               'OpenSteetMap': osm,
+               'OpenSteetMap (no labels)': osm_no,
+               'OpenSteetMap (black/white)': osm_bw,
+               'Transport Map': transport
+            });
+            return function () {
+                  return ctrl;
+            };
+        }();
+        map.addControl(map.getControl());
+
+        L.LatLngBounds.prototype.toOverpassBBoxString = function (){
+            var a = this._southWest,
+                b = this._northEast;
+            return [a.lat, a.lng, b.lat, b.lng].join(",");
+        };
+
+        var path_style = L.Path.prototype._updateStyle;
+            L.Path.prototype._updateStyle = function () {
+            path_style.apply(this);
+            for (var k in this.options.svg) {
+              this._path.setAttribute(k, this.options.svg[k]);
+            }
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+              var center = new L.LatLng(position.coords.latitude, position.coords.longitude);
+              map.setView(center, 13);
+            });
+        }
+
+        POImap.map = map;
+        return map;
+    };
+
+    POImap.loadAndParseOverpassJSON = function (overpassQueryUrl, callbackNode, callbackWay, callbackRelation) {
+      var url = overpassQueryUrl.replace(/(BBOX)/g, map.getBounds().toOverpassBBoxString());
+      $.getJSON(url, function (json) {
+        POImap.parseOverpassJSON(json, callbackNode, callbackWay, callbackRelation);
+      });
+    };
+
+    POImap.parseOverpassJSON = function (overpassJSON, callbackNode, callbackWay, callbackRelation) {
+      var nodes = {}, ways = {};
+      for (var i = 0; i < overpassJSON.elements.length; i++) {
+        var p = overpassJSON.elements[i];
+        switch (p.type) {
+          case 'node':
+            p.coordinates = [p.lon, p.lat];
+            p.geometry = {type: 'Point', coordinates: p.coordinates};
+            nodes[p.id] = p;
+            // p has type=node, id, lat, lon, tags={k:v}, coordinates=[lon,lat], geometry
+            if (typeof callbackNode === 'function') callbackNode(p);
+            break;
+          case 'way':
+            p.coordinates = p.nodes.map(function (id) {
+              return nodes[id].coordinates;
+            });
+            p.geometry = {type: 'LineString', coordinates: p.coordinates};
+            ways[p.id] = p;
+            // p has type=way, id, tags={k:v}, nodes=[id], coordinates=[[lon,lat]], geometry
+            if (typeof callbackWay === 'function') callbackWay(p);
+            break;
+          case 'relation':
+            if (!p.members) {
+              console.log('Empty relation', p);
+              break;
+            }
+            p.members.map(function (mem) {
+              mem.obj = (mem.type == 'way' ? ways : nodes)[mem.ref];
+            });
+            // p has type=relaton, id, tags={k:v}, members=[{role, obj}]
+            if (typeof callbackRelation === 'function') callbackRelation(p);
+            break;
+        }
+      }
+    };
+
+#}
+
+
+//////////////////////////////////////
 
 
     //OverPassAPI overlay
@@ -440,6 +646,8 @@
       }
     });
     map.addLayer(opl);
+
+
 
 
 //   options: {
@@ -471,7 +679,9 @@
 //   }
 // };
 
-    
+    // omnivore.kml('{{ url_for('static', filename='carte_des_topos.kml') }}').addTo(map);
+
+
     {% if outputfile is not none %}
     var gpx = '../{{outputfile}}'
     // var gpx = '{{ url_for('static', filename='{{outputfile}}') }}'
@@ -503,6 +713,7 @@
                 'toposcope': '{{ url_for('static', filename='img/markers/toposcope.png') }}',
                 'tree': '{{ url_for('static', filename='img/markers/tree.png') }}',
                 'ruins': '{{ url_for('static', filename='img/markers/ruins.png') }}',
+                'spring': '{{ url_for('static', filename='img/markers/water.png') }}',  
                 'shelter': '{{ url_for('static', filename='img/markers/shelter.png') }}',
                 'viewpoint': '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
                 'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',   
@@ -515,7 +726,7 @@
         }
     }).addTo(map); 
 
-
+    
 
       //document.getElementById("dist").innerHTML = e.target.get_distance() / 1000;
     
@@ -614,6 +825,8 @@
         "OpenTopoMap": opentopo,
         "Mapy.cz": mapyCz,
         "OSM": osm,
+        // 'OSM Fr': osmfr,
+        "Open Cycle Map":osmcyclemap,
         "Mapbox / Streets": streets,
         "Mapbox / Grayscale": grayscale,
         "Mapbox / Outdoors": outdoors,
@@ -636,6 +849,8 @@
         "Mapy.cz": mapyCz_overlay,
         "Hillshade": hillshade_overlay,
         "Flickr" : flickr,
+        "Clouds": clouds,
+        "Temperature": temp,
         // "Wikipedia" : wiki
     };
     
@@ -651,7 +866,14 @@
     });
         
         
-// --------------------------------
+
+
+
+
+
+
+
+
 
 {#
 // create custom icon
@@ -731,20 +953,23 @@ map.on('baselayerchange ', function(e) {
         case "OSM":
             layer = 3;
             break;
-        case "Mapbox / Streets":
+        case "Open Cycle Map":
             layer = 4;
             break;
-        case "Mapbox / Grayscale":
+        case "Mapbox / Streets":
             layer = 5;
             break;
-        case "Mapbox / Outdoors":
+        case "Mapbox / Grayscale":
             layer = 6;
             break;
-        case "Mapbox / Satellite":
+        case "Mapbox / Outdoors":
             layer = 7;
             break;
-         case "Google / Satellite":
+        case "Mapbox / Satellite":
             layer = 8;
+            break;
+         case "Google / Satellite":
+            layer = 9;
             break;
         default:
             layer = 1;
