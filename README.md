@@ -7,5 +7,6 @@ _Work in progress..._
 ### Usage
 
 ```bash
+pip install -r requirements.txt
 python osm_wpt_app.py
 ```
