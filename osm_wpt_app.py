@@ -38,7 +38,7 @@ def error_page(error):
 # -----------------------------------------------------------
 @app.route('/help', methods=['GET'])
 def help():
-    return "HELP page (Todo)"
+    return render_template('help.tpl')
 
 
 
@@ -153,9 +153,10 @@ def main_page(trk_num=None):
                 overlay_lst.append(v)
 
     # print overlay_lst
-    return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
-        lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
-
+    # return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
+    #     lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
+    return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr, 
+        layer_qstr=layer_name, overlay_qstr=overlay_lst)
 
 
 if __name__ == '__main__':

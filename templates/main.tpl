@@ -401,7 +401,7 @@
         });
         
     var clouds = L.OWM.clouds({showLegend: true, opacity: 0.5});
-    var temp = L.OWM.temperature({showLegend: true, opacity: 0.5});
+    var temp = L.OWM.temperature({showLegend: true, legendPosition: 'bottomright', opacity: 0.5});
     // var temp = L.OWM.current();
 
 
@@ -409,16 +409,16 @@
 
 
 
-    {% if layer_name is none %}
+    {% if layer_qstr is none %}
         // map_layers = [opentopo, strava_overlay_b, mapyCz_overlay];
         map_layers = [opentopo];
     {% else %}
-        map_layers = [{{layer_name}}];
+        map_layers = [{{layer_qstroverlay_qstr}}];
     {% endif %}
 
 
-    {% if overlay_lst is defined %}
-        {% for item in overlay_lst %}
+    {% if overlay_qstr is defined %}
+        {% for item in overlay_qstr %}
             map_layers.push({{item}});
         {% endfor %}
     {% endif %}
@@ -443,7 +443,7 @@
 
 ///////////////////////////////////////
 
-{#
+// 
 
     var nodes = {}, ways = {};
     $(function () {
@@ -623,7 +623,7 @@
       }
     };
 
-#}
+// 
 
 
 //////////////////////////////////////
@@ -727,26 +727,15 @@
     }).addTo(map); 
 
     
-
-      //document.getElementById("dist").innerHTML = e.target.get_distance() / 1000;
-    
-    
     gpx_overlay.on('loaded', function(e) {
-        // $(".tooltip").html( e.target.get_name());
-        // $(".gpx-name").append( e.target.get_name());
-
         $(".gpx-name").html( e.target.get_name());
         $(".gpx-name").attr('title', e.target.get_name());
-        
-
         // 
         var dist_m = e.target.get_distance() / 1000
         $(".gpx-info-dist").html( dist_m.toFixed(2));
         var elev_gain = e.target.get_elevation_gain()
         $(".gpx-info-egain").html( elev_gain.toFixed(2));
-
         $(".gpx-info-wpt_number").html(e.target.get_wpt_number());
-
         if (elev_gain > 1){
             var container=el.onAdd(map);
             $("#elevation-div").html(container);
@@ -776,18 +765,17 @@
         xTicks: undefined, //number of ticks in x axis, calculated by default according to width
         yTicks: undefined, //number of ticks on y axis, calculated by default according to height
         collapsed: true,  //collapsed mode, show chart on click or mouseover
-        imperial: false    //display imperial units instead of metric
     });
-    // el.addTo(map);
 
     // var el = L.control.elevation();
     
-
-
     gpx_overlay.on("addline",function(e){
+        // console.log(e.line)
+        // TODO: remove null values
         el.addData(e.line);
     });
-    // gpx_overlay.addTo(map);
+
+
 
    
 
@@ -806,18 +794,21 @@
 
 
 
-        {% if zoom is none or lat is none or lon is none %}
+        {% if map_qstr['zoom'] is none or map_qstr['lat'] is none or map_qstr['lon'] is none %}
             gpx_overlay.on('loaded', function(e) {
                 map.fitBounds(e.target.getBounds());
             })
         {% endif %}
-        {% if zoom is not none and lat is not none and lon is not none %}
-        map.setView({lat:{{lat}}, lng:{{lon}}}, {{zoom}})
+        {% if map_qstr['zoom'] is not none and map_qstr['lat'] is not none and map_qstr['lon'] is not none %}
+            map.setView({lat:{{map_qstr['lat']}}, lng:{{map_qstr['lon']}}}, {{map_qstr['zoom']}})
         {% endif %}
-
     {% else %}
-        {# Defaut value centered in france #}
-        map.setView({lat:46.491, lng:2.197}, 6)
+        {% if map_qstr['zoom'] is not none and map_qstr['lat'] is not none and map_qstr['lon'] is not none %}
+            map.setView({lat:{{map_qstr['lat']}}, lng:{{map_qstr['lon']}}}, {{map_qstr['zoom']}})
+        {% else %}
+            {# Defaut value centered in france #}
+            map.setView({lat:46.491, lng:2.197}, 6)
+        {% endif  %}
     {% endif  %}
 
         

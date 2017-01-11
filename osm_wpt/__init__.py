@@ -157,6 +157,17 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
 
 @timeit
 def get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist):
+    """
+    Purpose: Return way faetures close to the gpx route from the overpass query
+    Inputs:
+        - response: overpass response (json format)
+        - Pts: The waypoints 
+        - index_used: The gpx index point(s) linked to a waypoint
+        - lat
+        - lon
+        - lim_dist 
+    Return: list of waypoints with attributes
+    """
     i_name = 1
     for way in response['features']:
 
@@ -199,8 +210,8 @@ def find_nearest(lon, lat, lon2, lat2, lim_dist):
     dist = map(lambda x, y: (haversine(x, y, lon2, lat2)), lon, lat)
     dist_min = min(dist)
     i = dist.index(dist_min)
-    with open("nearest_new.txt", "a") as f:
-        f.write(str([dist_min < lim_dist, lon[i], lat[i], i, dist_min]) + '\n')
+    # with open("nearest_new.txt", "a") as f:
+    #     f.write(str([dist_min < lim_dist, lon[i], lat[i], i, dist_min]) + '\n')
     return dist_min < lim_dist, lon[i], lat[i], i, dist_min
 
 
@@ -308,10 +319,11 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     while (is_replied != 1) and (i < 5):
         try:
             response = api.Get(overpass_query_str, responseformat="geojson")
-            if responseformat is 'xml':
+            saveit = False
+            if responseformat is 'xml' and saveit:
                 with open("Overpass.xml", "w") as f:
                     f.write(response.encode('utf-8'))
-            elif responseformat is 'geojson':
+            elif responseformat is 'geojson' and saveit:
                 with open("Overpass.geojson", "w") as f:
                     json.dump(response, f)
             is_replied = 1
