@@ -147,6 +147,7 @@ def main_page(trk_num=None):
                 "E": 'mapyCz_overlay',
                 "F": 'hillshade_overlay',
                 "G": 'flickr',
+                "H": 'overpass_parking',
         }
         for k, v in dic.items():
             if k in overlay:
@@ -155,6 +156,7 @@ def main_page(trk_num=None):
     # print overlay_lst
     # return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
     #     lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
+    
     return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr, 
         layer_qstr=layer_name, overlay_qstr=overlay_lst)
 

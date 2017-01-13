@@ -115,6 +115,10 @@
     <div class="info elevation steelblue-theme leaflet-control">
         <div id="elevation-div"></div>
     </div>
+
+    <div class="info listwpt steelblue-theme leaflet-control">
+        <div id="listwpt-div"></div>
+    </div>
     {% endif %}
 
 </div>
@@ -405,7 +409,37 @@
     // var temp = L.OWM.current();
 
 
+
     var flickr = new L.Flickr('a06f677e097235ad98d9f0961d44252c',{maxLoad: 25, maxTotal: 250});      
+
+    var ParkingIcon = L.icon({
+                            iconUrl: '{{ url_for('static', filename='img/markers/Parking_icon.svg') }}',
+                            iconSize:     [15, 15], // size of the icon
+                            popupAnchor:  [0, -15] // point from which the popup should open relative to the iconAnchor
+                    });
+
+    var overpass_parking = new L.OverPassLayer({
+            endpoint: "http://api.openstreetmap.fr/oapi/",
+            query: "node(BBOX)['amenity'='parking'];out;",
+            minzoom: 14,
+
+            callback: function(data) {
+                for(var i=0;i<data.elements.length;i++) {
+                    var e = data.elements[i];
+                    if (e.id in this.instance._ids) return;
+                        this.instance._ids[e.id] = true;
+                        var pos = new L.LatLng(e.lat, e.lon);
+                        var popup = this.instance._poiInfo(e.tags,e.id);
+                        var Picon = L.marker(pos, {icon: ParkingIcon})
+                        .bindPopup(popup);
+                        this.instance.addLayer(Picon);
+                }
+            },
+            minZoomIndicatorOptions: {
+                minZoomMessage: ""
+            }
+        });
+
 
 
 
@@ -413,7 +447,7 @@
         // map_layers = [opentopo, strava_overlay_b, mapyCz_overlay];
         map_layers = [opentopo];
     {% else %}
-        map_layers = [{{layer_qstroverlay_qstr}}];
+        map_layers = [{{layer_qstr}}];
     {% endif %}
 
 
@@ -445,16 +479,17 @@
 
 // 
 
+
     var nodes = {}, ways = {};
     $(function () {
       // map = POImap.init();
-      layer = new L.GeoJSON(null, {
-        onEachFeature: function (e, layer) {
-          if (e.properties && e.properties.name) layer.bindPopup(e.properties.name);
-          if (e.properties && e.properties.style) layer.setStyle(e.properties.style);
+      layer_trail_sac = new L.GeoJSON(null, {
+        onEachFeature: function (e, layer_trail_sac) {
+          if (e.properties && e.properties.name) layer_trail_sac.bindPopup(e.properties.name);
+          if (e.properties && e.properties.style) layer_trail_sac.setStyle(e.properties.style);
         }
       });
-      map.addLayer(layer);
+       map.addLayer(layer_trail_sac);
       // this.addLayer(m);
       // map.zoomIn();
       loadPoi();
@@ -507,7 +542,7 @@
         style.svg = {'stroke-dasharray': '6,8'};
         style.weight = 3;
         // console.log(style);
-        layer.addData({
+        layer_trail_sac.addData({
           type: 'Feature',
           geometry: w.geometry,
           properties: {name: tagsTable(w.tags, 'w', w.id), style: style}
@@ -637,15 +672,7 @@
 
 
 
-    var opl = new L.OverPassLayer({
-      endpoint: "http://api.openstreetmap.fr/oapi/",
-      query: "node(BBOX)['amenity'='parking'];out;",
-      minzoom: 14,
-      minZoomIndicatorOptions: {
-        minZoomMessage: ""
-      }
-    });
-    map.addLayer(opl);
+
 
 
 
@@ -726,6 +753,17 @@
         }
     }).addTo(map); 
 
+    // gpx_overlay_no_wpt = new L.GPX(gpx, {async: true,
+    //     gpx_options:{parseElements: ['track', 'route']},
+    //     polyline_options: {color:'red', 
+    //         opacity: 1
+    //     },
+    //     marker_options: {
+    //         startIconUrl: '{{ url_for('static', filename='img/markers/start.png') }}',
+    //         endIconUrl: '{{ url_for('static', filename='img/markers/end.png') }}',
+    //         shadowUrl: '{{ url_for('static', filename='img/markers/pin-shadow.png') }}',
+    //     },
+    // })
     
     gpx_overlay.on('loaded', function(e) {
         $(".gpx-name").html( e.target.get_name());
@@ -833,6 +871,8 @@
 
 
     var overlayMaps = {
+        "GPX": gpx_overlay,
+        // "GPX no waypoint": gpx_overlay_no_wpt,
         "Strava Run / Blue": strava_overlay_b,
         "Strava Run / Red": strava_overlay_r,
         "Strava Bike / Blue": strava_bike_overlay,
@@ -843,6 +883,8 @@
         "Clouds": clouds,
         "Temperature": temp,
         // "Wikipedia" : wiki
+        "Parking": overpass_parking,
+        // "Trails difficulty": layer_trail_sac,
     };
     
     L.control.layers(baseLayers, overlayMaps).addTo(map);
@@ -971,43 +1013,11 @@ map.on('baselayerchange ', function(e) {
 });
 
 
-map.on('overlayadd ', function(e) {
-    // console.log(e.name)
-    switch(e.name) {
-        case "Strava Run / Blue":
-            layer = 'A';
-            break;
-        case "Strava Run / Red":
-            layer = 'B';
-            break;
-        case "Strava Bike / Blue":
-            layer = 'C';
-            break;
-        case "Waymarkedtrails":
-            layer = 'D';
-            break;
-        case "Mapy.cz":
-            layer = 'E';
-            break;
-        case "Hillshade":
-            layer = 'F';
-            break;
-        case "Flickr":
-            layer = 'G';
-            break;
-        default:
-            layer = '';
-    }
-    var stateObj = {};
-    window.qstr_overlay = window.qstr_overlay.replace('null','')
-    window.qstr_overlay = window.qstr_overlay.replace('G','')
-    window.qstr_overlay = window.qstr_overlay + layer
-    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
-});
 
-map.on('overlayremove ', function(e) {
-    // console.log(e.name)
-    switch(e.name) {
+
+
+function layer_overlay(name) {
+    switch(name) {
         case "Strava Run / Blue":
             overlay = 'A';
             break;
@@ -1029,9 +1039,26 @@ map.on('overlayremove ', function(e) {
         case "Flickr":
             overlay = 'G';
             break;
+        case "Parking":
+            overlay = 'H';
+            break;
         default:
             overlay = '';
     }
+    return overlay;              // The function returns the product of p1 and p2
+}
+
+map.on('overlayadd ', function(e) {
+    overlay = layer_overlay(e.name)
+    var stateObj = {};
+    window.qstr_overlay = window.qstr_overlay.replace('null','')
+    window.qstr_overlay = window.qstr_overlay.replace('H','')
+    window.qstr_overlay = window.qstr_overlay + overlay
+    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+});
+
+map.on('overlayremove ', function(e) {
+    overlay = layer_overlay(e.name)
     var stateObj = {};
     window.qstr_overlay = window.qstr_overlay.replace('null','')
     window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
