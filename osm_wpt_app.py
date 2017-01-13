@@ -23,6 +23,8 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
+app.jinja_env.lstrip_blocks = True
+app.jinja_env.trim_blocks = True
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -148,6 +150,7 @@ def main_page(trk_num=None):
                 "F": 'hillshade_overlay',
                 "G": 'flickr',
                 "H": 'overpass_parking',
+                "I": 'wiki',
         }
         for k, v in dic.items():
             if k in overlay:

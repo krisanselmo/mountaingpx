@@ -1,6 +1,4 @@
 {# http://jinja.pocoo.org/docs/dev/templates/ #}
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,6 +23,10 @@
     <script src="{{ url_for('static', filename='leaflet.elevation-0.0.4.src.js') }}"> </script>
 
 
+
+
+    <script src="{{ url_for('static', filename='jsonp.min.js') }}"> </script> {#wiki dependency#}
+    <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"> </script> {#https://github.com/MatthewBarker/leaflet-wikipedia#}
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>  -->
 
 
@@ -408,12 +410,18 @@
     var temp = L.OWM.temperature({showLegend: true, legendPosition: 'bottomright', opacity: 0.5});
     // var temp = L.OWM.current();
 
-
+    var wiki = L.layerGroup.wikipediaLayer({
+            target: '_blank',
+            images:"{{ url_for('static', filename='img/') }}",
+            minZoom: 10,
+            popupOnMouseover: true,
+            url: 'https://fr.wikipedia.org/',
+        });
 
     var flickr = new L.Flickr('a06f677e097235ad98d9f0961d44252c',{maxLoad: 25, maxTotal: 250});      
 
     var ParkingIcon = L.icon({
-                            iconUrl: '{{ url_for('static', filename='img/markers/Parking_icon.svg') }}',
+                            iconUrl: "{{ url_for('static', filename='img/markers/Parking_icon.svg') }}",
                             iconSize:     [15, 15], // size of the icon
                             popupAnchor:  [0, -15] // point from which the popup should open relative to the iconAnchor
                     });
@@ -421,7 +429,7 @@
     var overpass_parking = new L.OverPassLayer({
             endpoint: "http://api.openstreetmap.fr/oapi/",
             query: "node(BBOX)['amenity'='parking'];out;",
-            minzoom: 14,
+            minzoom: 12,
 
             callback: function(data) {
                 for(var i=0;i<data.elements.length;i++) {
@@ -869,9 +877,12 @@
    // Add a Wikipedia layer
     // var wiki = new L.layerGroup.wikipediaLayer();
 
+    
 
     var overlayMaps = {
+        {% if outputfile is not none %}
         "GPX": gpx_overlay,
+        {% endif %}
         // "GPX no waypoint": gpx_overlay_no_wpt,
         "Strava Run / Blue": strava_overlay_b,
         "Strava Run / Red": strava_overlay_r,
@@ -882,7 +893,7 @@
         "Flickr" : flickr,
         "Clouds": clouds,
         "Temperature": temp,
-        // "Wikipedia" : wiki
+        "Wikipedia" : wiki,
         "Parking": overpass_parking,
         // "Trails difficulty": layer_trail_sac,
     };
@@ -933,10 +944,9 @@
 
 #}
 
-
-
+{# -------------------- #}
 {# QUERY STRING UPDATES #}
-
+{# -------------------- #}
 
 function getParameterByName(name, url) {
     // Taken from:
@@ -952,14 +962,12 @@ function getParameterByName(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
-
 var qstr_map_val = getParameterByName('map');
 var qstr_layer_val = getParameterByName('layer');
 var qstr_overlay_val = getParameterByName('overlay');
 window.qstr_map = "?map=" + qstr_map_val
 window.qstr_layer = "&layer=" + qstr_layer_val
 window.qstr_overlay = "&overlay=" + qstr_overlay_val
-
 
 map.on('moveend', function(e) {
         lat_new = map.getCenter().lat.toFixed(4)
@@ -974,91 +982,52 @@ map.on('moveend', function(e) {
         );
 });
 
+var layer_dict = {
+  "OpenTopoMap": 1,
+  "Mapy.cz": 2,
+  "OSM": 3,
+  "Open Cycle Map": 4,
+  "Mapbox / Streets": 5,
+  "Mapbox / Grayscale": 6,
+  "Mapbox / Outdoors": 7,
+  "Mapbox / Satellite": 8,
+  "Google / Satellite": 9,
+};
 
 map.on('baselayerchange ', function(e) {
-    switch(e.name) {
-        case "OpenTopoMap":
-            layer = 1;
-            break;
-        case "Mapy.cz":
-            layer = 2;
-            break;
-        case "OSM":
-            layer = 3;
-            break;
-        case "Open Cycle Map":
-            layer = 4;
-            break;
-        case "Mapbox / Streets":
-            layer = 5;
-            break;
-        case "Mapbox / Grayscale":
-            layer = 6;
-            break;
-        case "Mapbox / Outdoors":
-            layer = 7;
-            break;
-        case "Mapbox / Satellite":
-            layer = 8;
-            break;
-         case "Google / Satellite":
-            layer = 9;
-            break;
-        default:
-            layer = 1;
-    }
+    layer_id = layer_dict[e.name]
+    if (layer_id == null){layer_id = 1}
+    console.log(layer_id)
     var stateObj = {};
-    window.qstr_layer = "&layer=" + layer
+    window.qstr_layer = "&layer=" + layer_id
     history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
 });
 
-
-
-
-
-function layer_overlay(name) {
-    switch(name) {
-        case "Strava Run / Blue":
-            overlay = 'A';
-            break;
-        case "Strava Run / Red":
-            overlay = 'B';
-            break;
-        case "Strava Bike / Blue":
-            overlay = 'C';
-            break;
-        case "Waymarkedtrails":
-            overlay = 'D';
-            break;
-        case "Mapy.cz":
-            overlay = 'E';
-            break;
-        case "Hillshade":
-            overlay = 'F';
-            break;
-        case "Flickr":
-            overlay = 'G';
-            break;
-        case "Parking":
-            overlay = 'H';
-            break;
-        default:
-            overlay = '';
-    }
-    return overlay;              // The function returns the product of p1 and p2
-}
+var layer_overlay = {
+  "Strava Run / Blue": "A",
+  "Strava Run / Red": "B",
+  "Strava Bike / Blue": "C",
+  "Waymarkedtrails": "D",
+  "Mapy.cz": "E",
+  "Hillshade": "F",
+  "Flickr": "G",
+  "Parking": "H",
+  "Wikipedia": "I",
+};
 
 map.on('overlayadd ', function(e) {
-    overlay = layer_overlay(e.name)
+    overlay = layer_overlay[e.name]
+    if (overlay == null){return}
     var stateObj = {};
     window.qstr_overlay = window.qstr_overlay.replace('null','')
-    window.qstr_overlay = window.qstr_overlay.replace('H','')
+    // window.qstr_overlay = window.qstr_overlay.replace('G','')
     window.qstr_overlay = window.qstr_overlay + overlay
     history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
 });
 
 map.on('overlayremove ', function(e) {
-    overlay = layer_overlay(e.name)
+    overlay = layer_overlay[e.name]
+    if (overlay = null){return}
     var stateObj = {};
     window.qstr_overlay = window.qstr_overlay.replace('null','')
     window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
@@ -1066,7 +1035,6 @@ map.on('overlayremove ', function(e) {
 });
 
 {# END QUERY STRING UPDATES #}
-
 
 </script>
 </body>
