@@ -74,6 +74,7 @@ def main_page(trk_num=None):
             try:
                 make_dirs()
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                print('File saved: ' + filename)
             except Exception as err:
                 flash('Permission denied')
                 return redirect(request.url)
