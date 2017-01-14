@@ -68,7 +68,11 @@ def main_page(trk_num=None):
 
             # Save file
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            try:
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            except Exception as err:
+                flash('Permission denied')
+                return redirect(request.url)
 
             # Output file processing
             trk_num = str(len(os.listdir(OUTPUT_FOLDER)) + 1) 

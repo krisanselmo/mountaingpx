@@ -497,7 +497,7 @@
           if (e.properties && e.properties.style) layer_trail_sac.setStyle(e.properties.style);
         }
       });
-       map.addLayer(layer_trail_sac);
+       // map.addLayer(layer_trail_sac);
       // this.addLayer(m);
       // map.zoomIn();
       loadPoi();
