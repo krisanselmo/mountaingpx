@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-
 import os
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort
 from werkzeug.utils import secure_filename
@@ -14,8 +13,6 @@ UPLOAD_FOLDER = 'uploads/'
 OUTPUT_FOLDER = 'static/track/'
 ALLOWED_EXTENSIONS = set(['gpx'])
 
-
-
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
@@ -25,6 +22,13 @@ app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.trim_blocks = True
+
+
+def make_dirs():
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    if not os.path.exists(OUTPUT_FOLDER):
+        os.makedirs(OUTPUT_FOLDER)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -41,7 +45,6 @@ def error_page(error):
 @app.route('/help', methods=['GET'])
 def help():
     return render_template('help.tpl')
-
 
 
 @app.route('/POImap', methods=['GET', 'POST'])
@@ -69,6 +72,7 @@ def main_page(trk_num=None):
             # Save file
             filename = secure_filename(file.filename)
             try:
+                make_dirs()
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             except Exception as err:
                 flash('Permission denied')
@@ -160,23 +164,16 @@ def main_page(trk_num=None):
             if k in overlay:
                 overlay_lst.append(v)
 
-    # print overlay_lst
-    # return render_template('main.tpl', outputfile=fpath, zoom=map_qstr['zoom'], lat=map_qstr['lat'], 
-    #     lon=map_qstr['lon'], layer_name=layer_name, overlay_lst=overlay_lst)
     
-    return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr, 
+    return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr,
         layer_qstr=layer_name, overlay_qstr=overlay_lst)
 
 
+
+
 if __name__ == '__main__':
-
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    if not os.path.exists(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-
-    app.run(debug=True)    
-
+    # app.run(debug=True)
+    app.run(port=80) 
 
 
 
