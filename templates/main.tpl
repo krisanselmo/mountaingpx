@@ -125,11 +125,6 @@
 
 </div>
 
-<!-- <a href="#" title="This is some information for our tooltip." class="tooltip"><span title="More">CSS3 Tooltip</span></a> -->
-<!--  -->
-<!-- #map > div.leaflet-control-container > div.leaflet-leftpane > div.elevation.steelblue-theme.leaflet-control -->
-
-    
 
 
     <!-- <div class="info leaflet-control">
@@ -144,13 +139,6 @@
 
 <!-- POSITION ZOOM -->
 <!-- http://stackoverflow.com/questions/33614912/how-to-locate-leaflet-zoom-control-in-a-desired-position -->
-
-
-<!-- <div class="leaflet-control-zoom leaflet-bar leaflet-control">
-    <a class="leaflet-control-zoom-in" href="#" title="Zoom in">+</a>
-    <a class="leaflet-control-zoom-out" href="#" title="Zoom out">-</a>
-</div>
- -->
 
 
 
@@ -262,45 +250,12 @@
         }
     });
 
-{# https://www.html5rocks.com/en/tutorials/file/dndfiles/ #}
-
-    // function handleFileSelect(evt) {
-    //     evt.stopPropagation();
-    //     evt.preventDefault();
-
-    //     var files = evt.dataTransfer.files; // FileList object.
-
-    //     // files is a FileList of File objects. List some properties.
-    //     var output = [];
-    //     output.push(escape(files[0].name));
-
-    //     // document.getElementById('up_filename').innerHTML = output.join('');
-    //     $("#up_filename").html(output.join(''));
-
-    //     // the_return = document.querySelector(".file-return");
-    // }
-
-    // function handleDragOver(evt) {
-    //     evt.stopPropagation();
-    //     evt.preventDefault();
-    //     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-    // }
-
-    // // Setup the dnd listeners.
-    // var dropZone = document.getElementById('drop_zone');
-    //     dropZone.addEventListener('dragover', handleDragOver, false);
-    //     dropZone.addEventListener('drop', handleFileSelect, false);
 
 </script>
 
-
 <div id='map'></div>
 
-
 <script>
-    
-
-    
     
     var opentopoAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
             'Imagery &copy <a href="https://opentopomap.org">OpenTopoMap</a>',
@@ -1027,11 +982,12 @@ map.on('overlayadd ', function(e) {
 
 map.on('overlayremove ', function(e) {
     overlay = layer_overlay[e.name]
-    if (overlay = null){return}
-    var stateObj = {};
-    window.qstr_overlay = window.qstr_overlay.replace('null','')
-    window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
-    history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+    if (overlay != null){
+        var stateObj = {};
+        window.qstr_overlay = window.qstr_overlay.replace('null','')
+        window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
+        history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+    }
 });
 
 {# END QUERY STRING UPDATES #}
