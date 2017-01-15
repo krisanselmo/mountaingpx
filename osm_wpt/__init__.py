@@ -398,7 +398,7 @@ def change_route(lat, lon, ele, reverse=False, index=None):
     return lat, lon, ele
 
 
-def osm_wpt(fpath, lim_dist=0.05, keep_old_wpt=False, gpxoutputname='out.gpx'):
+def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, ):
     '''
     lim_dist in kilometers (0.05 #default)
     keep_old_wpt (False #defaut)

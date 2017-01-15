@@ -76,7 +76,7 @@ def main_page(trk_num=None):
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 print('File saved: ' + filename)
             except Exception as err:
-                flash('Permission denied')
+                flash('Permission denied','error')
                 return redirect(request.url)
 
             # Output file processing
@@ -107,6 +107,9 @@ def main_page(trk_num=None):
         fpath = None
     else:
         fpath = OUTPUT_FOLDER + trk_num + '.gpx'
+        if not os.path.isfile(fpath):
+            fpath = None
+            flash('GPX not found')
 
     # Query string
     map_qstr = dict.fromkeys(['zoom', 'lat', 'lon'], None)
@@ -160,16 +163,14 @@ def main_page(trk_num=None):
                 "G": 'flickr',
                 "H": 'overpass_parking',
                 "I": 'wiki',
+                # "J": 'layer_trail_sac',
         }
         for k, v in dic.items():
             if k in overlay:
                 overlay_lst.append(v)
 
-    
     return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr,
         layer_qstr=layer_name, overlay_qstr=overlay_lst)
-
-
 
 
 if __name__ == '__main__':
