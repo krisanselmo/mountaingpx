@@ -102,9 +102,9 @@
         <div id="elevation-div"></div>
     </div>
 
-    <div class="info listwpt steelblue-theme leaflet-control">
+<!--     <div class="info listwpt steelblue-theme leaflet-control">
         <div id="listwpt-div"></div>
-    </div>
+    </div> -->
     {% endif %}
 
 </div>
@@ -356,7 +356,7 @@
     var overpass_parking = new L.OverPassLayer({
             endpoint: "http://api.openstreetmap.fr/oapi/",
             query: "node(BBOX)['amenity'='parking'];out;",
-            minzoom: 12,
+            minzoom: 11,
 
             callback: function(data) {
                 for(var i=0;i<data.elements.length;i++) {
@@ -436,7 +436,8 @@
         var tagsTable = function(tags, type, id) {
             var r = $('<table>');
             if (type && id)
-                r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: 'href="//localhost:8111/load_object?objects='+type+id, target: '_blank'}).text('edit')).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
+                r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
+                // r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: 'href="//localhost:8111/load_object?objects='+type+id, target: '_blank'}).text('edit')).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
             for (var key in tags)
                 r.append($('<tr>').append($('<th>').text(key)).append($('<td>').text(tags[key])));
             return $('<div>').append(r).html();
@@ -748,8 +749,8 @@
         "Mapy.cz": mapyCz_overlay,
         "Hillshade": hillshade_overlay,
         "Flickr" : flickr,
-        "Clouds": clouds,
-        "Temperature": temp,
+        // "Clouds": clouds,
+        // "Temperature": temp,
         "Wikipedia" : wiki,
         "Parking": overpass_parking,
     };
