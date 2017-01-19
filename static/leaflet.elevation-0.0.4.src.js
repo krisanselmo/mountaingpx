@@ -557,14 +557,16 @@ L.Control.Elevation = L.Control.extend({
                 var e = new L.LatLng(coords[i ? i - 1 : 0][1], coords[i ? i - 1 : 0][0]);
                 var newdist = opts.imperial ? s.distanceTo(e) * this.__mileFactor : s.distanceTo(e);
                 dist = dist + Math.round(newdist / 1000 * 100000) / 100000;
-                ele = ele < coords[i][2] ? coords[i][2] : ele;
-                data.push({
-                    dist: dist,
-                    altitude: opts.imperial ? coords[i][2] * this.__footFactor : coords[i][2],
-                    x: coords[i][0],
-                    y: coords[i][1],
-                    latlng: s
-                });
+                if (!!s.meta.ele) {
+                    ele = ele < coords[i][2] ? coords[i][2] : ele;
+                    data.push({
+                        dist: dist,
+                        altitude: opts.imperial ? coords[i][2] * this.__footFactor : coords[i][2],
+                        x: coords[i][0],
+                        y: coords[i][1],
+                        latlng: s
+                    });
+                }
             }
             this._dist = dist;
             this._data = data;
@@ -587,14 +589,16 @@ L.Control.Elevation = L.Control.extend({
                 var e = coords[i ? i - 1 : 0];
                 var newdist = opts.imperial ? s.distanceTo(e) * this.__mileFactor : s.distanceTo(e);
                 dist = dist + Math.round(newdist / 1000 * 100000) / 100000;
-                ele = ele < s.meta.ele ? s.meta.ele : ele;
-                data.push({
-                    dist: dist,
-                    altitude: opts.imperial ? s.meta.ele * this.__footFactor : s.meta.ele,
-                    x: s.lng,
-                    y: s.lat,
-                    latlng: s
-                });
+                if (!!s.meta.ele) {
+                    ele = ele < s.meta.ele ? s.meta.ele : ele;
+                    data.push({
+                        dist: dist,
+                        altitude: opts.imperial ? s.meta.ele * this.__footFactor : s.meta.ele,
+                        x: s.lng,
+                        y: s.lat,
+                        latlng: s
+                    });
+                }
             }
             this._dist = dist;
             this._data = data;
