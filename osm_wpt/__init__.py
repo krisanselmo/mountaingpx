@@ -114,6 +114,12 @@ def get_wpt_type(tag_dict):
             query_name = v
             return query_name
 
+    OSM_badly_tagged = {'water':'lake'}
+    for k, v in OSM_badly_tagged.items():
+        if k in tag_dict.values():
+            query_name = v
+            return query_name        
+
     # Return the same "query_name" that the input one if type is not found
     return query_name
 
@@ -398,7 +404,7 @@ def change_route(lat, lon, ele, reverse=False, index=None):
     return lat, lon, ele
 
 
-def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, ):
+def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
     '''
     lim_dist in kilometers (0.05 #default)
     keep_old_wpt (False #defaut)
@@ -454,6 +460,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, )
     query.append('way["tourism"="alpine_hut"]')
     query.append('way["tourism"="wilderness_hut"]')
     query.append('way["water"="lake"]')
+    query.append('way["natural"="water"]["water"!~".*"]["name"~"[lL]ac"]') # For missing lake tag cases
     query.append('way["natural"="glacier"]')
     query.append('way["building"="chapel"]')
     query.append('way["man_made"="observatory"]')
