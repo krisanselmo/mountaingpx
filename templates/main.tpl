@@ -15,8 +15,6 @@
     <link rel='stylesheet' href="{{ url_for('static', filename='cssapp2.css') }}" type='text/css'/>
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-sidebar.css') }}" type='text/css'/> 
     <link rel='stylesheet' href="{{ url_for('static', filename='OverPassLayer.css') }}" type='text/css'/>
-
-
     {# -- JAVASCRIPT -- #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js.cookie.js') }}"></script>
@@ -24,7 +22,6 @@
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> {# For Elevation #}
     <script src="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script> {# https://github.com/domoritz/leaflet-locatecontrol #}
     <script src="{{ url_for('static', filename='gpx.js') }}"></script>
-    
     <script src="{{ url_for('static', filename='Flickr.js') }}"></script> {# https://github.com/shurshur/Leaflet.Flickr #}
     <script src="{{ url_for('static', filename='leaflet.elevation-0.0.4.src.js') }}"> </script>
     <script src="{{ url_for('static', filename='jsonp.min.js') }}"> </script> {#wiki dependency#}
@@ -41,19 +38,10 @@
     <!-- <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script> -->
     <!-- <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"></script> -->
     <!-- <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script>  https://github.com/yohanboniface/Leaflet.EditInOSM  -->
+    <!-- <script src="{{ url_for('static', filename='bootbox.min.js') }}"></script> -->
+    <!-- <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> {# https://github.com/buche/leaflet-openweathermap #} -->
     #}
 
-    {# Test section #}
-
-    <script src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> {# https://github.com/buche/leaflet-openweathermap #}
-
-    
-    
-
-    
-
-    
 
 </head>
 <body>
@@ -64,17 +52,11 @@
         <div class="sidebar-tabs">
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
-                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
-<!--                 <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
-                <li><a href="#file" role="tab"><i class="fa fa-file"></i></a></li> -->
+                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>>
                 <li><a href="#help" role="tab"><i class="fa fa-question-circle"></i></a></li> 
                 <li><a href="#links" role="tab"><i class="fa fa-external-link"></i></a></li> 
             </ul>
-
             <ul role="tablist">
-
-
-                
                 <li><a href="#disqus" role="tab"><i class="fa fa-comment"></i></a></li> 
                 <li><a href="#dependencies" role="tab"><i class="fa fa-code"></i></a></li> 
                 <li><a href="https://github.com/krisanselmo/osm_wpt" role="tab" target="_blank"><i class="fa fa-github"></i></a></li>
@@ -273,25 +255,6 @@
         }
     });
 
-    {# -------------------- #}
-    {#    SETTINGS TAB      #}
-    {# -------------------- #}
-
-    $('#select_all_with_name').click(function(event) {
-        if(this.checked) {
-            $(':checkbox.with_name').prop('checked', true);
-        } else {
-            $(':checkbox.with_name').prop('checked', false);
-        }
-    });
-
-    $('#select_all_no_name').click(function(event) {
-        if(this.checked) {
-            $(':checkbox.no_name').prop('checked', true);
-        } else {
-            $(':checkbox.no_name').prop('checked', false);
-        }
-    });
 
 
 </script>
@@ -630,59 +593,6 @@
 
     var POImap = {};
 
-    // POImap.init = function () {
-    //     var attr_osm = 'Map data &copy; <a href="//openstreetmap.org/">OpenStreetMap</a> contributors',
-    //         attr_overpass = 'POI via <a href="//www.overpass-api.de/">Overpass API</a>';
-
-    //     var osm = new L.TileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: [attr_osm, attr_overpass].join(', ')}),
-    //     transport = new L.TileLayer('//{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png', {opacity: 0.5, attribution: ['<a href="http://blog.gravitystorm.co.uk/2011/04/11/transport-map/">Gravitystorm Transport Map</a>', attr_osm, attr_overpass].join(', ')}),
-    //     osm_bw = new L.TileLayer('//{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {opacity: 0.5, attribution: [attr_osm, attr_overpass].join(', ')}),
-    //     osm_no = new L.TileLayer('//{s}.www.toolserver.org/tiles/osm-no-labels/{z}/{x}/{y}.png', {attribution: [attr_osm, attr_overpass].join(', ')});
-
-    //     map = new L.Map('map', {
-    //         center: new L.LatLng(45.8501, 6.8670),
-    //         zoom: 13,
-    //         layers: osm
-    //     });
-
-    //     map.getControl = function () {
-    //         var ctrl = new L.Control.Layers({
-    //            'OpenSteetMap': osm,
-    //            'OpenSteetMap (no labels)': osm_no,
-    //            'OpenSteetMap (black/white)': osm_bw,
-    //            'Transport Map': transport
-    //         });
-    //         return function () {
-    //               return ctrl;
-    //         };
-    //     }();
-    //     map.addControl(map.getControl());
-
-    //     L.LatLngBounds.prototype.toOverpassBBoxString = function (){
-    //         var a = this._southWest,
-    //             b = this._northEast;
-    //         return [a.lat, a.lng, b.lat, b.lng].join(",");
-    //     };
-
-    //     var path_style = L.Path.prototype._updateStyle;
-    //         L.Path.prototype._updateStyle = function () {
-    //         path_style.apply(this);
-    //         for (var k in this.options.svg) {
-    //           this._path.setAttribute(k, this.options.svg[k]);
-    //         }
-    //     };
-
-    //     if (navigator.geolocation) {
-    //         navigator.geolocation.getCurrentPosition(function (position) {
-    //           var center = new L.LatLng(position.coords.latitude, position.coords.longitude);
-    //           map.setView(center, 13);
-    //         });
-    //     }
-
-    //     POImap.map = map;
-    //     return map;
-    // };
-
     POImap.loadAndParseOverpassJSON = function (overpassQueryUrl, callbackNode, callbackWay, callbackRelation) {
       var url = overpassQueryUrl.replace(/(BBOX)/g, map.getBounds().toOverpassBBoxString());
       $.getJSON(url, function (json) {
@@ -918,16 +828,6 @@
         sidebar.open('home');
     });
 
-    //L.control.layers(strava).addTo(map);
-    
-    // detect fullscreen toggling
-    // map.on('enterFullscreen', function(){
-    //     if(window.console) window.console.log('enterFullscreen');
-    // });
-    // map.on('exitFullscreen', function(){
-    //     if(window.console) window.console.log('exitFullscreen');
-    // });
-        
 
     {# -------------------- #}
     {# QUERY STRING UPDATES #}
