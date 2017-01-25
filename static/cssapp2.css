@@ -1,0 +1,80 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+html, body, #map {
+    height: 100%;
+    font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+/*h3 {
+    display: inline-block;
+}*/
+/*h3 { white-space: nowrap; }*/
+
+h3 {
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+ul.download li {
+    display: inline-block;
+}
+
+.download{
+    padding-left: 0px;
+    margin-bottom: 0px;
+}
+
+#up_filename {
+    font: 10pt "Tahoma", sans-serif;
+/*    display: inline-block;*/
+}
+
+.gpx-name {
+    margin-top: 15px;
+    /*font-style: italic;*/
+    font-weight: bold;
+    color: #4a000c;
+}
+
+.info_tab{
+    padding-left: 15px;
+}
+
+.msg_flsh,
+#home a:link {
+    color: #960018;
+}
+
+div#dropzone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999999999;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: visibility 175ms, opacity 175ms;
+    /*display: table;
+    text-shadow: 1px 1px 2px #000;*/
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+    /*font: bold 42px Oswald, DejaVu Sans, Tahoma, sans-serif;*/
+}
+
+
+.leaflet-touch .leaflet-control-layers-toggle {
+    background-image:width: 2px;
+    width: 32px;
+    height: 32px;
+}
+
+
+
+.elevation {
+    margin-bottom: -2px!important;
+    width: 32px;
+    background: rgba(255,255,255,.9);
+}

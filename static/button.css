@@ -5,16 +5,18 @@
 	margin-left: auto;
 	margin-right: auto;
 	width: 225px;
-	padding: 5px 0px;
+	/*padding: 5px 0px;*/
 } 
 .js .input-file-trigger {
-	display: block;
-	padding: 10px 0px;
+	/*display: block;*/
+	padding: 10px 10px;
 	background: #960018;
 	color: #fff;
 	font-size: 12pt;
 	transition: all .4s;
 	cursor: pointer;
+	margin-left: auto;
+	margin-right: auto;	
 }
 .js .input-file {
 	position: absolute;

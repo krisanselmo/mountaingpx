@@ -98,7 +98,7 @@ def get_wpt_type(tag_dict):
             return query_name
 
     # OSM node keys that it used to identify the waypoint type (typically with someting like "arbitrary_key"="yes")
-    list_of_OSM_key = ['ford', 'barrier']
+    list_of_OSM_key = ['ford', 'barrier', 'tunnel']
     for q in list_of_OSM_key:
         if q in tag_dict.keys():
             query_name = q
@@ -442,7 +442,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
     query.append('node["historic"="aircraft_wreck"]["aircraft_wreck"]')
     query.append('node["barrier"]["barrier"!="bollard"]')   # A spécifier un peu plus
     query.append('node["building"="chapel"]')
-    query.append('node["ford"="yes"]')   
+    query.append('node["ford"="yes"]')     
     query.append('node["historic"="ruins"]')   
     query.append('node["historic"="castle"]')   
     query.append('node["amenity"="toilets"]')   
@@ -465,6 +465,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
     query.append('way["building"="chapel"]')
     query.append('way["man_made"="observatory"]')
     query.append('way["amenity"="shelter"]')
+    query.append('way["tunnel"="yes"]') 
 
     # Paths
     # query.append('way["highway"="path"]["sac_scale"]["sac_scale"!="mountain_hiking"]["sac_scale"!="hiking"]')

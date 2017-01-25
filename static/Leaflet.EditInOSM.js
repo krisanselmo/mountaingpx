@@ -105,6 +105,29 @@
             },
 
             // http://mavisionneuse.ign.fr/visio.html?lon=5.743873&lat=45.132802&zoom=9&num=3&mt0=ign-cartes&mt1=osmfr&mt2=google-map
+
+
+// http://app.photoephemeris.com/?ll= 45.509220,4.229336 &center=45.4189,5.1077 &dt=20170120120400%2B0100&z=9&spn=1.01,3.70
+
+            Ephemeris: function (config) { 
+                var url = 'http://app.photoephemeris.com/?ll=',
+                    displayName = "PE ",
+                    buildUrl = function (map) {
+                        return this.url + [ 
+                            map.getCenter().wrap().lat,
+                            ',',
+                            map.getCenter().wrap().lng,
+                            '&z=',
+                            map.getZoom()
+                        ].join('');
+                    };
+                return {
+                    url: (config && config.url) || url,
+                    displayName: (config && config.displayName) || displayName,
+                    buildUrl: (config && config.buildUrl) || buildUrl
+                };
+            },
+
             Josm: function (config) {
                 var url = 'http://127.0.0.1:8111/load_and_zoom',
                     timeout = 1000,
@@ -184,7 +207,7 @@
             position: "topright",
             zoomThreshold: 0,
             widget: "multiButton",
-            editors: ["id", "josm", "ign"]
+            editors: ["id", "josm", "ign", 'ephemeris']
         },
 
         initialize: function (options) {
@@ -221,6 +244,8 @@
                     newEditors.push(new _Editors.Josm());
                 } else if (editorSmallName === "ign") {
                     newEditors.push(new _Editors.IGN());
+                } else if (editorSmallName === "ephemeris") {
+                    newEditors.push(new _Editors.Ephemeris());
                 } else if (editorSmallName === "potlatch") {
                     newEditors.push(new _Editors.Potlatch());
                 } else {

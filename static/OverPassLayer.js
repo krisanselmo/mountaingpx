@@ -155,14 +155,27 @@ L.OverPassLayer = L.FeatureGroup.extend({
     link.href = "http://www.openstreetmap.org/edit?editor=id&node=" + id;
     link.appendChild(document.createTextNode("Edit this entry in iD"));
     var table = document.createElement('table');
+    var img = document.createElement("a");
     for (var key in tags){
       var row = table.insertRow(0);
-      row.insertCell(0).appendChild(document.createTextNode(key));
-      row.insertCell(1).appendChild(document.createTextNode(tags[key]));
+          if (key == 'image'){
+            img.href = tags[key];
+            img.setAttribute('target', '_blank');
+            img.appendChild(document.createTextNode("Wikimedia image"));
+            // 
+            // img.setAttribute("src",tags[key]);
+            // console.log('img')
+          } else{
+            var boldkey = document.createElement("b");
+            boldkey.innerHTML = key;
+            row.insertCell(0).appendChild(boldkey);
+            row.insertCell(1).appendChild(document.createTextNode(tags[key]));
+          }
     }
     var div = document.createElement("div")
-    div.appendChild(link);
+    // div.appendChild(link);
     div.appendChild(table);
+    div.appendChild(img);
     return div;
   },
 

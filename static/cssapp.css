@@ -125,8 +125,6 @@ div#dropzone {
     height: 32px;
 }
 
-
-
 #header, .heading {
     color: #333;
 }
@@ -157,6 +155,8 @@ div#dropzone {
     padding: 6px 8px;
     font: 14px/16px "Helvetica Neue",Arial,Helvetica,sans-serif;
     box-shadow: 0 0 0 3px rgba(70,130,180,.2), 0 1px 5px rgba(0,0,0,.4);
+    /*box-shadow: 0 0 0 3px rgba(0,0,0,.2), 0 1px 5px rgba(0,0,0,.4);*/
+    /*border: 2px solid rgba(0,0,0,0.2);*/
     background: rgba(255,255,255,.9);
     border-radius: 5px;
 }

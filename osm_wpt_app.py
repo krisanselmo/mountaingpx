@@ -16,7 +16,8 @@ ALLOWED_EXTENSIONS = set(['gpx'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
@@ -42,14 +43,41 @@ def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
 
 # -----------------------------------------------------------
+@app.route('/presentation', methods=['GET'])
+@app.route('/intro', methods=['GET'])
+def intro():
+    return render_template('intro.tpl')
+
+# -----------------------------------------------------------
 @app.route('/help', methods=['GET'])
 def help():
-    return render_template('help.tpl')
+    return render_template('help_tab.tpl')
 
+# -----------------------------------------------------------
+@app.route('/test', methods=['GET'])
+def sidebar():
+    return render_template('test_sidebar_v2.tpl')
 
+# -----------------------------------------------------------
 @app.route('/POImap', methods=['GET', 'POST'])
 def POImap():
     return render_template('POImap.tpl')
+
+# @app.route('/massifs', methods=['GET', 'POST'])
+# def Massifs_map():
+#     return render_template('massifs.tpl', outputfile=null, map_qstr=null,
+#         layer_qstr=null, overlay_qstr=null)
+
+@app.route('/form', methods=['GET', 'POST'])
+def form():
+    if request.method == 'POST':
+        # print(request.form['distance'])
+        for element in request.form:
+            print(element)
+    return render_template('form.tpl')
+
+
+
 
 # -----------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
@@ -84,9 +112,21 @@ def main_page(trk_num=None):
             app.logger.debug(u'Track number: ' + trk_num)
 
             fpath = OUTPUT_FOLDER + trk_num + '.gpx'
+
+
+            # Get cookies
+            try:
+                snap_distance = float(request.cookies.get('snapdistance'))
+                if snap_distance > 0 and snap_distance < 1001:
+                    lim_dist = snap_distance / 1000
+                else:
+                    lim_dist = 0.05
+            except:
+                lim_dist = 0.05 
+
             try:
                 # TODO: AFFICHER UN LOADING
-                wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=0.05, gpxoutputname=fpath)
+                wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=lim_dist, gpxoutputname=fpath)
                 # app.logger.debug(u'osm_wpt script : OK')
                 # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
@@ -174,8 +214,8 @@ def main_page(trk_num=None):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(port=80) 
+    app.run(debug=True, port=80)
+    # app.run(port=80) 
 
 
 
@@ -280,6 +320,7 @@ TODO:
 
 ################################# OTHER THINGS
     ->  https://en.wikipedia.org/wiki/Map_matching
+    ->  https://en.wikipedia.org/wiki/GraphHopper
 
     -> pourcentage de terrain 
 
