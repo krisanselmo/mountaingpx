@@ -39,7 +39,7 @@
     <!-- <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"></script> -->
     <!-- <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script>  https://github.com/yohanboniface/Leaflet.EditInOSM  -->
     <!-- <script src="{{ url_for('static', filename='bootbox.min.js') }}"></script> -->
-    <!-- <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> {# https://github.com/buche/leaflet-openweathermap #} -->
+    <!-- <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> https://github.com/buche/leaflet-openweathermap  -->
     #}
 
 
