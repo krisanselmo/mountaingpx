@@ -374,8 +374,8 @@
             attribution: '<a href="http://nasa.gov/">NASA SRTM</a>',
         });
         
-    var clouds = L.OWM.clouds({showLegend: true, opacity: 0.5});
-    var temp = L.OWM.temperature({showLegend: true, legendPosition: 'bottomleft', opacity: 0.5});
+    // var clouds = L.OWM.clouds({showLegend: true, opacity: 0.5});
+    // var temp = L.OWM.temperature({showLegend: true, legendPosition: 'bottomleft', opacity: 0.5});
     // var temp = L.OWM.current();
 
     var wiki = L.layerGroup.wikipediaLayer({
