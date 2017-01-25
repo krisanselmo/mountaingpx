@@ -4,7 +4,7 @@ Un simple envoie vers le serveur d'un fichier GPX permet de faire apparaître ce
 
 <h3>Exemple</h3>
 
-<img src="{{ url_for('static', filename='img/tab/garmin-fenix-3-navigation.jpg') }}" width=220px align="middle">
+<!-- <img src="{{ url_for('static', filename='img/tab/garmin-fenix-3-navigation.jpg') }}" width=220px align="middle"> -->
 <!-- <img src="{{ url_for('static', filename='img/help_intro/Suunto-navigation.jpg') }}" width=250px align="middle"> -->
 
 <h2>Utilisation</h2>
