@@ -52,7 +52,7 @@
         <div class="sidebar-tabs">
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
-                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>>
+                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
                 <li><a href="#help" role="tab"><i class="fa fa-question-circle"></i></a></li> 
                 <li><a href="#links" role="tab"><i class="fa fa-external-link"></i></a></li> 
             </ul>
