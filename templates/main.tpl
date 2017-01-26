@@ -28,8 +28,6 @@
     <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"> </script> {#https://github.com/MatthewBarker/leaflet-wikipedia#}
     <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
     <script src="{{ url_for('static', filename='leaflet-sidebar.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='formToObject.min.js') }}"></script> {#https://raw.githubusercontent.com/serbanghita/formToObject.js/master/dist/formToObject.min.js#}
     <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script>
 
 
@@ -44,6 +42,7 @@
     <!-- <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script>  https://github.com/yohanboniface/Leaflet.EditInOSM  -->
     <!-- <script src="{{ url_for('static', filename='bootbox.min.js') }}"></script> -->
     <!-- <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> https://github.com/buche/leaflet-openweathermap  -->
+    <!-- <script src="{{ url_for('static', filename='formToObject.min.js') }}"></script> https://raw.githubusercontent.com/serbanghita/formToObject.js/master/dist/formToObject.min.js -->
     #}
 
 
@@ -96,10 +95,7 @@
                 <hr>
                 <h3><div class="gpx-name" title="test"></div></h3>
 
-                 <ul class="download">
-                    <li><h3>Téléchargement du gpx: </h3></li>
-                    <li><div class="value"><a href='../{{outputfile}}'><i class="fa fa-download fa-2x"></i></a></div></li>
-                </ul>
+                <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div></li>
 
                 <h3>Infos</h3>
                 <div class="info_tab">

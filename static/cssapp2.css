@@ -18,13 +18,26 @@ h3 {
     margin-top: 8px;
 }
 
-ul.download li {
+.download {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    width: 225px;
+}
+
+.download a:link{
+    background-color: #960018;
+    color: white;
+    padding: 10px 10px;
+    font-size: 12pt;
+    text-align: center;
+    text-decoration: none;
     display: inline-block;
 }
 
-.download{
-    padding-left: 0px;
-    margin-bottom: 0px;
+.download a:hover, .download a:active {
+    transition: all .4s;
+    background-color: gray; 
 }
 
 #up_filename {
@@ -43,8 +56,7 @@ ul.download li {
     padding-left: 15px;
 }
 
-.msg_flsh,
-#home a:link {
+.msg_flsh {
     color: #960018;
 }
 
