@@ -96,6 +96,11 @@
 	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
 	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
 	   	</tr>
+	   		<tr>
+	   		<td>Tunnel</td>
+	   		<td><input type="checkbox" name="tunnel" class='with_name'></td>
+	   		<td><input type="checkbox" name="tunnel" class='no_name'></td>
+	   	</tr>
 	   	<tr>
 	   		<td>Table d'orientation</td>
 	   		<td><input type="checkbox" name="toposcope" class='with_name'></td>
@@ -209,6 +214,11 @@
      
 	$( document ).ready(function() {
 		$(':checkbox.with_name').prop('checked', true);
+		$(':checkbox[name="tunnel"]').prop('checked', false);
+		$(':checkbox[name="ford"]').prop('checked', false);
+		$(':checkbox[name="barrier"]').prop('checked', false);
+
+
 		if (Cookies.get('snapdistance') != null){
 			document.custom_options.snapdistance.value = Cookies.get('snapdistance');
 		}
