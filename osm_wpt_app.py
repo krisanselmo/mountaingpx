@@ -124,9 +124,18 @@ def main_page(trk_num=None):
             except:
                 lim_dist = 0.05 
 
+            reverse = False
+            if request.cookies.get('reverse') == 'true':
+                print 'Invert track'
+                reverse = True
+
+            wpt = request.cookies.get('wpt')
+            wpt_no_name = request.cookies.get('wpt_no_name')
+
             try:
                 # TODO: AFFICHER UN LOADING
-                wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=lim_dist, gpxoutputname=fpath)
+                wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=lim_dist, gpxoutputname=fpath, 
+                    reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name)
                 # app.logger.debug(u'osm_wpt script : OK')
                 # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
@@ -223,33 +232,16 @@ if __name__ == '__main__':
 '''
 
 
-{# 
-
-    https://github.com/brunob/leaflet.fullscreen
-    https://keep.google.com/#NOTE/1481497142074.280328407
-    https://github.com/mpetazzoni/leaflet-gpx
-
-
-    Groupe Layer
-    http://bl.ocks.org/ismyrnow/6123517
-
-
-    - Selectionner les POI à afficher
 
 
 
-    <!-- https://cornilyon.fr/index.php?article100/stravalib -->
-
-
-    selector
-    https://codepen.io/bseth99/pen/fboKH
-    http://dropdownchecklist.sourceforge.net/
 
 
 
-#}
 
 
+
+# Exploiter cookies pour garder les checkbox
 
 
 # Hash 
@@ -259,19 +251,15 @@ if __name__ == '__main__':
 
 # Option pour virer les wpt sans nom.
 # Ajout liste des WPTs avec nom
-
 # Mettre une icone d'alerte si le nombre de waypoints dépasse la limite de suunto.
 
 
-# Seuil de distance     / JS + html
+
 
 
 
 ################################# ICONS
 
-
-
-    query.append('node["natural"="volcano"]')
     query.append('node["natural"="spring"]')
     query.append('node["man_made"="cairn"]')
 
@@ -283,10 +271,6 @@ Option pour enlever les POI sans nom
 RESPONSIVE
     -> Si écran petit en largeur, il faut recentrer la map
 
-WPTS BOX 
-    -> list items
-
-
 
 ################################# JS / Leaflet
 
@@ -295,19 +279,11 @@ Option to remove gpx layer
 
 
 OVERPASS sur ways:
-
 http://simon04.github.io/POImap/railway.html
 
 
 
 ################################# JS / Leaflet / Elevation
-
-    -> Remove comma separator
-    -> Smooth 
-
-var n = 34523453.345
-n.toLocaleString()
-
 
 ############################### python
 
@@ -326,5 +302,10 @@ TODO:
 
 
 
+    Groupe Layer
+    http://bl.ocks.org/ismyrnow/6123517
 
+    selector
+    https://codepen.io/bseth99/pen/fboKH
+    http://dropdownchecklist.sourceforge.net/
 '''    

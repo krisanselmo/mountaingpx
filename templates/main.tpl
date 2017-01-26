@@ -29,6 +29,10 @@
     <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
     <script src="{{ url_for('static', filename='leaflet-sidebar.js') }}"></script>
 
+    <script src="{{ url_for('static', filename='formToObject.min.js') }}"></script> {#https://raw.githubusercontent.com/serbanghita/formToObject.js/master/dist/formToObject.min.js#}
+    <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script>
+
+
     {# Other 
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" type='text/css'/>  -->    
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>  -->
@@ -93,7 +97,7 @@
                 <h3><div class="gpx-name" title="test"></div></h3>
 
                  <ul class="download">
-                    <li><h3>Téléchargement du gpx</h3></li>
+                    <li><h3>Téléchargement du gpx: </h3></li>
                     <li><div class="value"><a href='../{{outputfile}}'><i class="fa fa-download fa-2x"></i></a></div></li>
                 </ul>
 
@@ -674,6 +678,7 @@
                 'glacier': '{{ url_for('static', filename='img/markers/glacier.png') }}',
                 'guidepost': '{{ url_for('static', filename='img/markers/guidepost2.png') }}',
                 'lake': '{{ url_for('static', filename='img/markers/lake.png') }}',
+                'locality': '{{ url_for('static', filename='img/markers/i.png') }}',
                 'observatory': '{{ url_for('static', filename='img/markers/observatory.png') }}',
                 'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',          
                 'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',    
@@ -685,6 +690,7 @@
                 'spring': '{{ url_for('static', filename='img/markers/water.png') }}',  
                 'shelter': '{{ url_for('static', filename='img/markers/shelter.png') }}',
                 'viewpoint': '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
+                'volcano': '{{ url_for('static', filename='img/markers/volcano.png') }}',
                 'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',   
                 'water': '{{ url_for('static', filename='img/markers/water.png') }}',        
                 'waterfall': '{{ url_for('static', filename='img/markers/waterfall.png') }}',       

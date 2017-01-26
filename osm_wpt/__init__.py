@@ -13,6 +13,7 @@ import time
 import sys
 import logging as log
 import json
+import urllib
 from math import radians, cos, sin, asin, sqrt
 
 
@@ -89,7 +90,7 @@ def get_wpt_type(tag_dict):
     # OSM node values that it used to identify the waypoint type / Last values have low priority
     list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 
         'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
-        'guidepost', 'lake', 'observatory', 'peak', 'ruins', 
+        'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins', 
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
         'waterfall', 'wilderness_hut', 'cairn']
     for q in list_of_OSM_values:
@@ -322,6 +323,7 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     overpass_query_str += ');'
     is_replied = 0
     i = 1 # index while (max 5)
+    # print overpass_query_str
     while (is_replied != 1) and (i < 5):
         try:
             response = api.Get(overpass_query_str, responseformat="geojson")
@@ -404,7 +406,73 @@ def change_route(lat, lon, ele, reverse=False, index=None):
     return lat, lon, ele
 
 
-def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
+def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
+
+    if wpt_json is not None:
+        unquoted = urllib.unquote(wpt_json)
+        unquoted = unquoted.replace("\\"," ")
+        wpts = json.loads(unquoted)
+
+    dict_query_nodes = {
+        'saddle':'node["natural"="saddle"]',
+        'peak':'node["natural"="peak"]',
+        # 'peak':'node["natural"="volcano"]',
+        'waterfall':'node["waterway"="waterfall"]',
+        'waterfall':'node["natural"="waterfall"]',
+        'guidepost':'node["information"="guidepost"]',
+        'cave_entrance':'node["natural"="cave_entrance"]',
+        'viewpoint':'node["tourism"="viewpoint"]["map_type"!="toposcope"]',
+        'toposcope':'node["map_type"="toposcope"]',
+        'drinking_water':'node["amenity"="drinking_water"]',
+        'fountain':'node["amenity"="fountain"]',
+        'alpine_hut':'node["tourism"="alpine_hut"]',
+        'wilderness_hut':'node["tourism"="wilderness_hut"]',
+        'shelter':'node["amenity"="shelter"]',
+        'tree':'node["natural"="tree"]["name"]',
+        'aircraft_wreck':'node["historic"="aircraft_wreck"]["aircraft_wreck"]',
+        'barrier':'node["barrier"]["barrier"!="bollard"]',
+        'chapel':'node["building"="chapel"]',
+        'ford':'node["ford"="yes"]',
+        'ruins':'node["historic"="ruins"]',
+        'castle':'node["historic"="castle"]',
+        'toilets':'node["amenity"="toilets"]',
+        'spring':'node["natural"="spring"]',
+        'cairn':'node["man_made"="cairn"]',
+        'locality':'node["place"="locality"]'}
+
+    dict_query_ways = {
+        'alpine_hut':'way["tourism"="alpine_hut"]',
+        'wilderness_hut':'way["tourism"="wilderness_hut"]',
+        'lake':'way["water"="lake"]',
+        # 'lake':'way["natural"="water"]["water"!~".*"]["name"~"[lL]ac"]',
+        'glacier':'way["natural"="glacier"]',
+        'chapel':'way["building"="chapel"]',
+        'observatory':'way["man_made"="observatory"]',
+        'shelter':'way["amenity"="shelter"]',
+        'tunnel':'way["tunnel"="yes"]'}
+
+    if query_type is 'node':
+        dict_query = dict_query_nodes
+    else:
+        dict_query = dict_query_ways
+
+    if wpt_json is None:
+        for wpt, query_str in dict_query.items():
+            query_lst.append(query_str)
+        return query_lst
+
+    for wpt, query_str in dict_query.items():
+        if wpt in wpts:
+            if with_name is True:
+                query_str = query_str + '["name"]'
+            else:
+                query_str = query_str + '["name"!~".*"]'
+            query_lst.append(query_str)
+
+    return query_lst    
+
+
+def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, reverse=False, wpt_json=None, wpt_no_name_json=None):
     '''
     lim_dist in kilometers (0.05 #default)
     keep_old_wpt (False #defaut)
@@ -418,37 +486,13 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
         (gpx_name, lat, lon, ele) = parse_route(gpx)
 
     # Change start point manually
-    lat, lon, ele = change_route(lat, lon, ele, reverse=False, index=None)
+    lat, lon, ele = change_route(lat, lon, ele, reverse=reverse, index=None)
 
     index_used = []
     Pts = []
-
-    # Nodes
-    query = []
-    query.append('node["natural"="saddle"]')
-    query.append('node["natural"="peak"]')
-    query.append('node["waterway"="waterfall"]')
-    query.append('node["natural"="waterfall"]')
-    query.append('node["information"="guidepost"]')
-    query.append('node["natural"="cave_entrance"]')
-    query.append('node["tourism"="viewpoint"]["map_type"!="toposcope"]')
-    query.append('node["map_type"="toposcope"]')
-    query.append('node["amenity"="drinking_water"]')
-    query.append('node["amenity"="fountain"]')
-    query.append('node["tourism"="alpine_hut"]')
-    query.append('node["tourism"="wilderness_hut"]')
-    query.append('node["amenity"="shelter"]')
-    query.append('node["natural"="tree"]["name"]')
-    query.append('node["historic"="aircraft_wreck"]["aircraft_wreck"]')
-    query.append('node["barrier"]["barrier"!="bollard"]')   # A spécifier un peu plus
-    query.append('node["building"="chapel"]')
-    query.append('node["ford"="yes"]')     
-    query.append('node["historic"="ruins"]')   
-    query.append('node["historic"="castle"]')   
-    query.append('node["amenity"="toilets"]')   
-    query.append('node["natural"="volcano"]')
-    query.append('node["natural"="spring"]')
-    query.append('node["man_made"="cairn"]')
+    #N odes
+    query = construct_overpass_query([], 'node', wpt_json, True)
+    query = construct_overpass_query(query, 'node', wpt_no_name_json, False)
     print('Overpass node - start')
     response = overpass_query(lon, lat, query)
     print('Overpass node - done')
@@ -456,26 +500,13 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False):
         Pts = get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist)
 
     # Ways
-    query = []
-    query.append('way["tourism"="alpine_hut"]')
-    query.append('way["tourism"="wilderness_hut"]')
-    query.append('way["water"="lake"]')
-    query.append('way["natural"="water"]["water"!~".*"]["name"~"[lL]ac"]') # For missing lake tag cases
-    query.append('way["natural"="glacier"]')
-    query.append('way["building"="chapel"]')
-    query.append('way["man_made"="observatory"]')
-    query.append('way["amenity"="shelter"]')
-    query.append('way["tunnel"="yes"]') 
-
-    # Paths
-    # query.append('way["highway"="path"]["sac_scale"]["sac_scale"!="mountain_hiking"]["sac_scale"!="hiking"]')
-
+    query = construct_overpass_query([], 'way', wpt_json, True)
+    query = construct_overpass_query(query, 'way', wpt_no_name_json, False)
     print('Overpass way - start')
     response = overpass_query(lon, lat, query)
     print('Overpass way - done')
     if response is not None:
         Pts = get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist)
-
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
     print('Number of gpx points in route : ' + str(len(lat)))
