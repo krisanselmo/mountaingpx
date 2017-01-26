@@ -8,9 +8,11 @@
 	<!-- <li><a href="https://github.com/ebrelsford/Leaflet.loading">Leaflet.loading</a> © Eric Brelsford</li> -->
 	<!-- <li><a href="https://github.com/perliedman/leaflet-control-geocoder">Control.Geocoder</a> © Per Liedman</li> -->
 	<li><a href="https://github.com/Turbo87/sidebar-v2/">L.control.sidebar</a> © Tobias Bieniek</li>
-	<li><a href="https://github.com/domoritz/leaflet-locatecontrol">L.Control.Locate</a> © Dominik Moritz</li>
-	<!-- <li><a href="https://github.com/makinacorpus/Leaflet.RestoreView">Leaflet.RestoreView</a> © Makina Corpus</li> -->
-	<li><a href="https://github.com/kartenkarsten/leaflet-layer-overpass">L.OverPassLayer</a> © kartenkarsten</li>
+	<li><a href="https://github.com/domoritz/leaflet-locatecontrol">L.control.locate</a> © Dominik Moritz</li>
+	<li><a href="https://github.com/MrMufflon/Leaflet.Elevation">L.control.elevation</a> © Felix Bache</li>
+	<li><a href="https://github.com/kartenkarsten/leaflet-layer-overpass">L.OverPassLayer</a> © Karsten Hinz</li>
+	<li><a href="https://github.com/mpetazzoni/leaflet-gpx">L.GPX</a> © Maxime Petazzoni</li>
+
 	<!-- <li><a href="https://github.com/mlevans/leaflet-hash">L.Hash</a> © Michael Lawrence Evans</li> -->
 	<!-- <li><a href="https://github.com/Leaflet/Leaflet.label">Leaflet.label</a> © Leaflet</li> -->
 	  </ol>
