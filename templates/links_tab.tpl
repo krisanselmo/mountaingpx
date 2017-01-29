@@ -2,6 +2,10 @@
 
 <a href="http://www.refuges.info/nav" role="tab" target="_blank">refuges.info</a>
 
+<h3>OSM iD</h3>
+<a id="iDlink" href="http://www.openstreetmap.org/edit">http://www.openstreetmap.org/edit</a>
+
+
 <h3>Strava iD</h3>
 
 <a id="SiDlink" href="http://strava.github.io/iD/">strava.github.io/iD/</a>

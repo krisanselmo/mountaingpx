@@ -664,33 +664,34 @@
             endIconUrl: '{{ url_for('static', filename='img/markers/end.png') }}',
             shadowUrl: '{{ url_for('static', filename='img/markers/pin-shadow.png') }}',
             wptIconUrls: {
-                'alpine_hut': '{{ url_for('static', filename='img/markers/alpine_hut.png') }}',    
-                'barrier': '{{ url_for('static', filename='img/markers/barrier.png') }}',   
-                'castle': '{{ url_for('static', filename='img/markers/castle.png') }}',    
-                'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}', 
-                'chapel': '{{ url_for('static', filename='img/markers/chapel.png') }}', 
-                'ford': '{{ url_for('static', filename='img/markers/ford.png') }}',   
+                'alpine_hut': '{{ url_for('static', filename='img/markers/alpine_hut.png') }}',
+                'attraction': '{{ url_for('static', filename='img/markers/attraction.png') }}',
+                'barrier': '{{ url_for('static', filename='img/markers/barrier.png') }}',
+                'castle': '{{ url_for('static', filename='img/markers/castle.png') }}',
+                'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}',
+                'chapel': '{{ url_for('static', filename='img/markers/chapel.png') }}',
+                'ford': '{{ url_for('static', filename='img/markers/ford.png') }}',
                 'fountain': '{{ url_for('static', filename='img/markers/fountain.png') }}',
                 'glacier': '{{ url_for('static', filename='img/markers/glacier.png') }}',
                 'guidepost': '{{ url_for('static', filename='img/markers/guidepost2.png') }}',
                 'lake': '{{ url_for('static', filename='img/markers/lake.png') }}',
                 'locality': '{{ url_for('static', filename='img/markers/i.png') }}',
                 'observatory': '{{ url_for('static', filename='img/markers/observatory.png') }}',
-                'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',          
-                'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',    
-                'toilets': '{{ url_for('static', filename='img/markers/toilets.png') }}',     
+                'peak': '{{ url_for('static', filename='img/markers/peak.png') }}',
+                'saddle': '{{ url_for('static', filename='img/markers/saddle.png') }}',
+                'toilets': '{{ url_for('static', filename='img/markers/toilets.png') }}',
                 'toposcope': '{{ url_for('static', filename='img/markers/toposcope.png') }}',
                 'tree': '{{ url_for('static', filename='img/markers/tree.png') }}',
                 'tunnel': '{{ url_for('static', filename='img/markers/tunnel.png') }}',
                 'ruins': '{{ url_for('static', filename='img/markers/ruins.png') }}',
-                'spring': '{{ url_for('static', filename='img/markers/water.png') }}',  
+                'spring': '{{ url_for('static', filename='img/markers/water.png') }}',
                 'shelter': '{{ url_for('static', filename='img/markers/shelter.png') }}',
                 'viewpoint': '{{ url_for('static', filename='img/markers/viewpoint.png') }}',
                 'volcano': '{{ url_for('static', filename='img/markers/volcano.png') }}',
-                'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',   
-                'water': '{{ url_for('static', filename='img/markers/water.png') }}',        
-                'waterfall': '{{ url_for('static', filename='img/markers/waterfall.png') }}',       
-                'wilderness_hut': '{{ url_for('static', filename='img/markers/wilderness_hut.png') }}'         
+                'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',
+                'water': '{{ url_for('static', filename='img/markers/water.png') }}',
+                'waterfall': '{{ url_for('static', filename='img/markers/waterfall.png') }}', 
+                'wilderness_hut': '{{ url_for('static', filename='img/markers/wilderness_hut.png') }}'
             },
             iconSize: [33, 50],
             popupAnchor:  [0, -40]
@@ -939,6 +940,19 @@
                         map.getCenter().wrap().lng, '&z=',
                         map.getZoom()
                     ].join('');
+          console.log(url)
+          window.open(url, '_blank');               
+        });
+    });
+
+    $(function() {
+        $("#iDlink").click(function(e) {
+          e.preventDefault(); // if desired...
+          var url = 'http://www.openstreetmap.org/edit#map=' + [
+                        map.getZoom(),
+                        map.getCenter().wrap().lat,
+                        map.getCenter().wrap().lng
+                    ].join('/');
           console.log(url)
           window.open(url, '_blank');               
         });

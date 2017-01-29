@@ -43,41 +43,19 @@ def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
 
 # -----------------------------------------------------------
-@app.route('/presentation', methods=['GET'])
-@app.route('/intro', methods=['GET'])
-def intro():
-    return render_template('intro.tpl')
-
-# -----------------------------------------------------------
 @app.route('/help', methods=['GET'])
 def help():
     return render_template('help_tab.tpl')
 
 # -----------------------------------------------------------
-@app.route('/test', methods=['GET'])
-def sidebar():
-    return render_template('test_sidebar_v2.tpl')
-
-# -----------------------------------------------------------
-@app.route('/POImap', methods=['GET', 'POST'])
-def POImap():
-    return render_template('POImap.tpl')
+# @app.route('/POImap', methods=['GET', 'POST'])
+# def POImap():
+#     return render_template('POImap.tpl')
 
 # @app.route('/massifs', methods=['GET', 'POST'])
 # def Massifs_map():
 #     return render_template('massifs.tpl', outputfile=null, map_qstr=null,
 #         layer_qstr=null, overlay_qstr=null)
-
-@app.route('/form', methods=['GET', 'POST'])
-def form():
-    if request.method == 'POST':
-        # print(request.form['distance'])
-        for element in request.form:
-            print(element)
-    return render_template('form.tpl')
-
-
-
 
 # -----------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
@@ -112,7 +90,6 @@ def main_page(trk_num=None):
             app.logger.debug(u'Track number: ' + trk_num)
 
             fpath = OUTPUT_FOLDER + trk_num + '.gpx'
-
 
             # Get cookies
             try:
@@ -232,15 +209,6 @@ if __name__ == '__main__':
 '''
 
 
-
-
-
-
-
-
-
-
-
 # Exploiter cookies pour garder les checkbox
 
 
@@ -248,15 +216,9 @@ if __name__ == '__main__':
 # http://pythoncentral.io/hashing-files-with-python/
 
 # Fragmentation de la carte
-
-# Option pour virer les wpt sans nom.
 # Ajout liste des WPTs avec nom
-# Mettre une icone d'alerte si le nombre de waypoints dépasse la limite de suunto.
 
-
-
-
-
+Tourism=attraction
 
 ################################# ICONS
 
@@ -265,23 +227,16 @@ if __name__ == '__main__':
 
 ################################# HTML
 
-Option pour enlever les POI sans nom
-
-
 RESPONSIVE
     -> Si écran petit en largeur, il faut recentrer la map
-
 
 ################################# JS / Leaflet
 
 https://github.com/mpetazzoni/leaflet-gpx/issues/41
 Option to remove gpx layer
 
-
 OVERPASS sur ways:
 http://simon04.github.io/POImap/railway.html
-
-
 
 ################################# JS / Leaflet / Elevation
 
@@ -293,14 +248,11 @@ TODO:
         Last 2 km
         Last km
 
-
 ################################# OTHER THINGS
     ->  https://en.wikipedia.org/wiki/Map_matching
     ->  https://en.wikipedia.org/wiki/GraphHopper
 
     -> pourcentage de terrain 
-
-
 
     Groupe Layer
     http://bl.ocks.org/ismyrnow/6123517

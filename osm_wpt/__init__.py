@@ -88,7 +88,7 @@ def get_wpt_type(tag_dict):
 
     query_name = ''
     # OSM node values that it used to identify the waypoint type / Last values have low priority
-    list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 
+    list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 'attraction',
         'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
         'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins', 
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
@@ -418,7 +418,7 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
         'peak':'node["natural"="peak"]',
         # 'peak':'node["natural"="volcano"]',
         'waterfall':'node["waterway"="waterfall"]',
-        'waterfall':'node["natural"="waterfall"]',
+        # 'waterfall':'node["natural"="waterfall"]',
         'guidepost':'node["information"="guidepost"]',
         'cave_entrance':'node["natural"="cave_entrance"]',
         'viewpoint':'node["tourism"="viewpoint"]["map_type"!="toposcope"]',
@@ -436,6 +436,7 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
         'ruins':'node["historic"="ruins"]',
         'castle':'node["historic"="castle"]',
         'toilets':'node["amenity"="toilets"]',
+        'attraction':'node["tourism"="attraction"]',
         'spring':'node["natural"="spring"]',
         'cairn':'node["man_made"="cairn"]',
         'locality':'node["place"="locality"]'}

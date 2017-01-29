@@ -40,10 +40,10 @@
 	   		<td><input type="checkbox" name="wilderness_hut" class='no_name'></td>
 	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Tag:tourism%3Dwilderness_hut" role="tab" target="_blank">link</a></td>
 	   	</tr>
-	   	<tr>
-	   		<td>Barrière</td>
-	   		<td><input type="checkbox" name="barrier" class='with_name'></td>
-	   		<td><input type="checkbox" name="barrier" class='no_name'></td>
+	    <tr>
+	   		<td>Attraction touristique</td>
+	   		<td><input type="checkbox" name="attraction" class='with_name'></td>
+	   		<td><input type="checkbox" name="attraction" class='no_name'></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Chateau</td>
@@ -60,12 +60,7 @@
 	   		<td><input type="checkbox" name="chapel" class='with_name'></td>
 	   		<td><input type="checkbox" name="chapel" class='no_name'></td>
 	   	</tr>
-	   	<tr>
-	   		<td>Gué</td>
-	   		<td><input type="checkbox" name="ford" class='with_name'></td>
-	   		<td><input type="checkbox" name="ford" class='no_name'></td>
-	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Key:ford" role="tab" target="_blank">link</a></td>
-	   	</tr>
+
 	   	<tr>
 	   		<td>Fontaine</td>
 	   		<td><input type="checkbox" name="fountain" class='with_name'></td>
@@ -91,16 +86,7 @@
 	   		<td><input type="checkbox" name="observatory" class='with_name'></td>
 	   		<td><input type="checkbox" name="observatory" class='no_name'></td>
 	   	</tr>
-	   	<tr>
-	   		<td>Toilettes</td>
-	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
-	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
-	   	</tr>
-	   		<tr>
-	   		<td>Tunnel</td>
-	   		<td><input type="checkbox" name="tunnel" class='with_name'></td>
-	   		<td><input type="checkbox" name="tunnel" class='no_name'></td>
-	   	</tr>
+
 	   	<tr>
 	   		<td>Table d'orientation</td>
 	   		<td><input type="checkbox" name="toposcope" class='with_name'></td>
@@ -146,6 +132,28 @@
 	   		<td><input type="checkbox" name="locality" class='with_name'></td>
 	   		<td><input type="checkbox" name="locality" class='no_name'></td>
 	   		<td><a href="https://wiki.openstreetmap.org/wiki/FR:Tag:place%3Dlocality" role="tab" target="_blank">link</a></td>
+	   	</tr>
+
+	   	<tr>
+	   		<td>Toilettes</td>
+	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
+	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
+	   	</tr>
+	    <tr>
+	   		<td>Gué</td>
+	   		<td><input type="checkbox" name="ford" class='with_name'></td>
+	   		<td><input type="checkbox" name="ford" class='no_name'></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Key:ford" role="tab" target="_blank">link</a></td>
+	   	</tr>
+	   	<tr>
+	   		<td>Tunnel</td>
+	   		<td><input type="checkbox" name="tunnel" class='with_name'></td>
+	   		<td><input type="checkbox" name="tunnel" class='no_name'></td>
+	   	</tr>
+	   	<tr>
+	   		<td>Barrière</td>
+	   		<td><input type="checkbox" name="barrier" class='with_name'></td>
+	   		<td><input type="checkbox" name="barrier" class='no_name'></td>
 	   	</tr>
 
 </table>
@@ -214,9 +222,11 @@
      
 	$( document ).ready(function() {
 		$(':checkbox.with_name').prop('checked', true);
+		$(':checkbox.no_name').prop('checked', true);
 		$(':checkbox[name="tunnel"]').prop('checked', false);
 		$(':checkbox[name="ford"]').prop('checked', false);
 		$(':checkbox[name="barrier"]').prop('checked', false);
+		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
 
 
 		if (Cookies.get('snapdistance') != null){
