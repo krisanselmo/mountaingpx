@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">    
     <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />    
-    <link rel='stylesheet' href="{{ url_for('static', filename='button.css') }}" id='input_button' type='text/css' media='all' />
     <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
     <link rel='stylesheet' href="{{ url_for('static', filename='cssapp2.css') }}" type='text/css'/>
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-sidebar.css') }}" type='text/css'/> 
@@ -28,8 +27,8 @@
     <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"> </script> {#https://github.com/MatthewBarker/leaflet-wikipedia#}
     <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
     <script src="{{ url_for('static', filename='leaflet-sidebar.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script>
-
+    <!-- <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.js') }}"></script>
 
     {# Other 
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" type='text/css'/>  -->    

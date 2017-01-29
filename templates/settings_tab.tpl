@@ -194,30 +194,19 @@
 
 	function WriteCookie()
 	    {
-	       input = escape(document.custom_options.snapdistance.value);
-	       if( isNaN(input) || input < 1 || input > 1000) {
+	        input = escape(document.custom_options.snapdistance.value);
+	        if( isNaN(input) || input < 1 || input > 1000) {
 	       		alert('Cette valeur doit être comprise entre 1 et 1000');
 			}else{
 				Cookies.set("snapdistance", input);
 			}
 
-	       input = document.custom_options.reverse_track.checked;
-	       Cookies.set("reverse", input);
-
-	       // input = document.custom_options.reverse_track.checked;
-
-			// var $formNode = document.getElementById('options_form');
-			// var myFormObj = formToObject($formNode);
-			// console.log(myFormObj);
-			// Cookies.set("checkbox", myFormObj);
-			// var ch = $('.with_name:checkbox:checked')
-			// console.log(ch.name)
-			// console.log( $(":checkbox.with_name").jsonify())
+	        input = document.custom_options.reverse_track.checked;
+	        Cookies.set("reverse", input);
 			Cookies.set("wpt", $(":checkbox.with_name").jsonify());
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
-			// console.log($("#options_form").jsonify())
 
-// $('.theClass:checkbox:checked')
+
 	    }
      
 	$( document ).ready(function() {
@@ -228,10 +217,23 @@
 		$(':checkbox[name="barrier"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
 
-
 		if (Cookies.get('snapdistance') != null){
 			document.custom_options.snapdistance.value = Cookies.get('snapdistance');
 		}
+
+		if (Cookies.get('wpt') != null){
+			$(":checkbox.with_name").dejsonify(Cookies.get('wpt'));
+		} else {
+			Cookies.set("wpt", $(":checkbox.with_name").jsonify());
+		}
+
+		if (Cookies.get('wpt_no_name') != null){
+			$(":checkbox.no_name").dejsonify(Cookies.get('wpt_no_name'));
+		} else {
+			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
+		}
+
+
 	});
 
 
