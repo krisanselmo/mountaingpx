@@ -146,3 +146,45 @@ div#dropzone {
     font-style: normal;
     font-weight: normal;
 }
+
+
+#T1{ 
+    border-top : 3px solid yellow; 
+    width : 20px; 
+    display: inline-block;
+}
+#T2{ 
+    border-top : 3px solid blue; 
+    width : 20px; 
+    display: inline-block;
+}
+#T3{ 
+    border-top : 3px solid #00007f; 
+    width : 20px; 
+    display: inline-block;
+}
+#T4{ 
+    border-top : 3px solid red; 
+    width : 20px; 
+    display: inline-block;
+}
+#T5{ 
+    border-top : 3px solid #990000; 
+    width : 20px; 
+    display: inline-block;
+}
+#T6{ 
+    border-top : 3px solid #4C0000; 
+    width : 20px; 
+    display: inline-block;
+}
+
+
+#help > p{
+    text-align: justify;
+}
+
+#links > h3{
+    margin-bottom: 8px;
+    margin-top: 14px;
+}

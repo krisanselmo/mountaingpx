@@ -61,7 +61,7 @@
             <ul role="tablist">
                 <li><a href="#disqus" role="tab"><i class="fa fa-comment"></i></a></li> 
                 <li><a href="#dependencies" role="tab"><i class="fa fa-code"></i></a></li> 
-                <li><a href="https://github.com/krisanselmo/osm_wpt" role="tab" target="_blank"><i class="fa fa-github"></i></a></li>
+                <!-- <li><a href="https://github.com/krisanselmo/osm_wpt" role="tab" target="_blank"><i class="fa fa-github"></i></a></li> -->
             </ul>
         </div>
 
@@ -101,16 +101,16 @@
                     <table>
                         <tr><td>Distance:</td>
                             <td><span title="Distance 2d" class="gpx-info-dist"> </span> km</td></tr>
-                        <tr><td>Elevation:</td>
+                        <tr><td>Dénivelé positif:</td>
                             <td><span title="Raw elevation data" class="gpx-info-egain"> </span> m</td></tr>
-                        <tr><td>Waypoints:</td>
+                        <tr><td>Points d'intérêt:</td>
                             <td><span class="gpx-info-wpt_number"> </span></td></tr>
                     </table>
                 </div>
                 <br>
                 <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div>
                 <br>
-                <h3>Elevation</h3>
+                <h3>Profil d'altitude</h3>
                 <div class="elevation steelblue-theme leaflet-control">
                     <div id="elevation-div"></div>
                 </div>
@@ -141,10 +141,10 @@
                 {% include "dependencies_tab.tpl" %}
             </div>
 
-            <!-- <div class="sidebar-pane" id="disqus">
+            <div class="sidebar-pane" id="disqus">
                 <h1 class="sidebar-header">Commentaires<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 {% include "disqus_tab.tpl" %}
-            </div> -->
+            </div>
 
         </div>
     </div>

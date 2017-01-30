@@ -1,6 +1,6 @@
 
   <!-- <form action="{{ url_for('main_page') }}" method="post", class="custom_options"> -->
-  <form action="" name="custom_options" id='options_form'>	
+  <form action="" name="custom_options" id='options_form' onchange="WriteCookie();">	
     
     <br>
     <h3>Sélection des POI</h3>
@@ -156,14 +156,14 @@
 </table>
 <br>
 <h3>Distance max d'accrochage des POI</h3>
-<input type="text" name="snapdistance" value="50" onkeypress="WriteCookie();"> en mètre(s)
+<input type="text" name="snapdistance" value="50"> en mètre(s)
 <br>
 <h3>Inverser la trace</h3>
 <input type="checkbox" name="reverse_track">
 <br>
 <br>
 <!-- <input type="submit" value="Submit"> -->
-<input type="button" value="Envoyer" id='submit_options' onclick="WriteCookie();"/>
+<!-- <input type="button" value="Envoyer" id='submit_options' onclick="WriteCookie();"/> -->
 </form>
 
 
@@ -233,7 +233,6 @@
 		} else {
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
 		}
-
 
 	});
 
