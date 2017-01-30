@@ -92,9 +92,9 @@
 
                 {% if outputfile is not none %}
                 <hr>
-                <h3><div class="gpx-name" title="test"></div></h3>
-
-                <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div></li>
+                <h2><div class="gpx-name" title="test"></div></h2>
+                <hr>
+                
 
                 <h3>Infos</h3>
                 <div class="info_tab">
@@ -107,7 +107,9 @@
                             <td><span class="gpx-info-wpt_number"> </span></td></tr>
                     </table>
                 </div>
-
+                <br>
+                <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div>
+                <br>
                 <h3>Elevation</h3>
                 <div class="elevation steelblue-theme leaflet-control">
                     <div id="elevation-div"></div>
@@ -732,11 +734,20 @@
     {# -------------------- #}
     {#    GPX ELEVATION     #}
     {# -------------------- #}
+    var width = $(window).width();
+    var el_width = 300;
+    if (width > 768 && width < 991){
+        el_width = 240
+    } else{
+        el_width = 300
+    };
+
+
 
     var el = L.control.elevation({
         position:"topright",
         theme: "steelblue-theme", //default: lime-theme
-        width: 300,
+        width: el_width,
         height: 180,
         margins: {
             top: 10,

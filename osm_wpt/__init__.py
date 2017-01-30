@@ -313,8 +313,8 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     #   api = overpass.API()
     #   Default : http://overpass-api.de/api/interpreter
     response = None
-    api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
-
+    # api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
+    api = overpass.API()
     pos_str = str(minlat) + ',' + str(minlon) + ',' +\
     str(maxlat) + ',' + str(maxlon)
     overpass_query_str = '('

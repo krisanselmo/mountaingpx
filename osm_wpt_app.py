@@ -58,7 +58,7 @@ def help():
 #         layer_qstr=null, overlay_qstr=null)
 
 @app.route('/last', methods=['GET'])
-def last_track(trk_num=None):
+def last_track():
     trk_num = str(len(os.listdir(OUTPUT_FOLDER))) 
     return redirect(url_for('main_page', trk_num=trk_num))
 

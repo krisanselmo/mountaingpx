@@ -126,16 +126,15 @@
 	   		<td><input type="checkbox" name="waterfall" class='no_name'></td>
 	   	</tr>
 	   	<tr>
+	   		<td>Toilettes</td>
+	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
+	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
+	   	</tr>
+	   	<tr>
 	   		<td>Lieu-dit</td>
 	   		<td><input type="checkbox" name="locality" class='with_name'></td>
 	   		<td><input type="checkbox" name="locality" class='no_name'></td>
 	   		<td><a href="https://wiki.openstreetmap.org/wiki/FR:Tag:place%3Dlocality" role="tab" target="_blank">link</a></td>
-	   	</tr>
-
-	   	<tr>
-	   		<td>Toilettes</td>
-	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
-	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
 	   	</tr>
 	    <tr>
 	   		<td>Gué</td>
@@ -216,6 +215,7 @@
 		$(':checkbox[name="tunnel"]').prop('checked', false);
 		$(':checkbox[name="ford"]').prop('checked', false);
 		$(':checkbox[name="barrier"]').prop('checked', false);
+		$(':checkbox[name="locality"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
 
 		if (Cookies.get('snapdistance') != null){
