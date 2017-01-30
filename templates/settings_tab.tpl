@@ -1,9 +1,7 @@
 
   <!-- <form action="{{ url_for('main_page') }}" method="post", class="custom_options"> -->
   <form action="" name="custom_options" id='options_form'>	
-    <br>
-    <h3>Distance max d'accrochage des POI</h3>
-    <input type="text" name="snapdistance" value="50" onkeypress="WriteCookie();"> en mètre(s)
+    
     <br>
     <h3>Sélection des POI</h3>
 
@@ -157,6 +155,9 @@
 	   	</tr>
 
 </table>
+<br>
+<h3>Distance max d'accrochage des POI</h3>
+<input type="text" name="snapdistance" value="50" onkeypress="WriteCookie();"> en mètre(s)
 <br>
 <h3>Inverser la trace</h3>
 <input type="checkbox" name="reverse_track">

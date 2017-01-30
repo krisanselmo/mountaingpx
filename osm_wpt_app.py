@@ -57,6 +57,11 @@ def help():
 #     return render_template('massifs.tpl', outputfile=null, map_qstr=null,
 #         layer_qstr=null, overlay_qstr=null)
 
+@app.route('/last', methods=['GET'])
+def last_track(trk_num=None):
+    trk_num = str(len(os.listdir(OUTPUT_FOLDER))) 
+    return redirect(url_for('main_page', trk_num=trk_num))
+
 # -----------------------------------------------------------
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/track', methods=['GET', 'POST'])
@@ -209,7 +214,6 @@ if __name__ == '__main__':
 '''
 
 
-# Exploiter cookies pour garder les checkbox
 
 
 # Hash 
@@ -218,11 +222,9 @@ if __name__ == '__main__':
 # Fragmentation de la carte
 # Ajout liste des WPTs avec nom
 
-Tourism=attraction
 
 ################################# ICONS
 
-    query.append('node["natural"="spring"]')
     query.append('node["man_made"="cairn"]')
 
 ################################# HTML

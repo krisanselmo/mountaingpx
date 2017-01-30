@@ -28,7 +28,7 @@
     <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
     <script src="{{ url_for('static', filename='leaflet-sidebar.js') }}"></script>
     <!-- <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script> -->
-    <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.js') }}"></script> {#https://github.com/kushalpandya/JSONify#}
 
     {# Other 
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" type='text/css'/>  -->    
@@ -77,7 +77,7 @@
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
                     <div class="input-file-container">  
                         <input class="input-file" id="gpx-file" type="file" accept=".gpx" name=file>
-                        <label class="input-file-trigger">Envoyer un fichier GPX<!-- select a GPX file... --></label>
+                        <label class="input-file-trigger">Envoyer un fichier GPX<!-- select a GPX file... --><!--  <i class="fa fa-upload"></i> --></label>
                     </div><br>
                     <div id="up_filename"></div>
                 </form>
