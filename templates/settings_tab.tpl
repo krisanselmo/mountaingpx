@@ -30,13 +30,13 @@
 	   		<td>Refuge</td>
 	   		<td><input type="checkbox" name="alpine_hut" class='with_name'></td>
 	   		<td><input type="checkbox" name="alpine_hut" class='no_name'></td>
-	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Tag:tourism%3Dalpine_hut" role="tab" target="_blank">link</a></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Tag:tourism%3Dalpine_hut" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Refuge non gardé</td>
 	   		<td><input type="checkbox" name="wilderness_hut" class='with_name'></td>
 	   		<td><input type="checkbox" name="wilderness_hut" class='no_name'></td>
-	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Tag:tourism%3Dwilderness_hut" role="tab" target="_blank">link</a></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Tag:tourism%3Dwilderness_hut" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	    <tr>
 	   		<td>Attraction touristique</td>
@@ -134,13 +134,13 @@
 	   		<td>Lieu-dit</td>
 	   		<td><input type="checkbox" name="locality" class='with_name'></td>
 	   		<td><input type="checkbox" name="locality" class='no_name'></td>
-	   		<td><a href="https://wiki.openstreetmap.org/wiki/FR:Tag:place%3Dlocality" role="tab" target="_blank">link</a></td>
+	   		<td><a href="https://wiki.openstreetmap.org/wiki/FR:Tag:place%3Dlocality" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	    <tr>
 	   		<td>Gué</td>
 	   		<td><input type="checkbox" name="ford" class='with_name'></td>
 	   		<td><input type="checkbox" name="ford" class='no_name'></td>
-	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Key:ford" role="tab" target="_blank">link</a></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/FR:Key:ford" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Tunnel</td>

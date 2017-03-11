@@ -59,7 +59,7 @@
                 <li><a href="#links" role="tab"><i class="fa fa-external-link"></i></a></li> 
             </ul>
             <ul role="tablist">
-                <li><a href="#disqus" role="tab"><i class="fa fa-comment"></i></a></li> 
+                <!--<li><a href="#disqus" role="tab"><i class="fa fa-comment"></i></a></li> -->
                 <li><a href="#dependencies" role="tab"><i class="fa fa-code"></i></a></li> 
                 <!-- <li><a href="https://github.com/krisanselmo/osm_wpt" role="tab" target="_blank"><i class="fa fa-github"></i></a></li> -->
             </ul>
@@ -71,7 +71,7 @@
                 <h1 class="sidebar-header">Mountain GPX<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
                 <!-- <p>Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database</p> -->
-                <p>Ajoute automatiquement des points d'intérêts (POI) depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a> sur une trace GPX.</p> 
+                <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
 
                 <br>
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
@@ -141,10 +141,10 @@
                 {% include "dependencies_tab.tpl" %}
             </div>
 
-            <div class="sidebar-pane" id="disqus">
+           <!--  <div class="sidebar-pane" id="disqus">
                 <h1 class="sidebar-header">Commentaires<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 {% include "disqus_tab.tpl" %}
-            </div>
+            </div> -->
 
         </div>
     </div>
@@ -284,7 +284,8 @@
     var osm = L.tileLayer(osmUrl, {
             attribution: osmAttr
         });
-        osmcyclemap = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+        // https://manage.thunderforest.com/dashboard
+        osmcyclemap = L.tileLayer('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=312f6e6c89ec456f9f88857c5f687d92', {
             attribution: osmAttr
         });
         osmfr = L.tileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {

@@ -10,12 +10,14 @@ Created on Mon Oct 17 15:28:58 2016
 import gpxpy      # https://github.com/tkrajina/gpxpy
 import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
 import time
+import os
 import sys
 import logging as log
 import json
 import urllib
 from math import radians, cos, sin, asin, sqrt
 
+LOGFILE = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
 
 def timeit(f):
     def timed(*args, **kw):
@@ -49,6 +51,8 @@ class Point(object):
         return repr((self.osm_node_id, self.index, self.new_gpx_index,
                      self.query_name, self.name, self.lat, self.lon, self.ele))
 
+
+
 def parse_route(gpx, simplify=False):
     if not gpx.tracks:
         table = [(point.latitude, point.longitude, point.elevation) for track in gpx.routes for point in track.points]
@@ -64,7 +68,8 @@ def parse_route(gpx, simplify=False):
     #     raise InvalidGpxFile('No track or route in gpx')
 
     gpx_name = track.name
-    print(gpx_name)
+    # print(gpx_name) 
+    
     return gpx_name, lat, lon, ele
 
     
@@ -479,7 +484,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
     keep_old_wpt (False #defaut)
     '''
 
-    log.basicConfig(filename='osm_wpt.log', level=log.WARNING)
+    log.basicConfig(filename=LOGFILE, level=log.WARNING)
     log.info('Started')
 
     with open(fpath, 'r') as gpx_file:

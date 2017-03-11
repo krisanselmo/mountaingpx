@@ -1,3 +1,8 @@
+<h3>GitHub <i class="fa fa-github"></i></h3>
+<ul class="item">
+	<li>Le GitHub du projet: <a href='https://github.com/krisanselmo/mountaingpx'>mountaingpx</a></li>
+</ul>
+
 
 <h3>Javascript &amp; CSS</h3>
 

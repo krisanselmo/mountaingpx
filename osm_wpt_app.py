@@ -9,8 +9,11 @@ from werkzeug import SharedDataMiddleware
 import random
 import osm_wpt
 
-UPLOAD_FOLDER = 'uploads/'
-OUTPUT_FOLDER = 'static/track/'
+
+HERE = os.path.dirname(__file__)
+UPLOAD_FOLDER = os.path.join(HERE, 'uploads/')
+OUTPUT_FOLDER = os.path.join(HERE, 'static/track/')
+
 ALLOWED_EXTENSIONS = set(['gpx'])
 
 app = Flask(__name__)
@@ -82,19 +85,26 @@ def main_page(trk_num=None):
 
             # Save file
             filename = secure_filename(file.filename)
+
             try:
                 make_dirs()
+            except Exception as err:
+                flash('Unable to create directory','error')
+                return redirect(request.url)
+
+            try:
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 print('File saved: ' + filename)
             except Exception as err:
-                flash('Permission denied','error')
+                app.logger.error(u'Permission denied on ' + app.config['UPLOAD_FOLDER'])
+                flash('Permission denied: ' + str(err),'error')
                 return redirect(request.url)
 
             # Output file processing
             trk_num = str(len(os.listdir(OUTPUT_FOLDER)) + 1) 
             app.logger.debug(u'Track number: ' + trk_num)
 
-            fpath = OUTPUT_FOLDER + trk_num + '.gpx'
+            fpath = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx'
 
             # Get cookies
             try:
@@ -114,21 +124,20 @@ def main_page(trk_num=None):
             wpt = request.cookies.get('wpt')
             wpt_no_name = request.cookies.get('wpt_no_name')
 
+            input_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
             try:
                 # TODO: AFFICHER UN LOADING
-                wpts_number = osm_wpt.osm_wpt('uploads/' + filename, lim_dist=lim_dist, gpxoutputname=fpath, 
+                wpts_number = osm_wpt.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath, 
                     reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name)
                 # app.logger.debug(u'osm_wpt script : OK')
                 # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
-                flash('GPX Error')
-                # flash(err)
+                flash(str(err))
                 app.logger.warning(u'GPX Error')
                 return redirect(request.url)
     
-            # print(trk_num)
             return redirect(url_for('main_page', trk_num=trk_num))
-            # return redirect(url_for('main_page', trk_num=trk_num))
 
         else:
             flash('Not allowed file type')
@@ -137,8 +146,10 @@ def main_page(trk_num=None):
     if trk_num is None:
         fpath = None
     else:
-        fpath = OUTPUT_FOLDER + trk_num + '.gpx'
-        if not os.path.isfile(fpath):
+        # fpath = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx'
+        fpath = 'static/track/' + trk_num + '.gpx' 
+        fpathPY = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx' 
+        if not os.path.isfile(fpathPY):
             fpath = None
             flash('GPX not found')
 

@@ -55,4 +55,4 @@ For others watches or more details on the file transfert, I recommand to read <a
 
 <h2>Bugs / Questions / Contributions</h2>
 Contactez-moi: christophe.anselmo[at]gmail.com
-<br>Le GitHub: <a href='https://github.com/krisanselmo/osm_wpt'>OSM_wpt</a>
+<br>Le GitHub <i class="fa fa-github"></i>: <a href='https://github.com/krisanselmo/mountaingpx'>mountaingpx</a>
