@@ -51,7 +51,7 @@ For others watches or more details on the file transfert, I recommand to read <a
 </p>
 <h3>Suunto</h3>
 <p>For Suunto users the outputed gpx can be imported on movescount map. Note that unfortunately the waypoint types are not recognized by movescount.</p>
-<p><font color='red'>Update</font>: it's no longer working, waypoints are not saved :(</p>
+<!-- <p><font color='red'>Update</font>: it's no longer working, waypoints are not saved :(</p> -->
 
 <h2>Bugs / Questions / Contributions</h2>
 Contactez-moi: christophe.anselmo[at]gmail.com

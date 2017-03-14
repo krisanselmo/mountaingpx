@@ -5,6 +5,7 @@
     <title>Mountain GPX</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données">
     {# -- CSS -- #}
     <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
@@ -68,11 +69,12 @@
         <!-- Tab panes -->
         <div class="sidebar-content">
             <div class="sidebar-pane" id="home">
-                <h1 class="sidebar-header">Mountain GPX<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <h1 class="sidebar-header"><a href="/">Mountain GPX</a><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
                 <!-- <p>Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database</p> -->
-                <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
-
+                <!-- <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
+ -->
+                <p></p>
                 <br>
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
                     <div class="input-file-container">  
@@ -419,7 +421,7 @@
         });
 
     var GuidepostIcon = L.icon({
-                            iconUrl: "{{ url_for('static', filename='img/mapy_cz/384.png') }}",
+                            iconUrl: "{{ url_for('static', filename='img/markers/384.png') }}",
                             iconSize:     [20, 20], // size of the icon
                             popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
                     });
@@ -655,7 +657,7 @@
     {# -------------------- #}
 
     {% if outputfile is not none %}
-    var gpx = '../{{outputfile}}'
+    var gpx = '../../{{outputfile}}'
     
     gpx_overlay = new L.GPX(gpx, {async: true,
         polyline_options: {color:'red', 

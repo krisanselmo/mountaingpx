@@ -18,6 +18,12 @@ h3 {
     margin-top: 8px;
 }
 
+#home > h1 > a{
+    color: white;
+    text-decoration: none; 
+}
+
+
 .download {
     position: relative;
     margin-left: auto;
@@ -33,6 +39,7 @@ h3 {
     text-align: center;
     text-decoration: none;
     display: inline-block;
+    border-radius: 6px;
 }
 
 .download a:hover, .download a:active {
@@ -115,6 +122,7 @@ div#dropzone {
     cursor: pointer;
     margin-left: auto;
     margin-right: auto; 
+    border-radius: 6px;
 }
 .js .input-file {
     position: absolute;
@@ -123,6 +131,7 @@ div#dropzone {
     opacity: 0;
     padding: 14px 0;
     cursor: pointer;
+
 }
 .js .input-file:hover + .input-file-trigger,
 .js .input-file:focus + .input-file-trigger,

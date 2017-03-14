@@ -45,6 +45,12 @@ def allowed_file(filename):
 def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
 
+
+# -----------------------------------------------------------
+@app.route('/', methods=['GET'])
+def presentation():
+    return render_template('presentation.tpl')
+
 # -----------------------------------------------------------
 @app.route('/help', methods=['GET'])
 def help():
@@ -61,12 +67,15 @@ def help():
 #         layer_qstr=null, overlay_qstr=null)
 
 @app.route('/last', methods=['GET'])
+@app.route('/map/last', methods=['GET'])
 def last_track():
     trk_num = str(len(os.listdir(OUTPUT_FOLDER))) 
     return redirect(url_for('main_page', trk_num=trk_num))
 
 # -----------------------------------------------------------
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/map', methods=['GET', 'POST'])
+@app.route('/map/track', methods=['GET', 'POST'])
+@app.route('/map/track/<trk_num>', methods=['GET', 'POST'])
 @app.route('/track', methods=['GET', 'POST'])
 @app.route('/track/<trk_num>', methods=['GET', 'POST'])
 def main_page(trk_num=None):
