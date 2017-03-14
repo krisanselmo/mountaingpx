@@ -308,7 +308,7 @@ def haversine(lon1, lat1, lon2, lat2):
     r = 6371.0 # Radius of earth in kilometers. Use 3956 for miles
     return c * r
 
-
+@timeit
 def overpass_query(lon, lat, query, responseformat="geojson"):
     margin = 0.001
     minlon = min(lon) - margin
