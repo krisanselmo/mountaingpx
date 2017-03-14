@@ -15,6 +15,7 @@ import sys
 import logging as log
 import json
 import urllib
+from threading import Thread
 from math import radians, cos, sin, asin, sqrt
 
 LOGFILE = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
@@ -51,6 +52,22 @@ class Point(object):
         return repr((self.osm_node_id, self.index, self.new_gpx_index,
                      self.query_name, self.name, self.lat, self.lon, self.ele))
 
+
+class Overpass(Thread):
+    def __init__(self, lon, lat, query):
+        Thread.__init__(self)
+        self.lon = lon
+        self.lat = lat
+        self.query = query
+        self.ret = None
+
+    def run(self):
+        self.response = overpass_query(self.lon, self.lat, self.query)
+        return 
+
+    def join(self):
+        Thread.join(self)
+        return self.response
 
 
 def parse_route(gpx, simplify=False):
@@ -308,6 +325,7 @@ def haversine(lon1, lat1, lon2, lat2):
     r = 6371.0 # Radius of earth in kilometers. Use 3956 for miles
     return c * r
 
+
 @timeit
 def overpass_query(lon, lat, query, responseformat="geojson"):
     margin = 0.001
@@ -318,8 +336,8 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     #   api = overpass.API()
     #   Default : http://overpass-api.de/api/interpreter
     response = None
-    # api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
-    api = overpass.API()
+    api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
+    # api = overpass.API()
     pos_str = str(minlat) + ',' + str(minlon) + ',' +\
     str(maxlat) + ',' + str(maxlon)
     overpass_query_str = '('
@@ -496,23 +514,26 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
 
     index_used = []
     Pts = []
-    #N odes
-    query = construct_overpass_query([], 'node', wpt_json, True)
-    query = construct_overpass_query(query, 'node', wpt_no_name_json, False)
-    print('Overpass node - start')
-    response = overpass_query(lon, lat, query)
-    print('Overpass node - done')
-    if response is not None:
-        Pts = get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist)
 
     # Ways
     query = construct_overpass_query([], 'way', wpt_json, True)
     query = construct_overpass_query(query, 'way', wpt_no_name_json, False)
-    print('Overpass way - start')
-    response = overpass_query(lon, lat, query)
-    print('Overpass way - done')
-    if response is not None:
-        Pts = get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist)
+    thread_2 = Overpass(lon, lat, query)
+    # Nodes
+    query = construct_overpass_query([], 'node', wpt_json, True)
+    query = construct_overpass_query(query, 'node', wpt_no_name_json, False)
+    thread_1 = Overpass(lon, lat, query)
+
+    thread_1.start()
+    thread_2.start()
+
+    response_1 = thread_1.join()
+    if response_1 is not None:
+        Pts = get_overpass_nodes(response_1, Pts, index_used, lat, lon, lim_dist)
+
+    response_2 = thread_2.join()
+    if response_2 is not None:
+        Pts = get_overpass_ways(response_2, Pts, index_used, lat, lon, lim_dist)
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
     print('Number of gpx points in route : ' + str(len(lat)))
