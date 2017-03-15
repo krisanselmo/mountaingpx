@@ -45,8 +45,8 @@ def error_page(error):
 
 # -----------------------------------------------------------
 @app.route('/', methods=['GET'])
-def presentation():
-    return render_template('presentation.tpl')
+def home():
+    return render_template('home.tpl')
 
 # -----------------------------------------------------------
 @app.route('/help', methods=['GET'])
