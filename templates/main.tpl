@@ -5,7 +5,9 @@
     <title>Mountain GPX</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données">
+    <meta name="description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX">
+    <meta property="og:image" content="http://www.mountaingpx.fr/static/img/presentation/2.png">
+    <meta property="og:description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX" />
     {# -- CSS -- #}
     <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />

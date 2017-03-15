@@ -44,7 +44,7 @@
 	   		<td><input type="checkbox" name="attraction" class='no_name'></td>
 	   	</tr>
 	   	<tr>
-	   		<td>Chateau</td>
+	   		<td>Château</td>
 	   		<td><input type="checkbox" name="castle" class='with_name'></td>
 	   		<td><input type="checkbox" name="castle" class='no_name'></td>
 	   	</tr>
@@ -152,6 +152,13 @@
 	   		<td><input type="checkbox" name="barrier" class='with_name'></td>
 	   		<td><input type="checkbox" name="barrier" class='no_name'></td>
 	   	</tr>
+<!-- 	   	<tr>
+	   		<td>Cairn</td>
+	   		<td><input type="checkbox" name="cairn" class='with_name'></td>
+	   		<td><input type="checkbox" name="cairn" class='no_name'></td>
+	   	</tr> -->
+
+
 
 </table>
 <br>
