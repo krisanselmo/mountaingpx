@@ -1,27 +1,3 @@
-<!-- <h2>Aperçu</h2> -->
-
-<!-- Un simple envoie vers le serveur d'un fichier GPX permet de faire apparaître certains points d’intérêt (POI) sur cette même trace. Ces POI proviennent de la base de données <a href="http://www.openstreetmap.org/">Openstreetmap</a> et peuvent être enrichie à tout moment par n'importe qui. -->
-
-<!-- <h3>Exemple</h3> -->
-
-<!-- <img src="{{ url_for('static', filename='img/tab/garmin-fenix-3-navigation.jpg') }}" width=220px align="middle"> -->
-<!-- <img src="{{ url_for('static', filename='img/help_intro/Suunto-navigation.jpg') }}" width=250px align="middle"> -->
-
-<!-- <h2>Utilisation</h2>
-Il suffit de glisser/déposer un fichier GPX dans la fenêtre ou de cliquer sur le bouton suivant:
-
-<br>
-<br>
-<div class="input-file-container">  
-    <input class="input-file" id="gpx-file" type="file" accept=".gpx" name=file>
-    <label class="input-file-trigger">Envoyer un fichier GPX</label>
-</div>
-
-<p>Après traitement le nouveau GPX devrait s'afficher tout seul et être dispo
-</p>
- -->
-
-
 <h2>Données sources</h2>
 <p> Les points d'intérêt (POI) proviennent de la base de données du projet <a href="http://www.openstreetmap.org/">Openstreetmap</a> (OSM). Chacun est libre d'y contribuer et je vous encourage vivement à le faire après chacune de vos sorties. Un guide du débutant est disponible sur le <a href="http://wiki.openstreetmap.org/wiki/FR:Guide_du_d%C3%A9butant">wiki</a> du projet.</p>
 

@@ -373,7 +373,7 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
     # Create first track in our GPX:
     gpx_track = gpxpy.gpx.GPXTrack()
     gpx_track.name = gpx_name
-    gpx_track.link = 'http://localhost:5000/'
+    gpx_track.link = 'http://www.mountaingpx.fr'
     gpx_track.source = 'Mountain GPX'
     gpx.tracks.append(gpx_track)
     gpx_segment = gpxpy.gpx.GPXTrackSegment()
