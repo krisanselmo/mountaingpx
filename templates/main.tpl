@@ -10,7 +10,7 @@
     <meta property="og:description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX" />
     {# -- CSS -- #}
     <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">    
     <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />    
     <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
@@ -20,7 +20,7 @@
     {# -- JAVASCRIPT -- #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js.cookie.js') }}"></script>
-    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> {# For Elevation #}
     <script src="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script> {# https://github.com/domoritz/leaflet-locatecontrol #}
     <script src="{{ url_for('static', filename='gpx.js') }}"></script>
