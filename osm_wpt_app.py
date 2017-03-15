@@ -2,13 +2,11 @@
 # -*- coding:utf-8 -*-
 
 import os
+import random
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort
 from werkzeug.utils import secure_filename
 from werkzeug import SharedDataMiddleware
-
-import random
 import osm_wpt
-
 
 HERE = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(HERE, 'uploads/')
@@ -45,7 +43,6 @@ def allowed_file(filename):
 def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
 
-
 # -----------------------------------------------------------
 @app.route('/', methods=['GET'])
 def presentation():
@@ -57,15 +54,6 @@ def help():
     return render_template('help_tab.tpl')
 
 # -----------------------------------------------------------
-# @app.route('/POImap', methods=['GET', 'POST'])
-# def POImap():
-#     return render_template('POImap.tpl')
-
-# @app.route('/massifs', methods=['GET', 'POST'])
-# def Massifs_map():
-#     return render_template('massifs.tpl', outputfile=null, map_qstr=null,
-#         layer_qstr=null, overlay_qstr=null)
-
 @app.route('/last', methods=['GET'])
 @app.route('/map/last', methods=['GET'])
 def last_track():
@@ -165,7 +153,6 @@ def main_page(trk_num=None):
     # Query string
     map_qstr = dict.fromkeys(['zoom', 'lat', 'lon'], None)
 
-    # print request.args['msg']
     if request.args.get('map') is not None:
         a = request.args['map']
         b = a.split('/')
@@ -225,61 +212,7 @@ def main_page(trk_num=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=80)
-    # app.run(port=80) 
+    # app.run(debug=True, port=80)
+    app.run(port=80) 
 
 
-
-
-'''
-
-
-
-
-# Hash 
-# http://pythoncentral.io/hashing-files-with-python/
-
-# Fragmentation de la carte
-# Ajout liste des WPTs avec nom
-
-
-################################# ICONS
-
-    query.append('node["man_made"="cairn"]')
-
-################################# HTML
-
-RESPONSIVE
-    -> Si écran petit en largeur, il faut recentrer la map
-
-################################# JS / Leaflet
-
-https://github.com/mpetazzoni/leaflet-gpx/issues/41
-Option to remove gpx layer
-
-OVERPASS sur ways:
-http://simon04.github.io/POImap/railway.html
-
-################################# JS / Leaflet / Elevation
-
-############################### python
-
-TODO:
-    - Keep old WPT (partially functional)
-    - Add x kilometers before ending
-        Last 2 km
-        Last km
-
-################################# OTHER THINGS
-    ->  https://en.wikipedia.org/wiki/Map_matching
-    ->  https://en.wikipedia.org/wiki/GraphHopper
-
-    -> pourcentage de terrain 
-
-    Groupe Layer
-    http://bl.ocks.org/ismyrnow/6123517
-
-    selector
-    https://codepen.io/bseth99/pen/fboKH
-    http://dropdownchecklist.sourceforge.net/
-'''    
