@@ -138,6 +138,7 @@ L.GPX = L.FeatureGroup.extend({
   get_distance_imp:    function() { return this.to_miles(this.m_to_km(this.get_distance())); },
 
   get_wpt_number:      function() { return this._info.wpt_number; },
+  get_pts:             function() { return this._info.pts; },
 
   get_start_time:      function() { return this._info.duration.start; },
   get_end_time:        function() { return this._info.duration.end; },
@@ -279,6 +280,7 @@ L.GPX = L.FeatureGroup.extend({
       el = xml.getElementsByTagName(tags[j][0]);
       for (i = 0; i < el.length; i++) {
         var coords = this._parse_trkseg(el[i], xml, options, tags[j][1]);
+        this._info.pts = coords.length;
         if (coords.length === 0) continue;
 
         // add track
@@ -313,7 +315,7 @@ L.GPX = L.FeatureGroup.extend({
     // parse waypoints and add markers for each of them
     if (parseElements.indexOf('waypoint') > -1) {
       el = xml.getElementsByTagName('wpt');
-      this._info.wpt_number = el.length
+      this._info.wpt_number = el.length;
       for (i = 0; i < el.length; i++) {
         var ll = new L.LatLng(
             el[i].getAttribute('lat'),

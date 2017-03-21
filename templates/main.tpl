@@ -85,16 +85,27 @@
                     </div><br>
                     <div id="up_filename"></div>
                 </form>
-
+                
+                <div id="loading"></div>
                 <div class="msg_flsh">  
-                {% with messages = get_flashed_messages() %}
+          <!--       {% with messages = get_flashed_messages() %}
                 {% if messages %}
                 {{ messages[0] }}  {# Pas sur de la notation ici  #}
                 {% endif %}
+                {% endwith %} -->
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                      <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
                 {% endwith %}
-                </div>
 
+                </div>
                 {% if outputfile is not none %}
+
                 <hr>
                 <h2><div class="gpx-name" title="test"></div></h2>
                 <hr>
@@ -107,6 +118,8 @@
                             <td><span title="Distance 2d" class="gpx-info-dist"> </span> km</td></tr>
                         <tr><td>Dénivelé positif:</td>
                             <td><span title="Raw elevation data" class="gpx-info-egain"> </span> m</td></tr>
+                        <tr><td>Points GPS:</td>
+                            <td><span title="" class="gpx-info-pts"> </span></td></tr>          
                         <tr><td>Points d'intérêt:</td>
                             <td><span class="gpx-info-wpt_number"> </span></td></tr>
                     </table>
@@ -190,6 +203,7 @@
     fileInput.addEventListener( "change", function( event ) {  
         // $("#up_filename").html(this.files[0].name);
         $('#form_id').submit();
+        loading();
     });  
 
 
@@ -265,6 +279,12 @@
 </script>
 
 <div id='map'></div>
+
+<script type="text/javascript">// <![CDATA[
+        function loading(){
+            $("#loading").show();    
+        }
+// ]]></script>
 
 <script>
     
@@ -729,6 +749,7 @@
         var elev_gain = e.target.get_elevation_gain()
         $(".gpx-info-egain").html( elev_gain.toFixed(2));
         $(".gpx-info-wpt_number").html(e.target.get_wpt_number());
+        $(".gpx-info-pts").html(e.target.get_pts());
         if (elev_gain > 1){
             var container=el.onAdd(map);
             $("#elevation-div").html(container);
