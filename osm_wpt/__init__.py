@@ -85,8 +85,6 @@ def parse_route(gpx, simplify=False):
     #     raise InvalidGpxFile('No track or route in gpx')
 
     gpx_name = track.name
-    # print(gpx_name) 
-    
     return gpx_name, lat, lon, ele
 
     
@@ -105,7 +103,7 @@ def get_wpt_type(tag_dict):
     """
     Purpose: Récupérer le type de POI 
     (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
-    Return: the waypoint type that will be written into the gpx file
+    Return: the waypoint types that will be written into the gpx file
     """
 
     query_name = ''
@@ -114,7 +112,7 @@ def get_wpt_type(tag_dict):
         'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
         'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins', 
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
-        'waterfall', 'wilderness_hut', 'cairn','camp_site','hostel','hotel']
+        'waterfall', 'wilderness_hut', 'cairn', 'camp_site', 'hostel', 'hotel']
     for q in list_of_OSM_values:
         if q in list(tag_dict.values()):
             query_name = q
@@ -344,24 +342,23 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
     for q in query:
         overpass_query_str += q + '('+ pos_str + '); '
     overpass_query_str += ');'
-    is_replied = 0
+    replied = False
     i = 1 # index while (max 5)
     # print overpass_query_str
-    while (is_replied != 1) and (i < 5):
+    while (not replied) and (i < 5):
         try:
             response = api.Get(overpass_query_str, responseformat="geojson")
             saveit = False
-            if responseformat is 'xml' and saveit:
+            if responseformat is 'xml' and saveit:  # Useless 
                 with open("Overpass.xml", "w") as f:
                     f.write(response.encode('utf-8'))
             elif responseformat is 'geojson' and saveit:
                 with open("Overpass.geojson", "w") as f:
                     json.dump(response, f)
-            is_replied = 1
+            replied = True
         except Exception as err:
             print(err)
-            log.warning('Overpass ne repond pas')
-            # raise ValueError("Overpass ne repond pas")
+            log.warning('Overpass is not responding')
             i += 1
             time.sleep(2)
             # print 'MultipleRequestsError'
@@ -543,10 +540,10 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
         Pts = get_overpass_ways(response_2, Pts, index_used, lat, lon, lim_dist)
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
-    print(('Number of gpx points in route : ' + str(len(lat))))
+    print('Number of gpx points in route : ' + str(len(lat)))
 
     wpts_number = len(index_used)
-    print((str(wpts_number) + ' Waypoint(s)'))
+    print(str(wpts_number) + ' Waypoint(s)')
     return wpts_number
 
 
@@ -559,5 +556,5 @@ if __name__ == "__main__":
     else:
         fpath = u'test.gpx'
 
-    print((sys.version))
+    print(sys.version)
     osm_wpt(fpath, gpxoutputname=fpath_out)

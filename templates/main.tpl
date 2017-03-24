@@ -304,7 +304,7 @@
             maxZoom:17,
             errorTileUrl: osmUrl
         });
-    
+
     var osm = L.tileLayer(osmUrl, {
             attribution: osmAttr
         });
@@ -318,7 +318,7 @@
 
     var mapboxAttr = 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, ' +
             'Imagery &copy <a href="https://mapbox.com">Mapbox</a>',
-        mapboxUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';            
+        mapboxUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoia3Jpc3RyZW1vbmRvdXMiLCJhIjoiT2R0Y084YyJ9.fePC_n9LzdWkjWug4mdTCw';            
     var streets  = L.tileLayer(mapboxUrl, {
             id: 'mapbox.streets', 
             attribution: mapboxAttr
@@ -516,7 +516,8 @@
     {# -------------------- #}
 
     {% if layer_qstr is none %}
-        map_layers = [opentopo]; // default value
+        // map_layers = [opentopo]; // default value
+        map_layers = [streets]; // default value
     {% else %}
         map_layers = [{{layer_qstr}}];
     {% endif %}
