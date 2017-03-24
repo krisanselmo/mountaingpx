@@ -114,7 +114,7 @@ def get_wpt_type(tag_dict):
         'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
         'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins', 
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
-        'waterfall', 'wilderness_hut', 'cairn']
+        'waterfall', 'wilderness_hut', 'cairn','camp_site','hostel','hotel']
     for q in list_of_OSM_values:
         if q in tag_dict.values():
             query_name = q
@@ -462,7 +462,11 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
         'attraction':'node["tourism"="attraction"]',
         'spring':'node["natural"="spring"]',
         'cairn':'node["man_made"="cairn"]',
-        'locality':'node["place"="locality"]'}
+        'locality':'node["place"="locality"]',
+        'camp_site':'node["tourism"="camp_site"]',
+        'hostel':'node["tourism"="hostel"]',
+        'hotel':'node["tourism"="hotel"]'
+        }
 
     dict_query_ways = {
         'alpine_hut':'way["tourism"="alpine_hut"]',
@@ -473,7 +477,10 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
         'chapel':'way["building"="chapel"]',
         'observatory':'way["man_made"="observatory"]',
         'shelter':'way["amenity"="shelter"]',
-        'tunnel':'way["tunnel"="yes"]'}
+        'tunnel':'way["tunnel"="yes"]',
+        'camp_site':'way["tourism"="camp_site"]',
+        'hostel':'way["tourism"="hostel"]',
+        'hotel':'way["tourism"="hotel"]'}
 
     if query_type is 'node':
         dict_query = dict_query_nodes
