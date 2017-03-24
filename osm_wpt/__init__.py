@@ -74,21 +74,17 @@ def parse_route(gpx, simplify=False):
     if not gpx.tracks:
         table = [(point.latitude, point.longitude, point.elevation) for track in gpx.routes for point in track.points]
         lat, lon, ele = [x[0] for x in table], [x[1] for x in table], [x[2] for x in table]
-        gpx_name = gpx.routes[0].name
-
     else:
         table = [(point.latitude, point.longitude, point.elevation) for track in gpx.tracks for segment in track.segments for point in segment.points]
         lat, lon, ele = [x[0] for x in table], [x[1] for x in table], [x[2] for x in table]
-        gpx_name = gpx.tracks[0].name
 
     if simplify is True:
         lat, lon, ele = uniquify(lat, lon, ele)
 
     # if len(lat) == 0:
     #     raise InvalidGpxFile('No track or route in gpx')
-    
-#    gpx_name = track.name 
-    
+
+    gpx_name = 'track.name'
     # print(gpx_name) 
     
     return gpx_name, lat, lon, ele
