@@ -25,7 +25,7 @@ def timeit(f):
         ts = time.time()
         result = f(*args, **kw)
         te = time.time()
-        print(("function time {} : {} sec".format(f.__name__, te - ts)))
+        print("function time {} : {} sec".format(f.__name__, te - ts))
         return result
     return timed
 
