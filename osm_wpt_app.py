@@ -131,6 +131,7 @@ def main_page(trk_num=None):
                 # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
                 flash(str(err))
+                print(err)
                 app.logger.warning(u'GPX Error')
                 return redirect(request.url)
     
