@@ -152,6 +152,18 @@
 	   		<td><input type="checkbox" name="barrier" class='with_name'></td>
 	   		<td><input type="checkbox" name="barrier" class='no_name'></td>
 	   	</tr>
+		<td>Camping</td>
+	   		<td><input type="checkbox" name="camp_site" class='with_name'></td>
+	   		<td><input type="checkbox" name="camp_site" class='no_name'></td>
+	   	</tr>
+		<td>Auberge de jeunesse</td>
+	   		<td><input type="checkbox" name="hostel" class='with_name'></td>
+	   		<td><input type="checkbox" name="hostel" class='no_name'></td>
+	   	</tr>
+		<td>Hôtel</td>
+	   		<td><input type="checkbox" name="hotel" class='with_name'></td>
+	   		<td><input type="checkbox" name="hotel" class='no_name'></td>
+	   	</tr>
 <!-- 	   	<tr>
 	   		<td>Cairn</td>
 	   		<td><input type="checkbox" name="cairn" class='with_name'></td>
