@@ -115,7 +115,7 @@ def main_page(trk_num=None):
 
             reverse = False
             if request.cookies.get('reverse') == 'true':
-                print('Invert track')
+                print 'Invert track'
                 reverse = True
 
             wpt = request.cookies.get('wpt')
@@ -213,6 +213,6 @@ def main_page(trk_num=None):
 
 if __name__ == '__main__':
     # app.run(debug=True, port=80)
-    app.run(port=5555) 
+    app.run(port=80) 
 
 
