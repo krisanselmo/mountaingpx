@@ -14,7 +14,7 @@ import os
 import sys
 import logging as log
 import json
-import urllib
+import urllib.parse
 from threading import Thread
 from math import radians, cos, sin, asin, sqrt
 
@@ -25,7 +25,7 @@ def timeit(f):
         ts = time.time()
         result = f(*args, **kw)
         te = time.time()
-        print("function time {} : {} sec".format(f.__name__, te - ts))
+        print(("function time {} : {} sec".format(f.__name__, te - ts)))
         return result
     return timed
 
@@ -84,7 +84,7 @@ def parse_route(gpx, simplify=False):
     # if len(lat) == 0:
     #     raise InvalidGpxFile('No track or route in gpx')
 
-    gpx_name = track.name
+    gpx_name = 'track.name'
     # print(gpx_name) 
     
     return gpx_name, lat, lon, ele
@@ -92,7 +92,7 @@ def parse_route(gpx, simplify=False):
     
 def uniquify(lat, lon, ele):
     precision = 6
-    approx_coord_full = map(lambda x, y, z: ((round(x, precision), round(y, precision)), z), lat, lon, ele)
+    approx_coord_full = list(map(lambda x, y, z: ((round(x, precision), round(y, precision)), z), lat, lon, ele))
     in_it = set()
     res = [elem for elem in approx_coord_full if elem[0] not in in_it and not in_it.add(elem[0])]
     lat = [x[0][0] for x in res]
@@ -116,14 +116,14 @@ def get_wpt_type(tag_dict):
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
         'waterfall', 'wilderness_hut', 'cairn','camp_site','hostel','hotel']
     for q in list_of_OSM_values:
-        if q in tag_dict.values():
+        if q in list(tag_dict.values()):
             query_name = q
             return query_name
 
     # OSM node keys that it used to identify the waypoint type (typically with someting like "arbitrary_key"="yes")
     list_of_OSM_key = ['ford', 'barrier', 'tunnel']
     for q in list_of_OSM_key:
-        if q in tag_dict.keys():
+        if q in list(tag_dict.keys()):
             query_name = q
             return query_name
 
@@ -132,14 +132,14 @@ def get_wpt_type(tag_dict):
         'alpine_hiking':'T4 - ',
         'demanding_alpine_hiking':'T5 - ',
         'difficult_alpine_hiking':'T6 - '}
-    for k, v in OSM_sac_scale.items():
-        if k in tag_dict.values():
+    for k, v in list(OSM_sac_scale.items()):
+        if k in list(tag_dict.values()):
             query_name = v
             return query_name
 
     OSM_badly_tagged = {'water':'lake'}
-    for k, v in OSM_badly_tagged.items():
-        if k in tag_dict.values():
+    for k, v in list(OSM_badly_tagged.items()):
+        if k in list(tag_dict.values()):
             query_name = v
             return query_name        
 
@@ -236,7 +236,7 @@ def find_nearest(lon, lat, lon2, lat2, lim_dist):
     Purpose - Find if an OSM node matches with the gpx route and return the nearest
     coordinates and its index
     """
-    dist = map(lambda x, y: (haversine(x, y, lon2, lat2)), lon, lat)
+    dist = list(map(lambda x, y: (haversine(x, y, lon2, lat2)), lon, lat))
     dist_min = min(dist)
     i = dist.index(dist_min)
     # with open("nearest_new.txt", "a") as f:
@@ -316,7 +316,7 @@ def haversine(lon1, lat1, lon2, lat2):
     From : http://stackoverflow.com/a/4913653
     """
     # convert decimal degrees to radians
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    lon1, lat1, lon2, lat2 = list(map(radians, [lon1, lat1, lon2, lat2]))
     # haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
@@ -381,7 +381,7 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
 
     for i in range(len(lat)):
         if i in index_used:
-            pt = filter(lambda pt: pt.index == i, Pts)
+            pt = [pt for pt in Pts if pt.index == i]
             P = pt[0]
             if (P.new_gpx_index < i) and P.new_gpx_index is not None:
                 gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
@@ -432,7 +432,7 @@ def change_route(lat, lon, ele, reverse=False, index=None):
 def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
 
     if wpt_json is not None:
-        unquoted = urllib.unquote(wpt_json)
+        unquoted = urllib.parse.unquote(wpt_json)
         unquoted = unquoted.replace("\\"," ")
         wpts = json.loads(unquoted)
 
@@ -488,11 +488,11 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
         dict_query = dict_query_ways
 
     if wpt_json is None:
-        for wpt, query_str in dict_query.items():
+        for wpt, query_str in list(dict_query.items()):
             query_lst.append(query_str)
         return query_lst
 
-    for wpt, query_str in dict_query.items():
+    for wpt, query_str in list(dict_query.items()):
         if wpt in wpts:
             if with_name is True:
                 query_str = query_str + '["name"]'
@@ -543,10 +543,10 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
         Pts = get_overpass_ways(response_2, Pts, index_used, lat, lon, lim_dist)
 
     build_and_save_gpx(gpx, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt)
-    print('Number of gpx points in route : ' + str(len(lat)))
+    print(('Number of gpx points in route : ' + str(len(lat))))
 
     wpts_number = len(index_used)
-    print(str(wpts_number) + ' Waypoint(s)')
+    print((str(wpts_number) + ' Waypoint(s)'))
     return wpts_number
 
 
@@ -557,7 +557,7 @@ if __name__ == "__main__":
         if len(sys.argv) > 2:
             fpath_out = sys.argv[2]
     else:
-        fpath = u'test.gpx'
+        fpath = 'test.gpx'
 
-    print(sys.version)
+    print((sys.version))
     osm_wpt(fpath, gpxoutputname=fpath_out)
