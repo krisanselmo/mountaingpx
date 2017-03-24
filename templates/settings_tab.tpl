@@ -114,6 +114,7 @@
 	   		<td>Point de vue</td>
 	   		<td><input type="checkbox" name="viewpoint" class='with_name'></td>
 	   		<td><input type="checkbox" name="viewpoint" class='no_name'></td>
+			<td><a href="http://wiki.openstreetmap.org/wiki/Tag:tourism%3Dviewpoint" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Eau potable</td>
@@ -124,11 +125,13 @@
 	   		<td>Cascade</td>
 	   		<td><input type="checkbox" name="waterfall" class='with_name'></td>
 	   		<td><input type="checkbox" name="waterfall" class='no_name'></td>
+			<td><a href="http://wiki.openstreetmap.org/wiki/Tag:waterway%3Dwaterfall" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Toilettes</td>
 	   		<td><input type="checkbox" name="toilets" class='with_name'></td>
 	   		<td><input type="checkbox" name="toilets" class='no_name'></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/Tag:amenity%3Dtoilets" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 	   	<tr>
 	   		<td>Lieu-dit</td>
@@ -155,14 +158,17 @@
 		<td>Camping</td>
 	   		<td><input type="checkbox" name="camp_site" class='with_name'></td>
 	   		<td><input type="checkbox" name="camp_site" class='no_name'></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/Tag:tourism%3Dcamp_site" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 		<td>Auberge de jeunesse</td>
 	   		<td><input type="checkbox" name="hostel" class='with_name'></td>
 	   		<td><input type="checkbox" name="hostel" class='no_name'></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/Tag:tourism%3Dhostel" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 		<td>Hôtel</td>
 	   		<td><input type="checkbox" name="hotel" class='with_name'></td>
 	   		<td><input type="checkbox" name="hotel" class='no_name'></td>
+	   		<td><a href="http://wiki.openstreetmap.org/wiki/Tag:tourism%3Dhotel" role="tab" target="_blank">wiki</a></td>
 	   	</tr>
 <!-- 	   	<tr>
 	   		<td>Cairn</td>
