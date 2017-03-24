@@ -14,7 +14,7 @@ import os
 import sys
 import logging as log
 import json
-import urllib.parse
+import urllib
 from threading import Thread
 from math import radians, cos, sin, asin, sqrt
 
@@ -84,7 +84,7 @@ def parse_route(gpx, simplify=False):
     # if len(lat) == 0:
     #     raise InvalidGpxFile('No track or route in gpx')
 
-    gpx_name = 'track.name'
+    gpx_name = track.name
     # print(gpx_name) 
     
     return gpx_name, lat, lon, ele
@@ -123,7 +123,7 @@ def get_wpt_type(tag_dict):
     # OSM node keys that it used to identify the waypoint type (typically with someting like "arbitrary_key"="yes")
     list_of_OSM_key = ['ford', 'barrier', 'tunnel']
     for q in list_of_OSM_key:
-        if q in list(tag_dict.keys()):
+        if q in tag_dict.keys():
             query_name = q
             return query_name
 
@@ -381,7 +381,7 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
 
     for i in range(len(lat)):
         if i in index_used:
-            pt = [pt for pt in Pts if pt.index == i]
+            pt = filter(lambda pt: pt.index == i, Pts)
             P = pt[0]
             if (P.new_gpx_index < i) and P.new_gpx_index is not None:
                 gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
@@ -432,7 +432,7 @@ def change_route(lat, lon, ele, reverse=False, index=None):
 def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
 
     if wpt_json is not None:
-        unquoted = urllib.parse.unquote(wpt_json)
+        unquoted = urllib.unquote(wpt_json)
         unquoted = unquoted.replace("\\"," ")
         wpts = json.loads(unquoted)
 
@@ -557,7 +557,7 @@ if __name__ == "__main__":
         if len(sys.argv) > 2:
             fpath_out = sys.argv[2]
     else:
-        fpath = 'test.gpx'
+        fpath = u'test.gpx'
 
     print(sys.version)
     osm_wpt(fpath, gpxoutputname=fpath_out)
