@@ -180,7 +180,7 @@
 
 </table>
 <br>
-<input id="delete_cookies_button" type="button" value="Valeurs par défaut" onclick="deleteCookies();" />
+<input id="delete_cookies_button" type="button" value="Valeurs par défaut" onclick="SetDefautCheckboxValues();" />
 <br>
 <br>
 <h3>Requête overpass personnalisée</h3>
@@ -239,18 +239,9 @@
 	        Cookies.set("reverse", input);
 			Cookies.set("wpt", $(":checkbox.with_name").jsonify());
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
-
-
 	    }
      
-	function deleteCookies() {
-	    Cookies.remove('wpt');
-	    Cookies.remove('wpt_no_name');
-	    location.reload();
-	}
-
-
-	$( document ).ready(function() {
+	function SetDefautCheckboxValues(){
 		$(':checkbox.with_name').prop('checked', true);
 		$(':checkbox.no_name').prop('checked', true);
 		$(':checkbox[name="tunnel"]').prop('checked', false);
@@ -261,6 +252,11 @@
 		$(':checkbox[name="hostel"]').prop('checked', false);
 		$(':checkbox[name="camp_site"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
+	}
+
+
+	$( document ).ready(function() {
+		SetDefautCheckboxValues();
 
 		if (Cookies.get('snapdistance') != null){
 			document.custom_options.snapdistance.value = Cookies.get('snapdistance');
@@ -281,7 +277,6 @@
 		} else {
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
 		}
-
 	});
 
 
