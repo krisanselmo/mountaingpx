@@ -31,6 +31,8 @@ h3 {
     width: 225px;
 }
 
+
+
 .download a:link{
     background-color: #960018;
     color: white;
@@ -84,7 +86,6 @@ div#dropzone {
     width: 32px;
     height: 32px;
 }
-
 
 
 .elevation {
@@ -203,4 +204,19 @@ div#loading {
 #links > h3{
     margin-bottom: 8px;
     margin-top: 14px;
+}
+
+
+/* SETTINGS PAGE*/
+#delete_cookies_button{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+input#snap_dist{
+    width: 50px;
+}
+input#overpass{
+    width: 280px;
 }

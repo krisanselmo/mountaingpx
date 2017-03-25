@@ -88,11 +88,7 @@
                 
                 <div id="loading"></div>
                 <div class="msg_flsh">  
-          <!--       {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                {{ messages[0] }}  {# Pas sur de la notation ici  #}
-                {% endif %}
-                {% endwith %} -->
+
                 {% with messages = get_flashed_messages() %}
                   {% if messages %}
                     <ul>
@@ -544,6 +540,8 @@
     {# OVERPASS WAYS LAYER  #}
     {# -------------------- #}
 
+    // Adapted from https://github.com/simon04/POImap
+
     var nodes = {}, ways = {};
     $(function () {
         // map = POImap.init();
@@ -694,7 +692,7 @@
                 'alpine_hut': '{{ url_for('static', filename='img/markers/alpine_hut.png') }}',
                 'attraction': '{{ url_for('static', filename='img/markers/attraction.png') }}',
                 'barrier': '{{ url_for('static', filename='img/markers/barrier.png') }}',
-                'camping': '{{ url_for('static', filename='img/markers/camping.png') }}',
+                'camp_site': '{{ url_for('static', filename='img/markers/camping.png') }}',
                 'castle': '{{ url_for('static', filename='img/markers/castle.png') }}',
                 'cave_entrance': '{{ url_for('static', filename='img/markers/cave.png') }}',
                 'chapel': '{{ url_for('static', filename='img/markers/chapel.png') }}',

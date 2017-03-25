@@ -7,16 +7,17 @@ Created on Mon Oct 17 15:28:58 2016
 
 """
 
-import gpxpy      # https://github.com/tkrajina/gpxpy
-import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
-import time
 import os
 import sys
+import re
+import time
 import logging as log
 import json
 import urllib
 from threading import Thread
 from math import radians, cos, sin, asin, sqrt
+import gpxpy      # https://github.com/tkrajina/gpxpy
+import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
 
 LOGFILE = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
 
@@ -500,7 +501,16 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
     return query_lst    
 
 
-def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, reverse=False, wpt_json=None, wpt_no_name_json=None):
+def add_custom_overpass_query(query_lst, query_type, overpass_custom_str):
+    if overpass_custom_str is not None:
+        unquoted = urllib.unquote(overpass_custom_str)
+        if re.match(query_type + '\["(.)+"(=|~)"(.)+"\](.)*', unquoted):
+            query_lst.append(unquoted)
+    return query_lst 
+
+
+def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, reverse=False, 
+    wpt_json=None, wpt_no_name_json=None, overpass_custom_str=None):
     '''
     lim_dist in kilometers (0.05 #default)
     keep_old_wpt (False #defaut)
@@ -522,10 +532,12 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
     # Ways
     query = construct_overpass_query([], 'way', wpt_json, True)
     query = construct_overpass_query(query, 'way', wpt_no_name_json, False)
+    query = add_custom_overpass_query(query, 'way', overpass_custom_str)
     thread_2 = Overpass(lon, lat, query)
     # Nodes
     query = construct_overpass_query([], 'node', wpt_json, True)
     query = construct_overpass_query(query, 'node', wpt_no_name_json, False)
+    query = add_custom_overpass_query(query, 'node', overpass_custom_str)
     thread_1 = Overpass(lon, lat, query)
 
     thread_1.start()

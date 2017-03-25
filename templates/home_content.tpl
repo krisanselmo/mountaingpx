@@ -12,7 +12,7 @@
 
 <p class="txt">Une fois uploadé et passé à la moulinette, les points d'intérêts sont ajoutés dans un nouveau fichier GPX téléchargeable. Ce dernier est visualisable sur divers fonds de carte (exemple ci-dessous avec le rendu <a href="https://opentopomap.org" target="_blank">opentopomap</a>). La distance d'accrochage et le choix des types de POI sont personnalisables. Note: le temps de traitement peut être particulièrement long pour les gros fichiers.</p>
 <img src="{{ url_for('static', filename='img/presentation/2.png') }}" class="img_644">
-<div class='caption'>La trace GPS avec les POI une fois traité. Voir cette trace <a href="/track/1">ici</a>.</div>
+<div class='caption'>La trace GPS avec les POI une fois traité. Voir cette carte interactive <a href="/track/1">ici</a>.</div>
 
 <h3>Utilisation avec une montre GPS</h3>
 

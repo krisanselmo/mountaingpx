@@ -14,7 +14,7 @@ L'éditeur iD avec les heatmaps Strava.
 
 
 <h3>IGN</h3>
-Comparateur de carte.
+Le comparateur de carte IGN.
 <br><a id="IGNlink" href="http://mavisionneuse.ign.fr/visio.html">http://mavisionneuse.ign.fr</a>
 
  <!-- href="http://strava.github.io/iD/" role="tab" target="_blank"

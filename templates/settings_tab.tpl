@@ -180,8 +180,16 @@
 
 </table>
 <br>
+<input id="delete_cookies_button" type="button" value="Valeurs par défaut" onclick="deleteCookies();" />
+<br>
+<br>
+<h3>Requête overpass personnalisée</h3>
+<input id="overpass" type="text" name="overpass_custom" value=''> 
+<p>Limité à un seul élément en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide#Overpass_QL_Basics">Overpass QL Basics</a>.
+<b>Exemple</b>: <i>way["leisure"="park"]</i></p>
+<!-- <br> -->
 <h3>Distance max d'accrochage des POI</h3>
-<input type="text" name="snapdistance" value="50"> en mètre(s)
+<input id="snap_dist" type="text" name="snapdistance" value="50"> en mètre(s)
 <br>
 <h3>Inverser la trace</h3>
 <input type="checkbox" name="reverse_track">
@@ -190,7 +198,6 @@
 <!-- <input type="submit" value="Submit"> -->
 <!-- <input type="button" value="Envoyer" id='submit_options' onclick="WriteCookie();"/> -->
 </form>
-
 
 
 
@@ -226,6 +233,8 @@
 				Cookies.set("snapdistance", input);
 			}
 
+	        input = document.custom_options.overpass_custom.value;
+	        Cookies.set("overpass_custom", input);
 	        input = document.custom_options.reverse_track.checked;
 	        Cookies.set("reverse", input);
 			Cookies.set("wpt", $(":checkbox.with_name").jsonify());
@@ -234,6 +243,13 @@
 
 	    }
      
+	function deleteCookies() {
+	    Cookies.remove('wpt');
+	    Cookies.remove('wpt_no_name');
+	    location.reload();
+	}
+
+
 	$( document ).ready(function() {
 		$(':checkbox.with_name').prop('checked', true);
 		$(':checkbox.no_name').prop('checked', true);
@@ -241,10 +257,17 @@
 		$(':checkbox[name="ford"]').prop('checked', false);
 		$(':checkbox[name="barrier"]').prop('checked', false);
 		$(':checkbox[name="locality"]').prop('checked', false);
+		$(':checkbox[name="hotel"]').prop('checked', false);
+		$(':checkbox[name="hostel"]').prop('checked', false);
+		$(':checkbox[name="camp_site"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
 
 		if (Cookies.get('snapdistance') != null){
 			document.custom_options.snapdistance.value = Cookies.get('snapdistance');
+		}
+
+		if (Cookies.get('overpass_custom') != null){
+			document.custom_options.overpass_custom.value = Cookies.get('overpass_custom');
 		}
 
 		if (Cookies.get('wpt') != null){
