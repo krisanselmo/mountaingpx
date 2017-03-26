@@ -32,14 +32,17 @@ def timeit(f):
 
 
 class Point(object):
-    def __init__(self, name, osmtype, lon, lat, ele, node_id, index, new_gpx_index, query_name, has_name, min_dist):
+    def __init__(self, name, osmtype, lon, lat, ele, osm_id, index, new_gpx_index, query_name, has_name, min_dist):
         self.name = name
         self.osmtype = osmtype
         self.lat = lat
         self.lon = lon
 
         self.query_name = query_name
-        self.osm_node_id = node_id
+        self.osm_ref = osmtype + '/' + str(osm_id)
+        self.url = 'http://www.openstreetmap.org/' + self.osm_ref
+        self.description = '<a href="' + self.url + '" target="_blank">' + str(osm_id) + '</a>'
+
         self.index = index
         self.new_gpx_index = new_gpx_index
         self.has_name = has_name
@@ -50,20 +53,30 @@ class Point(object):
             self.ele = 0
 
     def __repr__(self):
-        return repr((self.osm_node_id, self.index, self.new_gpx_index,
+        return repr((self.osm_ref, self.index, self.new_gpx_index,
                      self.query_name, self.name, self.lat, self.lon, self.ele))
 
 
+class Box(object):
+    def __init__(self, lon, lat):
+        margin = 0.001
+        self.west = min(lon) - margin
+        self.east = max(lon) + margin
+        self.south = min(lat) - margin
+        self.north = max(lat) + margin
+        self.bounds = [self.south, self.west, self.north, self.east]
+        self.bounds_str = ','.join([str(x) for x in self.bounds])
+
+
 class Overpass(Thread):
-    def __init__(self, lon, lat, query):
+    def __init__(self, box, query):
         Thread.__init__(self)
-        self.lon = lon
-        self.lat = lat
+        self.box = box
         self.query = query
         self.ret = None
 
     def run(self):
-        self.response = overpass_query(self.lon, self.lat, self.query)
+        self.response = overpass_query(self.box, self.query)
         return 
 
     def join(self):
@@ -326,22 +339,16 @@ def haversine(lon1, lat1, lon2, lat2):
 
 
 @timeit
-def overpass_query(lon, lat, query, responseformat="geojson"):
-    margin = 0.001
-    minlon = min(lon) - margin
-    maxlon = max(lon) + margin
-    minlat = min(lat) - margin
-    maxlat = max(lat) + margin
+def overpass_query(box, query, responseformat="geojson"):
+
     #   api = overpass.API()
     #   Default : http://overpass-api.de/api/interpreter
     response = None
     api = overpass.API(endpoint='http://api.openstreetmap.fr/oapi/interpreter')
     # api = overpass.API()
-    pos_str = str(minlat) + ',' + str(minlon) + ',' +\
-    str(maxlat) + ',' + str(maxlon)
     overpass_query_str = '('
     for q in query:
-        overpass_query_str += q + '('+ pos_str + '); '
+        overpass_query_str += q + '('+ box.bounds_str + '); '
     overpass_query_str += ');'
     replied = False
     i = 1 # index while (max 5)
@@ -364,7 +371,7 @@ def overpass_query(lon, lat, query, responseformat="geojson"):
             time.sleep(2)
             # print 'MultipleRequestsError'
     return response
-    
+
 
 def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxoutputname, keep_old_wpt=True):
     gpx = gpxpy.gpx.GPX()
@@ -393,17 +400,11 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
         for waypoint in gpx_data.waypoints:
             gpx.waypoints.append(waypoint)
 
-    all_waypoints = True
-
     for Pt in Pts:
-        if Pt.has_name or all_waypoints:
-            #ok = filter(lambda wpt: round(wpt.latitude*1e5) == round(Pt.lat*1e5), gpx_data.waypoints)
-            #if len(ok) == 0:
-            # log.info(Pt)
-            gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(
-            Pt.lat, Pt.lon, elevation=Pt.ele, name=Pt.name,
-            symbol=Pt.query_name, type=Pt.query_name))
-        
+        gpx.waypoints.append(gpxpy.gpx.GPXWaypoint(
+        Pt.lat, Pt.lon, elevation=Pt.ele, name=Pt.name,
+        symbol=Pt.query_name, type=Pt.query_name, description=Pt.description))
+
     with open(gpxoutputname, 'w') as f:
         f.write(gpx.to_xml())
 
@@ -525,6 +526,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
 
     # Change start point manually
     lat, lon, ele = change_route(lat, lon, ele, reverse=reverse, index=None)
+    box = Box(lon, lat)
 
     index_used = []
     Pts = []
@@ -533,12 +535,12 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
     query = construct_overpass_query([], 'way', wpt_json, True)
     query = construct_overpass_query(query, 'way', wpt_no_name_json, False)
     query = add_custom_overpass_query(query, 'way', overpass_custom_str)
-    thread_2 = Overpass(lon, lat, query)
+    thread_2 = Overpass(box, query)
     # Nodes
     query = construct_overpass_query([], 'node', wpt_json, True)
     query = construct_overpass_query(query, 'node', wpt_no_name_json, False)
     query = add_custom_overpass_query(query, 'node', overpass_custom_str)
-    thread_1 = Overpass(lon, lat, query)
+    thread_1 = Overpass(box, query)
 
     thread_1.start()
     thread_2.start()

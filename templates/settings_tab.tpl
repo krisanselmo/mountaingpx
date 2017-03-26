@@ -252,6 +252,8 @@
 		$(':checkbox[name="hostel"]').prop('checked', false);
 		$(':checkbox[name="camp_site"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
+		Cookies.set("wpt", $(":checkbox.with_name").jsonify());
+		Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
 	}
 
 
