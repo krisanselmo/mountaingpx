@@ -12,10 +12,11 @@
 	   		<th>Sans nom</th>
 	   	</tr>
 	   	<tr>
-	   		<td>Tous</td>
+	   		<td><b>Tous</b></td>
 	   		<td><input type="checkbox" name="select-all" id="select_all_with_name"></td>
 	   		<td><input type="checkbox" name="select-all" id="select_all_no_name"></td>
 	   	</tr>
+
 	   	<tr>
 	   		<td>Sommet</td>
 	   		<td><input type="checkbox" name="peak" class='with_name'></td>
@@ -188,6 +189,16 @@
 <p>Limité à un seul élément en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide#Overpass_QL_Basics">Overpass QL Basics</a>.
 <b>Exemple</b>: <i>way["leisure"="park"]</i></p>
 <!-- <br> -->
+
+<h3>Segments Strava</h3>
+Type de segments: 
+<select name="strava_segment">
+	<option value="none">Aucun</option>
+	<option value="running">Running</option>
+	<option value="riding">Cycling</option>
+</select>
+
+
 <h3>Distance max d'accrochage des POI</h3>
 <input id="snap_dist" type="text" name="snapdistance" value="50"> en mètre(s)
 <br>
@@ -239,6 +250,8 @@
 	        Cookies.set("reverse", input);
 			Cookies.set("wpt", $(":checkbox.with_name").jsonify());
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
+			input = document.custom_options.strava_segment.value;
+			Cookies.set("strava_segment", input);
 	    }
      
 	function SetDefautCheckboxValues(){
@@ -267,6 +280,11 @@
 		if (Cookies.get('overpass_custom') != null){
 			document.custom_options.overpass_custom.value = Cookies.get('overpass_custom');
 		}
+		
+		if (Cookies.get('strava_segment') != null){
+			document.custom_options.strava_segment.value = Cookies.get('strava_segment');
+		}
+
 
 		if (Cookies.get('wpt') != null){
 			$(":checkbox.with_name").dejsonify(Cookies.get('wpt'));

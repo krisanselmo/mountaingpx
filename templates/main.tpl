@@ -76,7 +76,9 @@
                 <!-- <p>Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database</p> -->
                 <!-- <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
  -->
-                <p></p>
+                <!-- <p></p> -->
+                <!-- <br> -->
+                <p><- Réglages</p>
                 <br>
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
                     <div class="input-file-container">  
@@ -123,7 +125,7 @@
                 <br>
                 <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div>
                 <br>
-                <h3>Profil d'altitude</h3>
+                <div class="elevation_title"></div>
                 <div class="elevation steelblue-theme leaflet-control">
                     <div id="elevation-div"></div>
                 </div>
@@ -719,7 +721,9 @@
                 'drinking_water': '{{ url_for('static', filename='img/markers/water.png') }}',
                 'water': '{{ url_for('static', filename='img/markers/water.png') }}',
                 'waterfall': '{{ url_for('static', filename='img/markers/waterfall.png') }}', 
-                'wilderness_hut': '{{ url_for('static', filename='img/markers/wilderness_hut.png') }}'
+                'wilderness_hut': '{{ url_for('static', filename='img/markers/wilderness_hut.png') }}',
+                'strava_start': '{{ url_for('static', filename='img/markers/strava_start.png') }}',
+                'strava_end': '{{ url_for('static', filename='img/markers/strava_end.png') }}',
             },
             iconSize: [33, 50],
             popupAnchor:  [0, -40]
@@ -754,6 +758,7 @@
         $(".gpx-info-pts").html(e.target.get_pts());
         if (elev_gain > 1){
             var container=el.onAdd(map);
+            $(".elevation_title").append("<h3>Profil d'altitude</h3>")
             $("#elevation-div").html(container);
         }
         // console.log(e.target.get_elevation_data())

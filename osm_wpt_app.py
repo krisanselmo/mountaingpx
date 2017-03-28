@@ -113,6 +113,8 @@ def main_page(trk_num=None):
                 print 'Invert track'
                 reverse = True
 
+
+            strava_segment = request.cookies.get('strava_segment')   
             overpass_custom = request.cookies.get('overpass_custom')
             wpt = request.cookies.get('wpt')
             wpt_no_name = request.cookies.get('wpt_no_name')
@@ -122,7 +124,8 @@ def main_page(trk_num=None):
             try:
                 # TODO: AFFICHER UN LOADING
                 wpts_number = osm_wpt.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath, 
-                    reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name, overpass_custom_str=overpass_custom)
+                    reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name, 
+                    overpass_custom_str=overpass_custom, strava_segment=strava_segment)
                 # app.logger.debug(u'osm_wpt script : OK')
                 # app.logger.debug(u'waypoints: ' + str(wpts_number))
             except Exception as err:
