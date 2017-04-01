@@ -42,7 +42,7 @@ def allowed_file(filename):
 @app.errorhandler(500)
 def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
-
+   
 # -----------------------------------------------------------
 @app.route('/', methods=['GET'])
 def home():
@@ -207,8 +207,17 @@ def main_page(trk_num=None):
             if k in overlay:
                 overlay_lst.append(v)
 
+    hidesidebar = False
+    if request.args.get('hidesidebar') is not None:
+        hidesidebar = True
+
+    hidemapbutton = False
+    if request.args.get('hidemapbutton') is not None:
+        hidemapbutton = True
+
     return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr,
-        layer_qstr=layer_name, overlay_qstr=overlay_lst)
+        layer_qstr=layer_name, overlay_qstr=overlay_lst, hidesidebar=hidesidebar,
+        hidemapbutton=hidemapbutton)
 
 
 if __name__ == '__main__':

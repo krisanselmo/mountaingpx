@@ -346,7 +346,7 @@ L.GPX = L.FeatureGroup.extend({
           title: name,
           icon: symIcon ? new L.GPXTrackIcon({iconUrl: symIcon}) : new L.Icon.Default()
         });
-        marker.bindPopup("<b>" + name + "</b>" + (desc.length > 0 ? '<br>' + desc : '')).openPopup();
+        marker.bindPopup("<b>" + name + "</b>" + (desc.length > 0 ? '<br><div id="popupdesc">' + desc : '</div>')).openPopup();
         this.fire('addpoint', { point: marker, point_type: 'waypoint' });
         layers.push(marker);
       }

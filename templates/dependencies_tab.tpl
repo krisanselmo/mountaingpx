@@ -31,4 +31,6 @@
 	<li><a href="http://flask.pocoo.org/">Flask</a></li>
 	<li><a href="https://github.com/tkrajina/gpxpy">gpxpy</a> © Tomo Krajina</li>
 	<li><a href="https://github.com/mvexel/overpass-api-python-wrapper">overpass-api-python-wrapper</a> © Martijn van Exel</li>
+	<li><a href="https://github.com/hozn/stravalib">stravalib</a> © Hans Lellelid</li>
+	
 </ul>

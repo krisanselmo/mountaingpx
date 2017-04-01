@@ -111,6 +111,13 @@ div#loading {
     z-index:10000;
 }
 
+#share-iframe {
+    height: 150px;
+    width: 100%;
+    margin-bottom: 14px;
+    resize: none; 
+}
+
 /*BUTTON*/
 
 .input-file-container {
@@ -196,6 +203,10 @@ div#loading {
     display: inline-block;
 }
 
+
+div#popupdesc{
+    font: 8pt "Tahoma", sans-serif;
+}
 
 #help > p{
     text-align: justify;

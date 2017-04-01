@@ -50,14 +50,16 @@
 
 </head>
 <body>
-<div style="visibility:hidden; opacity:0" id="dropzone"></div>
 
+{% if hidesidebar == False %}
+<div style="visibility:hidden; opacity:0" id="dropzone"></div>
  <div id="sidebar" class="sidebar collapsed">
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
                 <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+                <li><a href="#share" role="tab"><i class="fa fa-share-alt"></i></a></li> 
                 <li><a href="#help" role="tab"><i class="fa fa-question-circle"></i></a></li> 
                 <li><a href="#links" role="tab"><i class="fa fa-external-link"></i></a></li> 
             </ul>
@@ -76,9 +78,8 @@
                 <!-- <p>Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database</p> -->
                 <!-- <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
  -->
-                <!-- <p></p> -->
+                <p></p>
                 <!-- <br> -->
-                <p><- Réglages</p>
                 <br>
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
                     <div class="input-file-container">  
@@ -154,6 +155,15 @@
             <div class="sidebar-pane" id="dependencies">
                 <h1 class="sidebar-header">Outils utilisés<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
                 {% include "dependencies_tab.tpl" %}
+            </div>
+
+            <div class="sidebar-pane" id="share">
+                <h1 class="sidebar-header">Partage<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <br>
+                <h3>Intégrer la carte dans une iframe</h3>
+                
+                <textarea id="share-iframe"></textarea>
+
             </div>
 
            <!--  <div class="sidebar-pane" id="disqus">
@@ -271,11 +281,9 @@
             $(".msg_flsh").html("Only one file allowed");
         }
     });
-
-
-
 </script>
 
+{% endif %}
 <div id='map'></div>
 
 <script type="text/javascript">// <![CDATA[
@@ -534,9 +542,6 @@
         layers: map_layers
     });
     
-    L.control.zoom({
-        position:'topright'
-    }).addTo(map);
 
     {# -------------------- #}
     {# OVERPASS WAYS LAYER  #}
@@ -664,16 +669,22 @@
     };
 
     {# -------------------- #}
-    {#        LOCATE        #}
+    {#     CONTROL MAP      #}
     {# -------------------- #}
 
-    var lc = L.control.locate({
-    position: 'topright',
-    strings: {
-        title: "Show me where I am, yo!"
-    }
-    }).addTo(map);
 
+    {% if hidemapbutton == False %}
+       L.control.zoom({
+            position:'topright'
+        }).addTo(map);
+
+        var lc = L.control.locate({
+        position: 'topright',
+        strings: {
+            title: "Show me where I am, yo!"
+        }
+        }).addTo(map);
+    {% endif %}
 
     {# -------------------- #}
     {#       GPX LAYER      #}
@@ -891,7 +902,7 @@
         if (!results) return null;
         if (!results[2]) return '';
         return decodeURIComponent(results[2].replace(/\+/g, " "));
-    }
+    };
 
     var qstr_map_val = getParameterByName('map');
     var qstr_layer_val = getParameterByName('layer');
@@ -907,10 +918,13 @@
             window.qstr_map = "?map=" + zoom_new + '/' + lat_new + '/' + lon_new
             // console.log(qstr_map)
             var stateObj = {};
+            window.qstr_layer = window.qstr_layer.replace('&layer=null','');
+            window.qstr_overlay = window.qstr_overlay.replace('&overlay=null','');
             history.pushState(
                 stateObj, "", 
                 window.qstr_map + window.qstr_layer + window.qstr_overlay
             );
+            updateIframe();
     });
 
     var layer_dict = {
@@ -930,8 +944,11 @@
         if (layer_id == null){layer_id = 1}
         // console.log(layer_id)
         var stateObj = {};
-        window.qstr_layer = "&layer=" + layer_id
+        window.qstr_layer = "&layer=" + layer_id;
+        window.qstr_layer = window.qstr_layer.replace('&layer=null','');
+        /*window.qstr_overlay = window.qstr_overlay.replace('&overlay=null','');*/
         history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+        updateIframe();
     });
 
     var layer_overlay = {
@@ -947,25 +964,47 @@
       "Hiking trail difficulty": "J",
     };
 
+    var overlay_list = [];
+    if (qstr_overlay_val != null){
+        overlay_list = Array.from(qstr_overlay_val);
+    };
+
     map.on('overlayadd ', function(e) {
         overlay = layer_overlay[e.name]
         if (overlay == null){return}
         var stateObj = {};
-        window.qstr_overlay = window.qstr_overlay.replace('null','')
-        window.qstr_overlay = window.qstr_overlay + overlay
-        window.qstr_overlay = window.qstr_overlay.replace('GG','G')
-        window.qstr_overlay = window.qstr_overlay.replace('JJ','J')
+        overlay_list.push(overlay);
+        window.qstr_overlay = "&overlay=" + overlay_list.join("");
+        window.qstr_overlay = window.qstr_overlay.replace('GG','G');
+        window.qstr_overlay = window.qstr_overlay.replace('JJ','J');
         history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+        updateIframe();
     });
 
     map.on('overlayremove ', function(e) {
         overlay = layer_overlay[e.name]
         if (overlay != null){
             var stateObj = {};
-            window.qstr_overlay = window.qstr_overlay.replace('null','')
-            window.qstr_overlay = window.qstr_overlay.replace(overlay,'')
+            overlay_list.splice( overlay_list.indexOf(overlay), 1 );
+            window.qstr_overlay = "&overlay=" + overlay_list.join("");
             history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
+            updateIframe();
         }
+    });
+
+
+    {# -------------------- #}
+    {#        IFRAME        #}
+    {# -------------------- #}
+
+    function updateIframe() {
+        url = window.location;
+        url2 = url + '&hidesidebar&hidemapbutton';
+        iframe_code = '<iframe width="800px" height="600px" frameBorder="0" src="'+url2+'"></iframe><p><a href="'+url+'">Voir en plein écran</a></p>';
+        $("textarea#share-iframe").val(iframe_code);
+    };
+    $(function() {
+         updateIframe();
     });
 
     {# -------------------- #}
