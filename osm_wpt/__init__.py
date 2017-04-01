@@ -87,8 +87,14 @@ class Box(object):
         self.east = max(lon) + margin
         self.south = min(lat) - margin
         self.north = max(lat) + margin
-        self.bounds = [self.south, self.west, self.north, self.east]
-        self.bounds_str = ','.join([str(x) for x in self.bounds])
+
+    @property
+    def bounds(self):
+        return [self.south, self.west, self.north, self.east]
+
+    @property
+    def bounds_str(self):
+        return ','.join([str(x) for x in self.bounds])
 
 
 class Overpass(Thread):
@@ -626,6 +632,23 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
         response = get_strava_segments(box, activity_type=strava_segment)
         if response is not None:
              Pts = get_segments_pts(response, Pts, index_used, lat, lon, lim_dist)
+
+        x = 2;
+        y = 2;
+        width = box.east - box.west
+        heigth = box.north - box.south
+        small_box = Box(lon, lat)
+        for i in range(x):
+            small_box.north = box.north - heigth/x * (i)
+            small_box.south = box.north - heigth/x * (i+1)
+            for j in range(y):
+                small_box.east = box.east - width/y * (j)
+                small_box.west = box.east - width/y * (j+1)
+                response = get_strava_segments(small_box, activity_type=strava_segment)
+                if response is not None:
+                     Pts = get_segments_pts(response, Pts, index_used, lat, lon, lim_dist)
+                     print "Length: " + str(len(Pts))
+
 
     response_1 = thread_1.join()
     if response_1 is not None:

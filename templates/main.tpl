@@ -919,7 +919,7 @@
             // console.log(qstr_map)
             var stateObj = {};
             window.qstr_layer = window.qstr_layer.replace('&layer=null','');
-            window.qstr_overlay = window.qstr_overlay.replace('&overlay=null','');
+            window.qstr_overlay = window.qstr_overlay.replace('null','');
             history.pushState(
                 stateObj, "", 
                 window.qstr_map + window.qstr_layer + window.qstr_overlay
@@ -946,7 +946,6 @@
         var stateObj = {};
         window.qstr_layer = "&layer=" + layer_id;
         window.qstr_layer = window.qstr_layer.replace('&layer=null','');
-        /*window.qstr_overlay = window.qstr_overlay.replace('&overlay=null','');*/
         history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
         updateIframe();
     });
@@ -975,6 +974,7 @@
         var stateObj = {};
         overlay_list.push(overlay);
         window.qstr_overlay = "&overlay=" + overlay_list.join("");
+        window.qstr_overlay = window.qstr_overlay.replace('null','');
         window.qstr_overlay = window.qstr_overlay.replace('GG','G');
         window.qstr_overlay = window.qstr_overlay.replace('JJ','J');
         history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
@@ -986,6 +986,7 @@
         if (overlay != null){
             var stateObj = {};
             overlay_list.splice( overlay_list.indexOf(overlay), 1 );
+            window.qstr_overlay = window.qstr_overlay.replace('null','');
             window.qstr_overlay = "&overlay=" + overlay_list.join("");
             history.pushState(stateObj, "", window.qstr_map + window.qstr_layer + window.qstr_overlay);
             updateIframe();
