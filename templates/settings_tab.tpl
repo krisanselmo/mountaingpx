@@ -181,7 +181,7 @@
 
 </table>
 <br>
-<input id="delete_cookies_button" type="button" value="Valeurs par défaut" onclick="SetDefautCheckboxValues();" />
+<input id="delete_cookies_button" type="button" value="Valeurs par défaut" onclick="setAndSaveDefautCheckboxValues();" />
 <br>
 <br>
 <h3>Requête overpass personnalisée</h3>
@@ -252,7 +252,7 @@ Type de segments:
 			Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
 			input = document.custom_options.strava_segment.value;
 			Cookies.set("strava_segment", input);
-	    }
+	    };
      
 	function SetDefautCheckboxValues(){
 		$(':checkbox.with_name').prop('checked', true);
@@ -266,12 +266,16 @@ Type de segments:
 		$(':checkbox[name="camp_site"]').prop('checked', false);
 		$(':checkbox[name="toilets"]').prop('checked', false);
 		$(':checkbox.no_name[name="guidepost"]').prop('checked', false);
+	};
+
+	function setAndSaveDefautCheckboxValues(){
+		SetDefautCheckboxValues();
 		Cookies.set("wpt", $(":checkbox.with_name").jsonify());
 		Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
-	}
-
+	};
 
 	$( document ).ready(function() {
+
 		SetDefautCheckboxValues();
 
 		if (Cookies.get('snapdistance') != null){
