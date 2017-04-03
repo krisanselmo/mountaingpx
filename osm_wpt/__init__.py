@@ -647,7 +647,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
                 response = get_strava_segments(small_box, activity_type=strava_segment)
                 if response is not None:
                      Pts = get_segments_pts(response, Pts, index_used, lat, lon, lim_dist)
-                     print "Length: " + str(len(Pts))
+                     print "Number of segments: " + str(len(Pts))
 
 
     response_1 = thread_1.join()

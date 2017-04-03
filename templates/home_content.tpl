@@ -5,17 +5,18 @@
     <p><a class="btn btn-lg btn-danger" href="/map" role="button">Voir la carte</a></p>
 </div>
 
+
+
 <h3>Présentation</h3>
 <p class="txt">À partir d'une trace gps (au format <a href="fr.wikipedia.org/wiki/GPX_(format_de_fichier)">GPX</a>) récupérée ou tracée par ailleurs, cet outil permet d'ajouter de manière automatique des points d'intérêts  issue d'openstreetmap dont la trace passe à proximité.</p> 
 <img src="{{ url_for('static', filename='img/presentation/1.png') }}" class="img_644">
-<div class='caption'>Exemple d'une trace GPS récupéré ne contenant que la route à suivre.</div>
+<div class='caption'>Exemple d'une trace GPS récupérée ne contenant que la route à suivre.</div>
 
 <p class="txt">Une fois uploadé et passé à la moulinette, les points d'intérêts sont ajoutés dans un nouveau fichier GPX téléchargeable. Ce dernier est visualisable sur divers fonds de carte (exemple ci-dessous avec le rendu <a href="https://opentopomap.org" target="_blank">opentopomap</a>). La distance d'accrochage et le choix des types de POI sont personnalisables. Note: le temps de traitement peut être particulièrement long pour les gros fichiers.</p>
 <img src="{{ url_for('static', filename='img/presentation/2.png') }}" class="img_644">
 <div class='caption'>La trace GPS avec les POI une fois traité. Voir cette carte interactive <a href="/track/1">ici</a>.</div>
 
 <h3>Utilisation avec une montre GPS</h3>
-
 <p class="txt">Si votre montre GPS supporte la navigation, une fois le fichier GPX transféré, votre itinéraire devrait s'afficher avec les POI associés comme ici:</p>
 <img src="{{ url_for('static', filename='img/presentation/watch.jpg') }}" class="img_644">
 
@@ -23,18 +24,26 @@
 
 <h4>Garmin</h4>
 <ul class="item">
-    <li>Enregistrer le fichier GPX et le copier dans le dossier caché "<b>Garmin/NewFiles</b>" de la montre.</li>
+    <li>Enregistrer le fichier GPX et le copier dans le dossier caché "<b>GARMIN/NEWFILES</b>" de la montre. Note: pour supprimer les points d'intérêts, vous pouvez le faire directement depuis la montre. Restez appuyé sur le bouton <b>UP</b> puis selectionnez <b>Navigation</b> puis <b>Saved Locations</b> et enfin tout en bas de la liste: <b>Delete All</b>.</li>
+    <!--  -->
 </ul>
 
 <h4>Suunto</h4>
 <ul class="item">
-    <li>Il suffit de télécharger puis d'importer le fichier GPX sur la plateforme <a href="http://www.movescount.com/map">Movescount</a>. Note: les différents <b>types</b> de POI ne sont pas reconnu par la plateforme, si vous voulez les avoir, il faudra les éditer manuellement :(</li>
+    <li>Il suffit de télécharger puis d'importer le fichier GPX sur la plateforme <a href="http://www.movescount.com/map">Movescount</a>. Note: les différents <b>types</b> de POI ne sont pas reconnu par la plateforme, si vous voulez les avoir, il faudra les éditer manuellement un par un :(</li>
 </ul>
 
 <h3>Exploration</h3>
 
 <p class="txt">D'autres fonctionnalités sont disponibles en ajoutant diverses surcouches de carte avec par exemple les photos Flickr géolocalisées, les articles Wikipédia, les heatmaps Strava etc. À vous de les découvrir.</p>
 <img src="{{ url_for('static', filename='img/presentation/3.png') }}" class="img_644">
+
+<h3>Partage</h3>
+<p class="txt">Les gpx peuvent être partagé via leur url et les cartes peuvent également être intégré directement dans une page web comme ci-dessous:</p>
+<object type="text/html" data="/track/1?hidesidebar&hidemapbutton&layer=1" style="width:644px; height:323px" class="img_644">
+<p>backup content</p>
+</object>
+
 <br>
 <p class="txt">N'hésitez pas à m'envoyer votre retour d'utilisation directement dans les commentaires en-dessous, sur le GitHub du projet: <a href='https://github.com/krisanselmo/mountaingpx'>Mountaingpx <i class="fa fa-github"></i></a> ou encore par email à christophe.anselmo|at|gmail.com</p>
 

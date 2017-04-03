@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />    
     <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
     <link rel='stylesheet' href="{{ url_for('static', filename='cssapp2.css') }}" type='text/css'/>
+    <link rel='stylesheet' href="{{ url_for('static', filename='accordion.css') }}" type='text/css'/>
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-sidebar.css') }}" type='text/css'/> 
     <link rel='stylesheet' href="{{ url_for('static', filename='OverPassLayer.css') }}" type='text/css'/>
     {# -- JAVASCRIPT -- #}
@@ -47,6 +48,9 @@
     <!-- <script src="{{ url_for('static', filename='formToObject.min.js') }}"></script> https://raw.githubusercontent.com/serbanghita/formToObject.js/master/dist/formToObject.min.js -->
     #}
 
+<link href="{{ url_for('static', filename='ziehharmonika.css') }}" rel="stylesheet" type="text/css">
+<script src="{{ url_for('static', filename='ziehharmonika.js') }}"></script>
+
 
 </head>
 <body>
@@ -58,7 +62,7 @@
         <div class="sidebar-tabs">
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
-                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+                <!-- <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li> -->
                 <li><a href="#share" role="tab"><i class="fa fa-share-alt"></i></a></li> 
                 <li><a href="#help" role="tab"><i class="fa fa-question-circle"></i></a></li> 
                 <li><a href="#links" role="tab"><i class="fa fa-external-link"></i></a></li> 
@@ -79,6 +83,46 @@
                 <!-- <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
  -->
                 <p></p>
+
+
+
+
+
+            <div class="container">
+                    <div class="ziehharmonika">
+                        <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Open Street Map</h3>
+                        <div>
+                            {% include "settings_osm.tpl" %}
+                        
+                        </div>
+                        <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Strava</h3>
+                        <div>
+                            <form action="" name="strava_options" onchange="WriteCookie();">      
+                            <h4>Segments Strava</h4>
+                            Type de segments: 
+                            <select name="strava_segment">
+                                <option value="none">Aucun</option>
+                                <option value="running">Running</option>
+                                <option value="riding">Cycling</option>
+                            </select>
+                            </form>
+                            <p><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> La détection des segments est seulement basée sur les points de départ et d'arrivée. 
+                                Tous les segments n'apparaissent pas nécessairement car l'API Strava ne retourne que 10 segments par requête.</p>
+                        </div>
+                        <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Propriétés générales</h3>
+                        <div>
+                            <form action="" name="properties" onchange="WriteCookie();">  
+                            <h4>Rayon d'accrochage des POI au gpx</h4>
+                            <input id="snap_dist" type="text" name="snapdistance" value="50"> en mètre(s)
+                            <!-- <p><i class="fa fa-question-circle" aria-hidden="true" ></i></p> -->
+                            <br>
+                            <h4>Inverser le parcours</h4>
+                            <input type="checkbox" name="reverse_track">
+                            </form>                
+                        </div>
+                    </div>
+            </div>
+
                 <!-- <br> -->
                 <br>
                 <form action="?" method=post enctype=multipart/form-data id="form_id">
@@ -142,10 +186,10 @@
                 {% include "help_tab.tpl" %}
             </div>
 
-            <div class="sidebar-pane" id="settings">
+            <!-- <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header">Paramètres<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {% include "settings_tab.tpl" %}
-            </div>
+                {#% include "settings_tab.tpl" %#}
+            </div> -->
 
             <div class="sidebar-pane" id="links">
                 <h1 class="sidebar-header">Liens externes<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
@@ -175,9 +219,112 @@
     </div>
 
 
+<script type="text/javascript">
+$(document).ready(function() {
+        $('.ziehharmonika').ziehharmonika({
+            collapsible: true,
+            prefix: ''
+        });
+    });
+</script>
 
-    
-<script>
+
+<script type="text/javascript">
+
+
+    $('#select_all_with_name').click(function(event) {
+        if(this.checked) {
+            $(':checkbox.with_name').prop('checked', true);
+        } else {
+            $(':checkbox.with_name').prop('checked', false);
+        }
+    });
+
+    $('#select_all_no_name').click(function(event) {
+        if(this.checked) {
+            $(':checkbox.no_name').prop('checked', true);
+        } else {
+            $(':checkbox.no_name').prop('checked', false);
+        }
+    });
+
+    // $('.with_name').click(function(event) {
+    //     Cookies.set(this.name, this.checked);
+    // });
+
+    function WriteCookie()
+        {
+            input = escape(document.properties.snapdistance.value);
+            if( isNaN(input) || input < 1 || input > 1000) {
+                alert('Cette valeur doit être comprise entre 1 et 1000');
+            }else{
+                Cookies.set("snapdistance", input);
+            }
+
+            input = document.osm_options.overpass_custom.value;
+            Cookies.set("overpass_custom", input);
+            input = document.properties.reverse_track.checked;
+            Cookies.set("reverse", input);
+            Cookies.set("wpt", $(":checkbox.with_name").jsonify());
+            Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
+            input = document.strava_options.strava_segment.value;
+            Cookies.set("strava_segment", input);
+        };
+     
+    function SetDefautCheckboxValues(){
+        $(':checkbox.with_name').prop('checked', true);
+        $(':checkbox.no_name').prop('checked', true);
+        $(':checkbox[name="tunnel"]').prop('checked', false);
+        $(':checkbox[name="ford"]').prop('checked', false);
+        $(':checkbox[name="barrier"]').prop('checked', false);
+        $(':checkbox[name="locality"]').prop('checked', false);
+        $(':checkbox[name="hotel"]').prop('checked', false);
+        $(':checkbox[name="hostel"]').prop('checked', false);
+        $(':checkbox[name="camp_site"]').prop('checked', false);
+        $(':checkbox[name="toilets"]').prop('checked', false);
+        $(':checkbox.no_name[name="guidepost"]').prop('checked', false);
+    };
+
+    function setAndSaveDefautCheckboxValues(){
+        SetDefautCheckboxValues();
+        Cookies.set("wpt", $(":checkbox.with_name").jsonify());
+        Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
+    };
+
+    $( document ).ready(function() {
+
+        SetDefautCheckboxValues();
+
+        if (Cookies.get('snapdistance') != null){
+            document.properties.snapdistance.value = Cookies.get('snapdistance');
+        }
+
+        if (Cookies.get('overpass_custom') != null){
+            document.osm_options.overpass_custom.value = Cookies.get('overpass_custom');
+        }
+        
+        if (Cookies.get('strava_segment') != null){
+            document.strava_options.strava_segment.value = Cookies.get('strava_segment');
+        }
+
+
+        if (Cookies.get('wpt') != null){
+            $(":checkbox.with_name").dejsonify(Cookies.get('wpt'));
+        } else {
+            Cookies.set("wpt", $(":checkbox.with_name").jsonify());
+        }
+
+        if (Cookies.get('wpt_no_name') != null){
+            $(":checkbox.no_name").dejsonify(Cookies.get('wpt_no_name'));
+        } else {
+            Cookies.set("wpt_no_name", $(":checkbox.no_name").jsonify());
+        }
+    });
+
+
+
+
+
 
     // document.cookie = "username=John Doe";
 
@@ -574,6 +721,7 @@
             if (type && id)
                 r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
                 // r.append($('<tr>').append($('<th>').text('ID')).append($('<td>').text(id).append(' ').append($('<a>').attr({href: 'href="//localhost:8111/load_object?objects='+type+id, target: '_blank'}).text('edit')).append(' ').append($('<a>').attr({href: '//www.openstreetmap.org/browse/'+{w:'way',n:'node',r:'relation'}[type]+'/'+id, target: '_blank'}).text('browse'))));
+            /*r.append($('<div class="popupdesc">'))*/
             for (var key in tags)
                 r.append($('<tr>').append($('<th>').text(key)).append($('<td>').text(tags[key])));
             return $('<div>').append(r).html();
@@ -1016,46 +1164,50 @@
     // .bind('mouseup', function(e){
 
     $(function() {
-        $("#TPElink").click(function(e) {
+        $("#TPElink").mousedown(function(e) {
+        if (e.which != 3) { 
           e.preventDefault(); // if desired...
           var url = 'http://app.photoephemeris.com/?ll=' + [
                         map.getCenter().wrap().lat, ',',
                         map.getCenter().wrap().lng, '&z=',
                         map.getZoom()
                     ].join('');
-          console.log(url)
-          window.open(url, '_blank');               
+          window.open(url, '_blank'); 
+          };              
         });
     });
 
     $(function() {
-        $("#iDlink").click(function(e) {
+        $("#iDlink").mousedown(function(e) {
+        if (e.which != 3) { 
           e.preventDefault(); // if desired...
           var url = 'http://www.openstreetmap.org/edit#map=' + [
                         map.getZoom(),
                         map.getCenter().wrap().lat,
                         map.getCenter().wrap().lng
                     ].join('/');
-          console.log(url)
-          window.open(url, '_blank');               
+          window.open(url, '_blank');
+          };       
         });
     });
 
     $(function() {
-        $("#SiDlink").click(function(e) {
+        $("#SiDlink").mousedown(function(e) {
+        if (e.which != 3) { 
           e.preventDefault(); // if desired...
           var url = 'http://strava.github.io/iD/#background=Bing&map=' + [
                         map.getZoom(),
                         map.getCenter().wrap().lng,
                         map.getCenter().wrap().lat
                     ].join('/');
-          console.log(url)
-          window.open(url, '_blank');               
+          window.open(url, '_blank');
+          };          
         });
     });
 
     $(function() {
-        $("#IGNlink").click(function(e) {
+        $("#IGNlink").mousedown(function(e) {
+        if (e.which != 3) { 
           e.preventDefault(); // if desired...
           var url = 'http://mavisionneuse.ign.fr/visio.html?' + [
                         'lon=',
@@ -1066,8 +1218,8 @@
                         map.getZoom(),
                         '&num=2&mt0=ign-cartes&mt1=osmfr'
                     ].join('');
-          console.log(url)
-          window.open(url, '_blank');               
+          window.open(url, '_blank');
+          };        
         });
     });
 
