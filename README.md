@@ -2,7 +2,7 @@
 [www.mountaingpx.fr](http://www.mountaingpx.fr)
 
 This web app aims at automatically adding waypoints (WPT) on a GPX route. These waypoints are particularly useful when following a route on a GPS watch device. Available waypoints come from:
-- [openstreetmap.org](openstreetmap.org)
+- [openstreetmap.org](http://www.openstreetmap.org)
 - [Strava segments](https://www.strava.com/segments/explore)
 
 Example of a GPX track with the openstreetmap waypoints automatically hooked: 
