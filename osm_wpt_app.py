@@ -3,6 +3,8 @@
 
 import os
 import random
+import urllib
+import time
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort
 from werkzeug.utils import secure_filename
 from werkzeug import SharedDataMiddleware
@@ -36,13 +38,21 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def pinger_urllib(host):
+    try:
+        t1 = time.time()
+        urllib.urlopen(host).read()
+        return (time.time() - t1) * 1000.0
+    except Exception, e:
+        return 0
+
 # -----------------------------------------------------------
 @app.errorhandler(401)
 @app.errorhandler(404)
 @app.errorhandler(500)
 def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
-   
+    
 # -----------------------------------------------------------
 @app.route('/', methods=['GET'])
 def home():
@@ -175,11 +185,11 @@ def main_page(trk_num=None):
         layer_num = request.args['layer']
         try:
             if int(layer_num)>0 & int(layer_num)<9:
-                options = {1 : "opentopo",
-                           2 : "mapyCz",
-                           3 : "osm",
+                options = {1 : 'opentopo',
+                           2 : 'mapyCz',
+                           3 : 'osm',
                            4 : 'osmcyclemap',
-                           5 : "streets",
+                           5 : 'streets',
                            6 : 'grayscale',
                            7 : 'outdoors',
                            8 : 'satellite',
@@ -214,6 +224,16 @@ def main_page(trk_num=None):
     hidemapbutton = False
     if request.args.get('hidemapbutton') is not None:
         hidemapbutton = True
+
+    '''
+    If defaut map (opentopomap) doesn't response then swith 
+    to another layer map (mapbox streets)
+    '''
+    URL = 'https://a.tile.opentopomap.org/14/8412/5843.png'
+    delay = float(pinger_urllib(URL))
+    print 'PING: %-30s %5.0f [ms]' % (URL, delay)
+    if delay == 0 or delay > 1000:
+        layer_name = "streets"
 
     return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr,
         layer_qstr=layer_name, overlay_qstr=overlay_lst, hidesidebar=hidesidebar,

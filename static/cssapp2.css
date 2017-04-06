@@ -204,7 +204,7 @@ div#loading {
 }
 
 
-div#popupdesc{
+div.popupdesc{
     font: 8pt "Tahoma", sans-serif;
 }
 

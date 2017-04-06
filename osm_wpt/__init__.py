@@ -20,6 +20,7 @@ import gpxpy      # https://github.com/tkrajina/gpxpy
 import overpass   # https://github.com/mvexel/overpass-api-python-wrapper
 from stravalib import Client
 import private_values
+# import pdb
 
 LOGFILE = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
 
@@ -45,8 +46,8 @@ class Point(object):
             self.url = 'http://www.openstreetmap.org/' + osmtype + '/' + str(osm_id)
             html_content = self.construct_osm_table(tags)
         elif osmtype is 'strava':
-            html_content = '' 
             self.url = 'https://www.strava.com/segments/' + str(osm_id)
+            html_content = self.construct_strava_table(tags)
         else:
             self.url = ''
             html_content = '' 
@@ -69,11 +70,29 @@ class Point(object):
             html_content = '<hr><table>'
             for key, value in tags.items():
                 if key not in uselesstags:
+                    if key == 'website':
+                        value = '<a href="' + value + '" target="_blank">' + value + '</a>'
+                    if key == 'wikidata':
+                        value = '<a href="https://www.wikidata.org/wiki/' + value + '" target="_blank">' + value + '</a>'
+                    if key == 'wikipedia':
+                        try:
+                            [lang, name] = value.split(':')
+                            value = '<a href="https://' + lang + '.wikipedia.org/wiki/' + name + '" target="_blank">' + value + '</a>'
+                        except:
+                            pass
                     html_content += '<tr><th>' + key + '</th><td>' + value + '</td></tr>'
             html_content += '</table><hr>'   
         return html_content  
 
-    # def add_description(self)  
+    def construct_strava_table(self, segment): 
+        html_content = ''   
+        if segment is not None:
+            html_content = '<hr><table>'
+            html_content += '<tr><th>' + "Distance" + '</th><td>' + str(segment.distance) + '</td></tr>'
+            html_content += '<tr><th>' + "Elev Diff" + '</th><td>' + str(segment.elev_difference) + '</td></tr>'
+            html_content += '<tr><th>' + "Avg Grade" + '</th><td>' + str(segment.avg_grade) + '&nbsp;%</td></tr>'
+            html_content += '</table><hr>'   
+        return html_content      
 
     def __repr__(self):
         return repr((self.index, self.new_gpx_index,
@@ -271,11 +290,19 @@ def get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist):
                 log.debug('/!\ Node index already used: ' + query_name + " - " + name + " - " + ele)
     return Pts
 
+
+class TokenException( Exception ): pass
+
+
 @timeit
 def get_strava_segments(box, activity_type='running'):
     response = None
-    client = Client(access_token=private_values.ACCESS_TOKEN)
-    response = client.explore_segments(box.bounds, activity_type=activity_type)
+    try:
+        client = Client(access_token=private_values.ACCESS_TOKEN)
+        response = client.explore_segments(box.bounds, activity_type=activity_type)
+    except Exception:
+        err = TokenException( "Invalid Strava token. Get a valid API key from Strava and replace the ACCESS_TOKEN value in 'private_values.py'" )
+        raise err
     return response
 
 
@@ -303,7 +330,7 @@ def get_segments_pts(response, Pts, index_used, lat, lon, lim_dist):
             # Because only 1 POI is possible per GPS point
             if index not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name)
-                Pt = Point(name, 'strava', lon_new, lat_new, '', segment.id, index, new_gpx_index, query_name, True, min_dist)
+                Pt = Point(name, 'strava', lon_new, lat_new, '', segment.id, index, new_gpx_index, query_name, True, min_dist, tags=segment)
                 Pts.append(Pt)
                 index_used.append(index)
             else:
@@ -317,7 +344,7 @@ def get_segments_pts(response, Pts, index_used, lat, lon, lim_dist):
             # Because only 1 POI is possible per GPS point
             if index2 not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name)
-                Pt = Point(name, 'strava', lon_new, lat_new, '', segment.id, index2, new_gpx_index, query_name, True, min_dist)
+                Pt = Point(name, 'strava', lon_new, lat_new, '', segment.id, index2, new_gpx_index, query_name, True, min_dist, tags=segment)
                 Pts.append(Pt)
                 index_used.append(index2)
             else:
@@ -677,3 +704,4 @@ if __name__ == "__main__":
 
     print(sys.version)
     osm_wpt(fpath, gpxoutputname=fpath_out)
+    # osm_wpt(fpath, gpxoutputname=fpath_out, strava_segment="running")

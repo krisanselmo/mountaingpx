@@ -18,6 +18,7 @@
     <link rel='stylesheet' href="{{ url_for('static', filename='accordion.css') }}" type='text/css'/>
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-sidebar.css') }}" type='text/css'/> 
     <link rel='stylesheet' href="{{ url_for('static', filename='OverPassLayer.css') }}" type='text/css'/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ziehharmonika.css') }}" type="text/css">
     {# -- JAVASCRIPT -- #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js.cookie.js') }}"></script>
@@ -31,8 +32,8 @@
     <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"> </script> {#https://github.com/MatthewBarker/leaflet-wikipedia#}
     <script src="{{ url_for('static', filename='OverPassLayer.js') }}"></script>
     <script src="{{ url_for('static', filename='leaflet-sidebar.js') }}"></script>
-    <!-- <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.min.js') }}"></script> -->
     <script src="{{ url_for('static', filename='jquery.jsonify-0.3.1.js') }}"></script> {#https://github.com/kushalpandya/JSONify#}
+    <script src="{{ url_for('static', filename='ziehharmonika.js') }}"></script>
 
     {# Other 
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" type='text/css'/>  -->    
@@ -41,15 +42,12 @@
     <!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script> -->
     <!--<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.2.0/leaflet-omnivore.min.js'></script>  -->
     <!-- <script src="https://rawgithub.com/mpetazzoni/leaflet-gpx/master/gpx.js"></script> -->
-    <!-- <script src="{{ url_for('static', filename='leaflet-wikipedia.js') }}"></script> -->
     <!-- <script src="{{ url_for('static', filename='Leaflet.EditInOSM.js') }}"></script>  https://github.com/yohanboniface/Leaflet.EditInOSM  -->
     <!-- <script src="{{ url_for('static', filename='bootbox.min.js') }}"></script> -->
     <!-- <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script> https://github.com/buche/leaflet-openweathermap  -->
     <!-- <script src="{{ url_for('static', filename='formToObject.min.js') }}"></script> https://raw.githubusercontent.com/serbanghita/formToObject.js/master/dist/formToObject.min.js -->
     #}
 
-<link href="{{ url_for('static', filename='ziehharmonika.css') }}" rel="stylesheet" type="text/css">
-<script src="{{ url_for('static', filename='ziehharmonika.js') }}"></script>
 
 
 </head>
@@ -70,7 +68,6 @@
             <ul role="tablist">
                 <!--<li><a href="#disqus" role="tab"><i class="fa fa-comment"></i></a></li> -->
                 <li><a href="#dependencies" role="tab"><i class="fa fa-code"></i></a></li> 
-                <!-- <li><a href="https://github.com/krisanselmo/osm_wpt" role="tab" target="_blank"><i class="fa fa-github"></i></a></li> -->
             </ul>
         </div>
 
@@ -78,15 +75,7 @@
         <div class="sidebar-content">
             <div class="sidebar-pane" id="home">
                 <h1 class="sidebar-header"><a href="/">Mountain GPX</a><span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-
-                <!-- <p>Automatically add waypoints on your GPX from <a href="http://www.openstreetmap.org/" target="_blank">OSM</a> database</p> -->
-                <!-- <p>Ajoute automatiquement des points d'intérêts (POI) sur une trace GPX depuis la base de données <a href="http://www.openstreetmap.org/" target="_blank">openstreetmap</a>.</p> 
- -->
                 <p></p>
-
-
-
-
 
             <div class="container">
                     <div class="ziehharmonika">
@@ -98,7 +87,7 @@
                         <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Strava</h3>
                         <div>
                             <form action="" name="strava_options" onchange="WriteCookie();">      
-                            <h4>Segments Strava</h4>
+                            <h4>Segments <a href="https://www.strava.com/" target='_blank'>Strava</a></h4>
                             Type de segments: 
                             <select name="strava_segment">
                                 <option value="none">Aucun</option>
@@ -322,11 +311,6 @@ $(document).ready(function() {
     });
 
 
-
-
-
-
-    // document.cookie = "username=John Doe";
 
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -669,8 +653,7 @@ $(document).ready(function() {
     {# -------------------- #}
 
     {% if layer_qstr is none %}
-        // map_layers = [opentopo]; // default value
-        map_layers = [streets]; // default value
+        map_layers = [opentopo]; // default value
     {% else %}
         map_layers = [{{layer_qstr}}];
     {% endif %}
