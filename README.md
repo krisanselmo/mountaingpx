@@ -12,7 +12,7 @@ Example of a GPX track with the openstreetmap waypoints automatically hooked:
 Note: Only available in French for the moment
 
 ### Requirement for Strava segments
-Get a [STRAVA API token](http://strava.github.io/api/) and copy/paste the public access token in this file: [osm_wpt/private_values.py](osm_wpt/private_values.py)
+Get a [STRAVA API token](http://strava.github.io/api/) and replace the public access token in this file: [osm_wpt/private_values.py](osm_wpt/private_values.py)
 
 ### Usage
 
