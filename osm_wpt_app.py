@@ -2,19 +2,19 @@
 # -*- coding:utf-8 -*-
 
 import os
-import random
 import urllib
 import time
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort
 from werkzeug.utils import secure_filename
 from werkzeug import SharedDataMiddleware
 import osm_wpt
+from threading import Thread
 
 HERE = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.join(HERE, 'uploads/')
 OUTPUT_FOLDER = os.path.join(HERE, 'static/track/')
 
-ALLOWED_EXTENSIONS = set(['gpx'])
+ALLOWED_EXTENSIONS = {'gpx'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -34,17 +34,26 @@ def make_dirs():
     if not os.path.exists(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-def pinger_urllib(host):
+
+def ping_urllib(host):
     try:
         t1 = time.time()
         urllib.urlopen(host).read()
         return (time.time() - t1) * 1000.0
-    except Exception, e:
+    except Exception:
         return 0
+
+
+def ping_opentopomap():
+    URL = 'https://a.tile.opentopomap.org/14/8412/5843.png'
+    delay = float(ping_urllib(URL))
+    print 'PING: %-30s %5.0f [ms]' % (URL, delay)
+
 
 # -----------------------------------------------------------
 @app.errorhandler(401)
@@ -52,18 +61,21 @@ def pinger_urllib(host):
 @app.errorhandler(500)
 def error_page(error):
     return "D'Oh! Error {}".format(error.code), error.code
-    
+
+
 # -----------------------------------------------------------
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('home.tpl')
+    return render_template('home.html')
+
 
 # -----------------------------------------------------------
 @app.route('/last', methods=['GET'])
 @app.route('/map/last', methods=['GET'])
 def last_track():
-    trk_num = str(len(os.listdir(OUTPUT_FOLDER))) 
+    trk_num = str(len(os.listdir(OUTPUT_FOLDER)))
     return redirect(url_for('main_page', trk_num=trk_num))
+
 
 # -----------------------------------------------------------
 @app.route('/map', methods=['GET', 'POST'])
@@ -91,7 +103,7 @@ def main_page(trk_num=None):
             try:
                 make_dirs()
             except Exception as err:
-                flash('Unable to create directory','error')
+                flash('Unable to create directory', 'error')
                 return redirect(request.url)
 
             try:
@@ -99,11 +111,11 @@ def main_page(trk_num=None):
                 print('File saved: ' + filename)
             except Exception as err:
                 app.logger.error(u'Permission denied on ' + app.config['UPLOAD_FOLDER'])
-                flash('Permission denied: ' + str(err),'error')
+                flash('Permission denied: ' + str(err), 'error')
                 return redirect(request.url)
 
             # Output file processing
-            trk_num = str(len(os.listdir(OUTPUT_FOLDER)) + 1) 
+            trk_num = str(len(os.listdir(OUTPUT_FOLDER)) + 1)
             app.logger.debug(u'Track number: ' + trk_num)
 
             fpath = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx'
@@ -116,34 +128,32 @@ def main_page(trk_num=None):
                 else:
                     lim_dist = 0.05
             except:
-                lim_dist = 0.05 
+                lim_dist = 0.05
 
             reverse = False
             if request.cookies.get('reverse') == 'true':
                 print 'Invert track'
                 reverse = True
 
-
-            strava_segment = request.cookies.get('strava_segment')   
+            strava_segment = request.cookies.get('strava_segment')
             overpass_custom = request.cookies.get('overpass_custom')
             wpt = request.cookies.get('wpt')
             wpt_no_name = request.cookies.get('wpt_no_name')
 
             input_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
+
             try:
                 # TODO: AFFICHER UN LOADING
-                wpts_number = osm_wpt.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath, 
-                    reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name, 
-                    overpass_custom_str=overpass_custom, strava_segment=strava_segment)
-                # app.logger.debug(u'osm_wpt script : OK')
-                # app.logger.debug(u'waypoints: ' + str(wpts_number))
+                osm_wpt.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath,
+                                reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name,
+                                overpass_custom_str=overpass_custom, strava_segment=strava_segment)
+
             except Exception as err:
                 flash(str(err))
                 print(err)
                 app.logger.warning(u'GPX Error')
                 return redirect(request.url)
-    
+
             return redirect(url_for('main_page', trk_num=trk_num))
 
         else:
@@ -154,9 +164,9 @@ def main_page(trk_num=None):
         fpath = None
     else:
         # fpath = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx'
-        fpath = 'static/track/' + trk_num + '.gpx' 
-        fpathPY = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx' 
-        if not os.path.isfile(fpathPY):
+        fpath = 'static/track/' + trk_num + '.gpx'
+        fpath_py = app.config['OUTPUT_FOLDER'] + trk_num + '.gpx'
+        if not os.path.isfile(fpath_py):
             fpath = None
             flash('GPX not found')
 
@@ -184,35 +194,35 @@ def main_page(trk_num=None):
     if request.args.get('layer') is not None:
         layer_num = request.args['layer']
         try:
-            if int(layer_num)>0 & int(layer_num)<9:
-                options = {1 : 'opentopo',
-                           2 : 'mapyCz',
-                           3 : 'osm',
-                           4 : 'osmcyclemap',
-                           5 : 'streets',
-                           6 : 'grayscale',
-                           7 : 'outdoors',
-                           8 : 'satellite',
-                           9 : 'google',
-                }
+            if int(layer_num) > 0 & int(layer_num) < 9:
+                options = {1: 'opentopo',
+                           2: 'mapyCz',
+                           3: 'osm',
+                           4: 'osmcyclemap',
+                           5: 'streets',
+                           6: 'grayscale',
+                           7: 'outdoors',
+                           8: 'satellite',
+                           9: 'google',
+                           }
                 layer_name = options[int(layer_num)]
         except:
             layer_name = None
 
-    overlay_lst = [] 
+    overlay_lst = []
     if request.args.get('overlay') is not None:
         overlay = request.args['overlay']
-        dic = { "A": 'strava_overlay_b',
-                "B": 'strava_overlay_r',
-                "C": 'strava_bike_overlay',
-                "D": 'lonvia_overlay',
-                "E": 'mapyCz_overlay',
-                "F": 'hillshade_overlay',
-                "G": 'flickr',
-                "H": 'overpass_parking',
-                "I": 'wiki',
-                # "J": 'layer_trail_sac',
-        }
+        dic = {"A": 'strava_overlay_b',
+               "B": 'strava_overlay_r',
+               "C": 'strava_bike_overlay',
+               "D": 'lonvia_overlay',
+               "E": 'mapyCz_overlay',
+               "F": 'hillshade_overlay',
+               "G": 'flickr',
+               "H": 'overpass_parking',
+               "I": 'wiki',
+               # "J": 'layer_trail_sac',
+               }
         for k, v in dic.items():
             if k in overlay:
                 overlay_lst.append(v)
@@ -226,22 +236,23 @@ def main_page(trk_num=None):
         hidemapbutton = True
 
     '''
-    If defaut map (opentopomap) doesn't response then swith 
+    If defaut map (opentopomap) doesn't response then swith
     to another layer map (mapbox streets)
     '''
-    URL = 'https://a.tile.opentopomap.org/14/8412/5843.png'
-    delay = float(pinger_urllib(URL))
-    print 'PING: %-30s %5.0f [ms]' % (URL, delay)
-    if delay == 0 or delay > 1000:
-        layer_name = "streets"
+    if layer_name is None or layer_name == 'opentopo':
+        d = Thread(target=ping_opentopomap)
+        d.setDaemon(True)
+        d.start()
+        d.join(1)
+        if d.isAlive():
+            layer_name = "streets"
 
-    return render_template('main.tpl', outputfile=fpath, map_qstr=map_qstr,
-        layer_qstr=layer_name, overlay_qstr=overlay_lst, hidesidebar=hidesidebar,
-        hidemapbutton=hidemapbutton)
+    print trk_num
+    return render_template('main.html', outputfile=fpath, map_qstr=map_qstr,
+                           layer_qstr=layer_name, overlay_qstr=overlay_lst, hidesidebar=hidesidebar,
+                           hidemapbutton=hidemapbutton, trk_num=trk_num)
 
 
 if __name__ == '__main__':
     # app.run(debug=True, port=80)
-    app.run(port=80) 
-
-
+    app.run(port=80)

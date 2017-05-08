@@ -1,13 +1,13 @@
-{# http://jinja.pocoo.org/docs/dev/templates/ #}
 <!DOCTYPE html>
+{# http://jinja.pocoo.org/docs/dev/templates/ #}
 <html>
 <head>
-    <title>Mountain GPX</title>
+    <title>Mountain GPX | {{trk_num}}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX">
-    <meta property="og:image" content="http://www.mountaingpx.fr/static/img/presentation/2.png">
-    <meta property="og:description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX" />
+<!--     <meta property="og:image" content="http://www.mountaingpx.fr/static/img/presentation/2.png">
+    <meta property="og:description" content="Outil open source permettant d'ajouter automatiquement des points d'intérêts (POI) sur une trace GPX" /> -->
     {# -- CSS -- #}
     <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />    
     <link rel='stylesheet' href="{{ url_for('static', filename='leaflet.elevation-0.0.4_kris.css') }}" type='text/css'/>
     <link rel='stylesheet' href="{{ url_for('static', filename='cssapp2.css') }}" type='text/css'/>
-    <link rel='stylesheet' href="{{ url_for('static', filename='accordion.css') }}" type='text/css'/>
+<!--     <link rel='stylesheet' href="{{ url_for('static', filename='accordion.css') }}" type='text/css'/> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-sidebar.css') }}" type='text/css'/> 
     <link rel='stylesheet' href="{{ url_for('static', filename='OverPassLayer.css') }}" type='text/css'/>
     <link rel="stylesheet" href="{{ url_for('static', filename='ziehharmonika.css') }}" type="text/css">
@@ -81,7 +81,7 @@
                     <div class="ziehharmonika">
                         <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Open Street Map</h3>
                         <div>
-                            {% include "settings_osm.tpl" %}
+                            {% include "settings_osm.html" %}
                         
                         </div>
                         <h3><i class="fa fa-gear"></i>&nbsp;&nbsp;  Strava</h3>
@@ -159,12 +159,17 @@
                 <br>
                 <div class="download"><a href='../{{outputfile}}'>Télécharger <i class="fa fa-download"></i></a></div>
                 <br>
+                <div class="download"><a href='/alti/{{trk_num}}'>Recalculer profil</i></a></div>
+                
                 <div class="elevation_title"></div>
+
                 <div class="elevation steelblue-theme leaflet-control">
                     <div id="elevation-div"></div>
                 </div>
 
                 <!-- <h3>Liste des POI</h3> -->
+
+
                 {% endif %}
 
             </div>
@@ -172,22 +177,22 @@
 
             <div class="sidebar-pane" id="help">
                 <h1 class="sidebar-header">Aide<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {% include "help_tab.tpl" %}
+                {% include "help_tab.html" %}
             </div>
 
             <!-- <div class="sidebar-pane" id="settings">
                 <h1 class="sidebar-header">Paramètres<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {#% include "settings_tab.tpl" %#}
+                {#% include "settings_tab.html" %#}
             </div> -->
 
             <div class="sidebar-pane" id="links">
                 <h1 class="sidebar-header">Liens externes<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {% include "links_tab.tpl" %}
+                {% include "links_tab.html" %}
             </div>
 
             <div class="sidebar-pane" id="dependencies">
                 <h1 class="sidebar-header">Outils utilisés<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {% include "dependencies_tab.tpl" %}
+                {% include "dependencies_tab.html" %}
             </div>
 
             <div class="sidebar-pane" id="share">
@@ -201,7 +206,7 @@
 
            <!--  <div class="sidebar-pane" id="disqus">
                 <h1 class="sidebar-header">Commentaires<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-                {% include "disqus_tab.tpl" %}
+                {% include "disqus_tab.html" %}
             </div> -->
 
         </div>

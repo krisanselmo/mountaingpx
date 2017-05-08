@@ -13,8 +13,6 @@
     <link rel='stylesheet' href="{{ url_for('static', filename='presentation.css') }}" type='text/css' />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-
 </head>
 
 <body>
@@ -36,12 +34,12 @@
 
         <div class="tab-content">
             <div class="tab-pane fade in active" id="home">
-                {% include "home_content.tpl" %}
+                {% include "home_content.html" %}
                 <hr>
-                {% include "disqus_tab.tpl" %}
+                {% include "disqus_tab.html" %}
             </div>
             <div class="tab-pane fade" id="about">
-                {% include "dependencies_tab.tpl" %}
+                {% include "dependencies_tab.html" %} 
             </div>
         </div>
 

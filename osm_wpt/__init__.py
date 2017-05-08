@@ -41,7 +41,7 @@ class Point(object):
         self.lat = lat
         self.lon = lon
         self.query_name = query_name
-        
+
         if osmtype in ['node','way']:
             self.url = 'http://www.openstreetmap.org/' + osmtype + '/' + str(osm_id)
             html_content = self.construct_osm_table(tags)
@@ -50,7 +50,7 @@ class Point(object):
             html_content = self.construct_strava_table(tags)
         else:
             self.url = ''
-            html_content = '' 
+            html_content = ''
 
         self.description = html_content + '<a href="' + self.url + '" target="_blank">' + str(osm_id) + '</a>'
         self.index = index
@@ -63,8 +63,8 @@ class Point(object):
             self.ele = 0
 
 
-    def construct_osm_table(self, tags): 
-        html_content = ''   
+    def construct_osm_table(self, tags):
+        html_content = ''
         uselesstags = ['source', 'name']
         if tags is not None:
             html_content = '<hr><table>'
@@ -81,18 +81,18 @@ class Point(object):
                         except:
                             pass
                     html_content += '<tr><th>' + key + '</th><td>' + value + '</td></tr>'
-            html_content += '</table><hr>'   
-        return html_content  
+            html_content += '</table><hr>'
+        return html_content
 
-    def construct_strava_table(self, segment): 
-        html_content = ''   
+    def construct_strava_table(self, segment):
+        html_content = ''
         if segment is not None:
             html_content = '<hr><table>'
             html_content += '<tr><th>' + "Distance" + '</th><td>' + str(segment.distance) + '</td></tr>'
             html_content += '<tr><th>' + "Elev Diff" + '</th><td>' + str(segment.elev_difference) + '</td></tr>'
             html_content += '<tr><th>' + "Avg Grade" + '</th><td>' + str(segment.avg_grade) + '&nbsp;%</td></tr>'
-            html_content += '</table><hr>'   
-        return html_content      
+            html_content += '</table><hr>'
+        return html_content
 
     def __repr__(self):
         return repr((self.index, self.new_gpx_index,
@@ -125,7 +125,7 @@ class Overpass(Thread):
 
     def run(self):
         self.response = overpass_query(self.box, self.query)
-        return 
+        return
 
     def join(self):
         Thread.join(self)
@@ -149,7 +149,7 @@ def parse_route(gpx, simplify=False):
     gpx_name = track.name
     return gpx_name, lat, lon, ele
 
-    
+
 def uniquify(lat, lon, ele):
     precision = 6
     approx_coord_full = list(map(lambda x, y, z: ((round(x, precision), round(y, precision)), z), lat, lon, ele))
@@ -163,7 +163,7 @@ def uniquify(lat, lon, ele):
 
 def get_wpt_type(tag_dict):
     """
-    Purpose: Récupérer le type de POI 
+    Purpose: Récupérer le type de POI
     (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
     Return: the waypoint types that will be written into the gpx file
     """
@@ -171,8 +171,8 @@ def get_wpt_type(tag_dict):
     query_name = ''
     # OSM node values that it used to identify the waypoint type / Last values have low priority
     list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 'attraction',
-        'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier', 
-        'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins', 
+        'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier',
+        'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins',
         'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
         'waterfall', 'wilderness_hut', 'cairn', 'camp_site', 'hostel', 'hotel']
     for q in list_of_OSM_values:
@@ -187,7 +187,7 @@ def get_wpt_type(tag_dict):
             query_name = q
             return query_name
 
-    # For a particular waypoint type name that is not written in OSM db 
+    # For a particular waypoint type name that is not written in OSM db
     OSM_sac_scale = {'demanding_mountain_hiking':'T3 - ',
         'alpine_hiking':'T4 - ',
         'demanding_alpine_hiking':'T5 - ',
@@ -201,7 +201,7 @@ def get_wpt_type(tag_dict):
     for k, v in list(OSM_badly_tagged.items()):
         if k in list(tag_dict.values()):
             query_name = v
-            return query_name        
+            return query_name
 
     # Return the same "query_name" that the input one if type is not found
     return query_name
@@ -213,7 +213,7 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
     for node in response['features']:
         lat2 = node['geometry']['coordinates'][1]
         lon2 = node['geometry']['coordinates'][0]
-        
+
         match, near_lon, near_lat, index, min_dist = find_nearest(lon, lat, lon2, lat2, lim_dist)
         if match:
 
@@ -221,7 +221,7 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
             has_name = False
             ele = '' # set default in case proper tag not found
             [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon2, lat2, index)
-            
+
             tag_dict = node['properties']
             query_name = get_wpt_type(tag_dict)
             if 'ele' in tag_dict:
@@ -232,7 +232,6 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
             else:
                 name = query_name + str(i_name) # set by default in case proper tag not found
                 i_name += 1
-
             # Because only 1 POI is possible per GPS point
             if index not in index_used and new_gpx_index is not None:
                 log.debug(query_name + " - " + name + " - " + ele)
@@ -247,14 +246,14 @@ def get_overpass_nodes(response, Pts, index_used, lat, lon, lim_dist):
 @timeit
 def get_overpass_ways(response, Pts, index_used, lat, lon, lim_dist):
     """
-    Purpose: Return way faetures close to the gpx route from the overpass query
+    Purpose: Return way features close to the gpx route from the overpass query
     Inputs:
         - response: overpass response (json format)
-        - Pts: The waypoints 
+        - Pts: The waypoints
         - index_used: The gpx index point(s) linked to a waypoint
         - lat
         - lon
-        - lim_dist 
+        - lim_dist
     Return: list of waypoints with attributes
     """
     i_name = 1
@@ -317,7 +316,7 @@ def get_segments_pts(response, Pts, index_used, lat, lon, lim_dist):
         match, near_lon, near_lat, index, min_dist = find_nearest(lon, lat, lon_start, lat_start, lim_dist)
 
         lat_end = segment.end_latlng.lat
-        lon_end = segment.end_latlng.lon 
+        lon_end = segment.end_latlng.lon
         match2, near_lon2, near_lat2, index2, min_dist = find_nearest(lon, lat, lon_end, lat_end, lim_dist)
 
         # print('index :' + str(index) + ' ' + str(index2))
@@ -325,7 +324,7 @@ def get_segments_pts(response, Pts, index_used, lat, lon, lim_dist):
             log.debug('Distance to node: ' + '%.2f' % (min_dist * 1e3) + ' m')
             [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon_start, lat_start, index)
             query_name = 'strava_start'
-            name = 'Start ' + segment.name 
+            name = 'Start ' + segment.name
 
             # Because only 1 POI is possible per GPS point
             if index not in index_used and new_gpx_index is not None:
@@ -336,10 +335,10 @@ def get_segments_pts(response, Pts, index_used, lat, lon, lim_dist):
             else:
                 log.debug('/!\ Node index already used: ' + query_name + " - " + name)
 
-   
+
             [lon_new, lat_new, new_gpx_index] = add_new_point(lon, lat, lon_end, lat_end, index2)
             query_name = 'strava_end'
-            name = 'End ' + segment.name 
+            name = 'End ' + segment.name
 
             # Because only 1 POI is possible per GPS point
             if index2 not in index_used and new_gpx_index is not None:
@@ -392,6 +391,11 @@ def find_nearest_way(lon, lat, lon2, lat2, lim_dist):
 
 
 def add_new_point(lon, lat, lon2, lat2, index):
+    """
+    Purpose - Add a new coordinate point
+    Input: coordinate of the GPX track (lon, lat, index), coordinate of the POI (lon2, lat2)
+    Return new coordinates: (longitude, latitude, index) 
+    """
     if (index == 0) or (index+1 == len(lat)):
         return None, None, None
 
@@ -403,10 +407,12 @@ def add_new_point(lon, lat, lon2, lat2, index):
     else:
         i = index+1
 
+    print "PERP - lat[i]: " + str(lat[i]) + " - lat2: " + str(lat2)
     [lon_new, lat_new, exist] = get_perp(lon[i], lat[i], lon[index], lat[index], lon2, lat2)
     if exist == 1:
         i = index
     precision = 6
+    print "\t - lat_new: " + str(round(lat_new, precision))
     return round(lon_new, precision), round(lat_new, precision), i
 
 
@@ -467,7 +473,7 @@ def overpass_query(box, query, responseformat="geojson"):
         try:
             response = api.Get(overpass_query_str, responseformat="geojson")
             saveit = False
-            if responseformat is 'xml' and saveit:  # Useless 
+            if responseformat is 'xml' and saveit:  # Useless
                 with open("Overpass.xml", "w") as f:
                     f.write(response.encode('utf-8'))
             elif responseformat is 'geojson' and saveit:
@@ -494,17 +500,35 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
     gpx_segment = gpxpy.gpx.GPXTrackSegment()
     gpx_track.segments.append(gpx_segment)
 
+    _lat = []
+    _lon = []
+    _ele = []
+
     for i in range(len(lat)):
         if i in index_used:
             pt = filter(lambda pt: pt.index == i, Pts)
             P = pt[0]
+            # Add new coord before i
             if (P.new_gpx_index < i) and P.new_gpx_index is not None:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
-        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat[i], lon[i], elevation=ele[i]))
+                # gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
+                _lat.append(P.lat)
+                _lon.append(P.lon)
+                _ele.append(ele[i])
+        # gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat[i], lon[i], elevation=ele[i]))
+        _lat.append(lat[i])
+        _lon.append(lon[i])
+        _ele.append(ele[i])
         if i in index_used:
-
+            # Add new coord after i
             if (P.new_gpx_index > i) and P.new_gpx_index is not None:
-                gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
+                # gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(P.lat, P.lon, elevation=ele[i]))
+                _lat.append(P.lat)
+                _lon.append(P.lon)
+                _ele.append(ele[i])
+
+    _lat2, _lon2, _ele2 = filtering_duplicate(_lat, _lon, _ele)
+    for i in range(len(_lat2)):
+        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(_lat2[i], _lon2[i], elevation=_ele2[i]))
 
     if keep_old_wpt is True:
         for waypoint in gpx_data.waypoints:
@@ -517,6 +541,21 @@ def build_and_save_gpx(gpx_data, gpx_name, Pts, lat, lon, ele, index_used, gpxou
 
     with open(gpxoutputname, 'w') as f:
         f.write(gpx.to_xml())
+
+def filtering_duplicate(_lat, _lon, _ele):
+
+    _lat2 = []
+    _lon2 = []
+    _ele2 = []
+    for i in range(len(_lat)):
+
+        if i > 1:
+            if (_lat[i] != _lat[i-1]) and (_lon[i] != _lon[i-1]):
+                _lat2.append(_lat[i])
+                _lon2.append(_lon[i])
+                _ele2.append(_ele[i])
+
+    return _lat2, _lon2, _ele2
 
 
 def shift(l, n):
@@ -609,7 +648,7 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
                 query_str = query_str + '["name"!~".*"]'
             query_lst.append(query_str)
 
-    return query_lst    
+    return query_lst
 
 
 def add_custom_overpass_query(query_lst, query_type, overpass_custom_str):
@@ -617,10 +656,10 @@ def add_custom_overpass_query(query_lst, query_type, overpass_custom_str):
         unquoted = urllib.unquote(overpass_custom_str)
         if re.match(query_type + '\["(.)+"(=|~)"(.)+"\](.)*', unquoted):
             query_lst.append(unquoted)
-    return query_lst 
+    return query_lst
 
 
-def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, reverse=False, 
+def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, reverse=False,
     wpt_json=None, wpt_no_name_json=None, overpass_custom_str=None, strava_segment=None):
     '''
     lim_dist in kilometers (0.05 #default)
