@@ -166,26 +166,25 @@ def get_wpt_type(tag_dict):
     Purpose: Récupérer le type de POI
     (Nécessaire car les requetes overpass se font maintenant en 2 différents blocs)
     Return: the waypoint types that will be written into the gpx file
+			or empty string if type is not found
     """
 
-    query_name = ''
     # OSM node values that it used to identify the waypoint type / Last values have low priority
-    list_of_OSM_values = ['aircraft_wreck', 'alpine_hut', 'attraction',
-        'castle', 'cave_entrance', 'chapel', 'drinking_water', 'fountain', 'glacier',
-        'guidepost', 'lake', 'locality', 'observatory', 'peak', 'ruins',
-        'saddle', 'shelter', 'spring', 'toilets', 'toposcope', 'tree', 'viewpoint', 'volcano',
-        'waterfall', 'wilderness_hut', 'cairn', 'camp_site', 'hostel', 'hotel']
-    for q in list_of_OSM_values:
-        if q in list(tag_dict.values()):
-            query_name = q
-            return query_name
+    list_of_OSM_values = ['peak', 'saddle', 'volcano', 'attraction', 'toposcope', 'viewpoint',
+        'drinking_water', 'fountain', 'glacier', 'waterfall', 'spring', 'lake',
+        'guidepost', 'locality', 'observatory', 'cave_entrance',
+        'chapel', 'castle', 'ruins', 'aircraft_wreck', 'toilets', 'tree', 'cairn',
+        'alpine_hut', 'wilderness_hut', 'shelter', 'camp_site', 'hostel', 'hotel']
+    for v in list_of_OSM_values:
+        if v in list(tag_dict.values()):
+            print v
+            return v
 
     # OSM node keys that it used to identify the waypoint type (typically with someting like "arbitrary_key"="yes")
     list_of_OSM_key = ['ford', 'barrier', 'tunnel']
-    for q in list_of_OSM_key:
-        if q in tag_dict.keys():
-            query_name = q
-            return query_name
+    for v in list_of_OSM_key:
+        if v in tag_dict.keys():
+            return v
 
     # For a particular waypoint type name that is not written in OSM db
     OSM_sac_scale = {'demanding_mountain_hiking':'T3 - ',
@@ -194,17 +193,14 @@ def get_wpt_type(tag_dict):
         'difficult_alpine_hiking':'T6 - '}
     for k, v in list(OSM_sac_scale.items()):
         if k in list(tag_dict.values()):
-            query_name = v
-            return query_name
+            return v
 
     OSM_badly_tagged = {'water':'lake'}
     for k, v in list(OSM_badly_tagged.items()):
         if k in list(tag_dict.values()):
-            query_name = v
-            return query_name
+            return v
 
-    # Return the same "query_name" that the input one if type is not found
-    return query_name
+    return ''
 
 
 @timeit
