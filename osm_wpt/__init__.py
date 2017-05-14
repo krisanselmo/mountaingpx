@@ -407,12 +407,12 @@ def add_new_point(lon, lat, lon2, lat2, index):
     else:
         i = index+1
 
-    print "PERP - lat[i]: " + str(lat[i]) + " - lat2: " + str(lat2)
+    # print "PERP - lat[i]: " + str(lat[i]) + " - lat2: " + str(lat2)
     [lon_new, lat_new, exist] = get_perp(lon[i], lat[i], lon[index], lat[index], lon2, lat2)
     if exist == 1:
         i = index
     precision = 6
-    print "\t - lat_new: " + str(round(lat_new, precision))
+    # print "\t - lat_new: " + str(round(lat_new, precision))
     return round(lon_new, precision), round(lat_new, precision), i
 
 
@@ -472,11 +472,11 @@ def overpass_query(box, query, responseformat="geojson"):
     while (not replied) and (i < 5):
         try:
             response = api.Get(overpass_query_str, responseformat="geojson")
-            saveit = False
-            if responseformat is 'xml' and saveit:  # Useless
+            save_it = False # For debug
+            if responseformat is 'xml' and save_it:
                 with open("Overpass.xml", "w") as f:
                     f.write(response.encode('utf-8'))
-            elif responseformat is 'geojson' and saveit:
+            elif responseformat is 'geojson' and save_it:
                 with open("Overpass.geojson", "w") as f:
                     json.dump(response, f)
             replied = True
@@ -485,6 +485,8 @@ def overpass_query(box, query, responseformat="geojson"):
             log.warning('Overpass is not responding')
             i += 1
             time.sleep(2)
+            log.warning('Switch to default API endpoint')
+            api = overpass.API()
             # print 'MultipleRequestsError'
     return response
 
@@ -654,7 +656,7 @@ def construct_overpass_query(query_lst, query_type, wpt_json, with_name):
 def add_custom_overpass_query(query_lst, query_type, overpass_custom_str):
     if overpass_custom_str is not None:
         unquoted = urllib.unquote(overpass_custom_str)
-        if re.match(query_type + '\["(.)+"(=|~)"(.)+"\](.)*', unquoted):
+        if re.match(query_type + '\["(.)+"([=~])"(.)+"\](.)*', unquoted):
             query_lst.append(unquoted)
     return query_lst
 
