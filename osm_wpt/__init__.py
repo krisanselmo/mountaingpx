@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 17 15:28:58 2016
@@ -22,7 +23,7 @@ from stravalib import Client
 import private_values
 # import pdb
 
-LOGFILE = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
+LOGFILE_PATH = os.path.join(os.path.dirname(__file__), 'osm_wpt.log')
 
 def timeit(f):
     def timed(*args, **kw):
@@ -664,7 +665,7 @@ def osm_wpt(fpath, gpxoutputname='out.gpx', lim_dist=0.05, keep_old_wpt=False, r
     keep_old_wpt (False #defaut)
     '''
 
-    log.basicConfig(filename=LOGFILE, level=log.WARNING)
+    log.basicConfig(filename=LOGFILE_PATH, level=log.WARNING)
     log.info('Started')
 
     with open(fpath, 'r') as gpx_file:
