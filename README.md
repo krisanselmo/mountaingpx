@@ -18,5 +18,5 @@ Get a [STRAVA API token](http://strava.github.io/api/) and replace the public ac
 
 ```bash
 pip install -r requirements.txt
-python osm_wpt_app.py
+python mountaingpx_app.py
 ```
