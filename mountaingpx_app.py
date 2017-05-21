@@ -6,8 +6,7 @@ import urllib
 import time
 from flask import Flask, request, redirect, url_for, flash, send_from_directory, render_template, abort
 from werkzeug.utils import secure_filename
-from werkzeug import SharedDataMiddleware
-import osm_wpt
+import wpts
 from threading import Thread
 
 HERE = os.path.dirname(__file__)
@@ -144,9 +143,9 @@ def main_page(trk_num=None):
 
             try:
                 # TODO: AFFICHER UN LOADING
-                osm_wpt.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath,
-                                reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name,
-                                overpass_custom_str=overpass_custom, strava_segment=strava_segment)
+                wpts.main.osm_wpt(input_file, lim_dist=lim_dist, gpxoutputname=fpath,
+                             reverse=reverse, wpt_json=wpt, wpt_no_name_json=wpt_no_name,
+                             overpass_custom_str=overpass_custom, strava_segment=strava_segment)
 
             except Exception as err:
                 flash(str(err))
@@ -254,5 +253,5 @@ def main_page(trk_num=None):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True, port=80)
-    app.run(port=80)
+    app.run(debug=True, port=80)
+    #app.run(port=80)
