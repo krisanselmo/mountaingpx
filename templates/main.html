@@ -211,8 +211,33 @@
     </div>
 
 
+
+
 <script type="text/javascript">
-$(document).ready(function() {
+
+
+    // var marker;
+    // function markerFunction(id){
+    //     for (var i in gpx_overlay._markers){
+    //         var markerID = gpx_overlay._markers[i].options.title;
+    //         if (markerID == id){
+    //             // gpx_overlay._markers[i].openPopup();
+                
+    //             if (marker){
+    //                 map.removeLayer(marker);
+    //             }
+    //             lat = gpx_overlay._markers[i]._latlng.lat;
+    //             lng = gpx_overlay._markers[i]._latlng.lng;
+    //             map.panTo(new L.LatLng(lat, lng));
+    //             marker = new L.marker([lat, lng],{icon: testicon, zIndexOffset: 1000}).addTo(map);
+    //         };
+    //     }
+    // }
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
         $('.ziehharmonika').ziehharmonika({
             collapsible: true,
             prefix: ''
@@ -222,7 +247,6 @@ $(document).ready(function() {
 
 
 <script type="text/javascript">
-
 
     $('#select_all_with_name').click(function(event) {
         if(this.checked) {
@@ -1016,7 +1040,9 @@ $(document).ready(function() {
 
     var sidebar = L.control.sidebar('sidebar').addTo(map);
     $(document).ready(function () {
-        sidebar.open('home');
+        if ($(window).width() > 768) {
+            sidebar.open('home');
+        }
     });
 
 
