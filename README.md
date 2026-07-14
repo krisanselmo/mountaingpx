@@ -20,3 +20,18 @@ Get a [STRAVA API token](http://strava.github.io/api/) and replace the public ac
 pip install -r requirements.txt
 python mountaingpx_app.py
 ```
+
+## 🆕 Browser edition (100% client-side, no server)
+
+A full rewrite running **entirely in the browser** — no Flask, no Python, no
+server. Your GPX file never leaves your device; only anonymous Overpass
+(OpenStreetMap) queries are made to fetch the points of interest. See
+[`webapp/`](webapp/) for details.
+
+```bash
+# from the repo root
+python3 -m http.server 8000
+# then open http://localhost:8000/webapp/
+```
+
+It can also be hosted as-is on any static host (GitHub Pages, Netlify, …).
