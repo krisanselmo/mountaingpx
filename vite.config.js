@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Mountain GPX — waypoints automatiques',
         short_name: 'Mountain GPX',
@@ -41,9 +41,10 @@ export default defineConfig({
         // so a previously loaded area stays usable offline.
         runtimeCaching: [
           {
-            // Leaflet tile layers (OpenTopoMap, OSM, Esri, waymarked trails…).
+            // Leaflet tile layers: OpenTopoMap, OSM, Esri satellite, Waymarked Trails.
             urlPattern: ({ url }) =>
-              /tile|\.png$|\.jpg$|arcgisonline|waymarkedtrails/i.test(url.href),
+              /(opentopomap|openstreetmap|waymarkedtrails)\.org$/.test(url.hostname) ||
+              url.hostname === 'server.arcgisonline.com',
             handler: 'CacheFirst',
             options: {
               cacheName: 'map-tiles',
@@ -55,8 +56,8 @@ export default defineConfig({
             },
           },
           {
-            // Overpass API responses.
-            urlPattern: ({ url }) => /overpass/i.test(url.href),
+            // Overpass API responses (overpass-api.de, kumi.systems, maps.mail.ru).
+            urlPattern: ({ url }) => /\/overpass\/|\/interpreter$/.test(url.pathname),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'overpass-api',
