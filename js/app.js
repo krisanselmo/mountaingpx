@@ -588,6 +588,7 @@ async function generate() {
     state.pts = applyOverrides(res.pts);
     syncWaypointUI();
     updatePoiCounts();
+    setMenu(false); // reveal the map with the fresh waypoints (mobile)
     const n = state.pts.length;
     if (res.failedSegments) {
       toast(`${n} waypoint(s) — ${res.failedSegments}/${res.totalSegments} portion(s) du parcours n'ont pas pu être interrogées, réessayez`, 'warn');
@@ -704,31 +705,53 @@ function resetDefaults() {
   onSelectionChanged();
 }
 
+// ---- Mobile drawer ----------------------------------------------------
+function setMenu(open) {
+  const backdrop = $('#backdrop');
+  document.body.classList.toggle('menu-open', open);
+  $('#menu-btn').setAttribute('aria-expanded', String(open));
+  if (open) {
+    backdrop.hidden = false;
+    requestAnimationFrame(() => backdrop.classList.add('show'));
+  } else {
+    backdrop.classList.remove('show');
+    setTimeout(() => {
+      if (!document.body.classList.contains('menu-open')) backdrop.hidden = true;
+    }, 250);
+  }
+}
+
 // ---- Wiring -----------------------------------------------------------
 function wire() {
-  const drop = document.body;
+  const drop = $('#dropzone');
   const input = $('#file-input');
   $('#btn-open').addEventListener('click', () => input.click());
   input.addEventListener('change', (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
-  // Drag & drop a GPX anywhere on the page (desktop convenience).
   ['dragenter', 'dragover'].forEach((ev) =>
     drop.addEventListener(ev, (e) => {
       e.preventDefault();
-      drop.classList.add('dragging');
+      drop.classList.add('over');
     })
   );
   ['dragleave', 'drop'].forEach((ev) =>
     drop.addEventListener(ev, (e) => {
       e.preventDefault();
-      if (ev === 'dragleave' && e.relatedTarget) return;
-      drop.classList.remove('dragging');
+      drop.classList.remove('over');
     })
   );
   drop.addEventListener('drop', (e) => {
     const f = e.dataTransfer.files[0];
     if (f) handleFile(f);
   });
+
+  // Mobile drawer for the POI config.
+  $('#menu-btn').addEventListener('click', () =>
+    setMenu(!document.body.classList.contains('menu-open'))
+  );
+  $('#menu-close').addEventListener('click', () => setMenu(false));
+  $('#backdrop').addEventListener('click', () => setMenu(false));
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
 
   $('#btn-generate').addEventListener('click', generate);
   $('#btn-download').addEventListener('click', download);
