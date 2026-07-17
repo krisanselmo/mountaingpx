@@ -13,6 +13,8 @@ import * as Overpass from './overpass.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME } from './poi.js';
 
 const LS_KEY = 'mountaingpx.settings.v1';
+const LS_VIEW_KEY = 'mountaingpx.view.v1';
+const DEFAULT_VIEW = { lat: 45.9, lon: 6.87, zoom: 12 };
 
 // ---- Application state -------------------------------------------------
 const state = {
@@ -138,9 +140,31 @@ function persistSelection() {
   });
 }
 
+// ---- Map view persistence ---------------------------------------------
+function loadView() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_VIEW_KEY));
+    if (v && isFinite(v.lat) && isFinite(v.lon) && isFinite(v.zoom)) return v;
+  } catch (_) {}
+  return null;
+}
+function saveView(map) {
+  const c = map.getCenter();
+  try {
+    localStorage.setItem(
+      LS_VIEW_KEY,
+      JSON.stringify({ lat: c.lat, lon: c.lng, zoom: map.getZoom() })
+    );
+  } catch (_) {}
+}
+
 // ---- Map --------------------------------------------------------------
 function initMap() {
-  const map = L.map('map', { zoomControl: true }).setView([45.9, 6.87], 12);
+  // Restore the last view: the URL hash wins (shareable links), otherwise
+  // fall back to the position saved from the previous session.
+  const saved = parseMapHash(location.hash) || loadView() || DEFAULT_VIEW;
+  const map = L.map('map', { zoomControl: true })
+    .setView([saved.lat, saved.lon], saved.zoom);
 
   const opentopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
@@ -171,12 +195,12 @@ function initMap() {
   state.markerLayer = L.layerGroup().addTo(map);
 
   // Keep the map position in the URL (OSM-style #map=zoom/lat/lon) so the
-  // view survives reloads and can be shared.
-  const fromHash = parseMapHash(location.hash);
-  if (fromHash) map.setView([fromHash.lat, fromHash.lon], fromHash.zoom);
+  // view can be shared, and persist it to localStorage so it is restored
+  // whenever the app is reopened (even without the hash, e.g. as a PWA).
   map.on('moveend', () => {
     const c = map.getCenter();
     history.replaceState(null, '', `#map=${map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`);
+    saveView(map);
   });
 }
 
