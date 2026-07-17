@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mountain GPX — waypoints automatiques</title>
+  <meta name="description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, fontaines…) sur votre trace GPX. Entièrement dans le navigateur, sans serveur.">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <aside id="sidebar">
+    <header class="brand">
+      <div class="logo">⛰️</div>
+      <div>
+        <h1>Mountain GPX</h1>
+        <p class="tagline">Waypoints automatiques</p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div id="dropzone" class="dropzone">
+        <input type="file" id="file-input" accept=".gpx" hidden>
+        <p class="dz-icon">📂</p>
+        <p><strong>Glissez votre fichier GPX</strong><br>ou</p>
+        <button id="btn-open" class="btn btn-ghost" type="button" title="Rien n'est envoyé sur un serveur — tout reste sur votre appareil.">Choisir un fichier</button>
+      </div>
+    </section>
+
+    <section class="panel scroll">
+      <div class="panel-head">
+        <h2>Points d'intérêt</h2>
+        <div class="bulk">
+          <button id="sel-all-with" class="link" type="button">Tout</button>
+          <button id="sel-none-with" class="link" type="button">Rien</button>
+          <button id="btn-defaults" class="link" type="button">Défaut</button>
+        </div>
+      </div>
+      <div id="poi-list"></div>
+
+      <details class="poi-group advanced">
+        <summary>Options avancées</summary>
+        <label class="field">
+          <span>Requête Overpass personnalisée</span>
+          <input type="text" id="overpass-custom" placeholder='ex : way["leisure"="park"]'>
+          <small>Un seul élément, en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide" target="_blank" rel="noopener">Overpass QL</a>.</small>
+        </label>
+        <label class="field">
+          <span>Distance max d'accrochage : <b id="snap-dist-val">50 m</b></span>
+          <input type="range" id="snap-dist" min="10" max="500" step="10" value="50">
+        </label>
+        <label class="check">
+          <input type="checkbox" id="reverse"> Inverser le sens de la trace
+        </label>
+      </details>
+    </section>
+
+    <footer class="actions">
+      <button id="btn-generate" class="btn btn-primary" type="button">
+        <span class="spinner"></span> Générer les waypoints
+      </button>
+      <button id="btn-download" class="btn btn-ok" type="button" disabled>⬇ Télécharger le GPX</button>
+    </footer>
+  </aside>
+
+  <main id="main">
+    <div id="toolbar" class="toolbar">
+      <span id="track-name" class="track-name">Aucune trace</span>
+      <div class="stats">
+        <span class="stat"><b id="stat-dist">—</b><small>distance</small></span>
+        <span class="stat"><b id="stat-dplus">—</b><small>D+</small></span>
+        <span class="stat"><b id="stat-alt">—</b><small>alt. max</small></span>
+        <span class="stat"><b id="stat-wpt">0</b><small>waypoints</small></span>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="profile-wrap" class="profile-wrap empty">
+      <label id="profile-wpts-toggle-wrap" class="profile-toggle" hidden>
+        <input type="checkbox" id="profile-wpts-toggle" checked> Waypoints
+      </label>
+      <svg id="profile" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="loader"></div>
+      <p id="overlay-msg">Interrogation d'OpenStreetMap…</p>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

@@ -1,22 +1,66 @@
-# Mountain GPX 
-[www.mountaingpx.fr](http://www.mountaingpx.fr)
+# Mountain GPX
 
-This web app aims at automatically adding waypoints (WPT) on a GPX route. These waypoints are particularly useful when following a route on a GPS watch device. Available waypoints come from:
-- [openstreetmap.org](http://www.openstreetmap.org)
-- [Strava segments](https://www.strava.com/segments/explore)
+Application web qui ajoute automatiquement des waypoints (sommets, cols,
+refuges, points d'eau…) à une trace GPX, à partir des données OpenStreetMap.
+100 % client-side : le fichier GPX est traité dans le navigateur, seules des
+requêtes vers l'API Overpass sont émises.
 
-Example of a GPX track with the openstreetmap waypoints automatically hooked: 
-![image1](https://raw.githubusercontent.com/krisanselmo/mountaingpx/master/static/img/presentation/2.png)
-([See online demo](http://www.mountaingpx.fr/track/1))
+Déployée sur https://krisanselmo.github.io/mountaingpx/
 
-Note: Only available in French for the moment
+## Fonctionnalités
 
-### Requirement for Strava segments
-Get a [STRAVA API token](http://strava.github.io/api/) and replace the public access token in this file: [osm_wpt/private_values.py](osm_wpt/private_values.py)
+- Import GPX par glisser-déposer ou sélecteur de fichier (`trk` et `rte`).
+- Récupération des POI via l'API Overpass : sommets, cols, refuges, fontaines,
+  lacs, cascades, chapelles, points de vue, etc.
+- Accrochage des POI sur la trace : distance de Haversine, point le plus
+  proche, projection perpendiculaire sur le segment.
+- Sélection par type de POI, « avec nom » et/ou « sans nom », requête Overpass
+  personnalisée, distance d'accrochage réglable, inversion du sens de la trace.
+- Carte Leaflet (OpenTopoMap / OpenStreetMap / satellite Esri, overlay
+  sentiers, overlay points d'eau) avec popups des tags OSM ; renommage et
+  suppression des waypoints depuis la carte.
+- Profil altimétrique et statistiques (distance, D+, altitude max).
+- Export GPX enrichi des waypoints, téléchargé localement.
+- Préférences mémorisées dans `localStorage`.
 
-### Usage
+## Développement
+
+Build [Vite](https://vite.dev), Leaflet en dépendance npm.
 
 ```bash
-pip install -r requirements.txt
-python mountaingpx_app.py
+npm install
+npm run dev        # serveur de développement (http://localhost:5173)
+npm run build      # build de production dans dist/
+npm run preview    # sert le build de production en local
 ```
+
+`dist/` est un site statique à chemins relatifs (`base: './'`), déployable sur
+n'importe quel hébergeur statique.
+
+## Structure
+
+```
+├── index.html          # interface (SPA), point d'entrée Vite
+├── public/             # assets copiés tels quels (favicon)
+├── css/style.css       # styles
+└── js/                 # modules ES
+    ├── geometry.js     # Haversine, plus proche point, projection
+    ├── poi.js          # catalogue POI, filtres Overpass, détection de type
+    ├── icons.js        # icônes SVG inline (Lucide, licence ISC + glyphes maison), pins Leaflet
+    ├── gpx.js          # parsing et génération GPX
+    ├── overpass.js     # requêtes Overpass segmentées et hedgées, accrochage
+    └── app.js          # carte Leaflet, UI, orchestration
+```
+
+## Déploiement
+
+`.github/workflows/deploy-webapp.yml` : à chaque push sur `master`,
+`npm ci && npm run build` puis publication de `dist/` sur GitHub Pages.
+
+## Notes
+
+- Les requêtes Overpass sont réparties sur plusieurs instances publiques :
+  la trace est découpée en segments interrogés en parallèle, et chaque requête
+  est relancée sur une autre instance après 8 s sans réponse.
+- Les marqueurs sont des `L.divIcon` SVG générés par `js/icons.js` — aucun
+  asset image.
