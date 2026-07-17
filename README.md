@@ -22,6 +22,10 @@ Déployée sur https://krisanselmo.github.io/mountaingpx/
 - Profil altimétrique et statistiques (distance, D+, altitude max).
 - Export GPX enrichi des waypoints, téléchargé localement.
 - Préférences mémorisées dans `localStorage`.
+- **PWA installable** : l'application peut être ajoutée à l'écran d'accueil
+  (mobile) ou installée comme app de bureau, et fonctionne hors-ligne grâce à
+  un service worker (mise en cache de l'app, des tuiles carto déjà consultées
+  et des réponses Overpass).
 
 ## Développement
 
@@ -41,7 +45,7 @@ n'importe quel hébergeur statique.
 
 ```
 ├── index.html          # interface (SPA), point d'entrée Vite
-├── public/             # assets copiés tels quels (favicon)
+├── public/             # assets copiés tels quels (favicon, icônes PWA)
 ├── css/style.css       # styles
 └── js/                 # modules ES
     ├── geometry.js     # Haversine, plus proche point, projection
