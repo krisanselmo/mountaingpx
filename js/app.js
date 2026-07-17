@@ -14,6 +14,7 @@ import { POI, GROUPS, DEFAULT_WITH_NAME } from './poi.js';
 
 const LS_KEY = 'mountaingpx.settings.v1';
 const LS_VIEW_KEY = 'mountaingpx.view.v1';
+const LS_LAYERS_KEY = 'mountaingpx.layers.v1';
 const DEFAULT_VIEW = { lat: 45.9, lon: 6.87, zoom: 12 };
 
 // ---- Application state -------------------------------------------------
@@ -158,6 +159,19 @@ function saveView(map) {
   } catch (_) {}
 }
 
+function loadLayers() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_LAYERS_KEY));
+    if (v && typeof v.base === 'string' && Array.isArray(v.overlays)) return v;
+  } catch (_) {}
+  return null;
+}
+function saveLayers(base, overlays) {
+  try {
+    localStorage.setItem(LS_LAYERS_KEY, JSON.stringify({ base, overlays }));
+  } catch (_) {}
+}
+
 // ---- Map --------------------------------------------------------------
 function initMap() {
   // Restore the last view: the URL hash wins (shareable links), otherwise
@@ -183,13 +197,40 @@ function initMap() {
     opacity: 0.7,
   });
 
-  opentopo.addTo(map);
-  L.control
-    .layers(
-      { 'OpenTopoMap': opentopo, 'OpenStreetMap': osm, 'Satellite': sat },
-      { 'Sentiers (waymarked)': cycl, "Points d'eau": initWaterOverlay(map) }
-    )
-    .addTo(map);
+  const baseLayers = { 'OpenTopoMap': opentopo, 'OpenStreetMap': osm, 'Satellite': sat };
+  const overlays = { 'Sentiers (waymarked)': cycl, "Points d'eau": initWaterOverlay(map) };
+
+  // Restore the base map and overlays chosen in the previous session.
+  const savedLayers = loadLayers();
+  const base = (savedLayers && baseLayers[savedLayers.base]) || opentopo;
+  base.addTo(map);
+
+  L.control.layers(baseLayers, overlays).addTo(map);
+
+  // Add restored overlays after the control exists, firing `overlayadd` so
+  // dependent layers (e.g. the on-demand "Points d'eau") load their data.
+  if (savedLayers) {
+    for (const name of savedLayers.overlays) {
+      const layer = overlays[name];
+      if (layer && !map.hasLayer(layer)) {
+        layer.addTo(map);
+        map.fire('overlayadd', { layer, name });
+      }
+    }
+  }
+
+  // Persist the active base map / overlays whenever they change.
+  const persistLayers = () => {
+    let baseName = 'OpenTopoMap';
+    for (const [name, layer] of Object.entries(baseLayers)) {
+      if (map.hasLayer(layer)) baseName = name;
+    }
+    const on = Object.entries(overlays)
+      .filter(([, layer]) => map.hasLayer(layer))
+      .map(([name]) => name);
+    saveLayers(baseName, on);
+  };
+  map.on('baselayerchange overlayadd overlayremove', persistLayers);
 
   state.map = map;
   state.markerLayer = L.layerGroup().addTo(map);
