@@ -706,21 +706,23 @@ function resetDefaults() {
 
 // ---- Wiring -----------------------------------------------------------
 function wire() {
-  const drop = $('#dropzone');
+  const drop = document.body;
   const input = $('#file-input');
   $('#btn-open').addEventListener('click', () => input.click());
   input.addEventListener('change', (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
+  // Drag & drop a GPX anywhere on the page (desktop convenience).
   ['dragenter', 'dragover'].forEach((ev) =>
     drop.addEventListener(ev, (e) => {
       e.preventDefault();
-      drop.classList.add('over');
+      drop.classList.add('dragging');
     })
   );
   ['dragleave', 'drop'].forEach((ev) =>
     drop.addEventListener(ev, (e) => {
       e.preventDefault();
-      drop.classList.remove('over');
+      if (ev === 'dragleave' && e.relatedTarget) return;
+      drop.classList.remove('dragging');
     })
   );
   drop.addEventListener('drop', (e) => {
