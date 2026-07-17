@@ -15,6 +15,11 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <button id="menu-btn" class="menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="sidebar" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+  <div id="backdrop" class="backdrop" hidden></div>
+
   <aside id="sidebar">
     <header class="brand">
       <div class="logo">⛰️</div>
@@ -22,6 +27,9 @@
         <h1>Mountain GPX</h1>
         <p class="tagline">Waypoints automatiques</p>
       </div>
+      <button id="menu-close" class="menu-close" type="button" aria-label="Fermer le menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
     </header>
 
     <section class="panel">
