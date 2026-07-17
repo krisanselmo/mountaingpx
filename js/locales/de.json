@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "Mountain GPX — automatische Wegpunkte",
+    "description": "Fügen Sie automatisch Wegpunkte (Gipfel, Pässe, Hütten, Brunnen…) zu Ihrem GPX-Track hinzu. Vollständig im Browser, ohne Server."
+  },
+  "lang": { "aria": "Sprache" },
+  "menu": { "open": "Menü öffnen", "close": "Menü schließen" },
+  "brand": { "tagline": "Automatische Wegpunkte" },
+  "dropzone": {
+    "drop": "Ziehen Sie Ihre GPX-Datei hierher",
+    "or": "oder",
+    "openBtn": "Datei auswählen",
+    "openTitle": "Es wird nichts an einen Server gesendet — alles bleibt auf Ihrem Gerät."
+  },
+  "panel": { "poiHeading": "Interessante Punkte" },
+  "bulk": { "all": "Alle", "none": "Keine", "default": "Standard" },
+  "th": {
+    "named": "Benannt",
+    "namedTitle": "POIs einbeziehen, die in OpenStreetMap einen Namen haben — der Wegpunkt übernimmt diesen Namen (z. B. „Col de la Vache“).",
+    "noname": "Ohne Namen",
+    "nonameTitle": "Auch POIs ohne Namen in OpenStreetMap einbeziehen — ein nummerierter generischer Name wird vergeben (z. B. saddle1, spring2)."
+  },
+  "advanced": {
+    "summary": "Erweiterte Optionen",
+    "customLabel": "Benutzerdefinierte Overpass-Abfrage",
+    "customPlaceholder": "z. B. way[\"leisure\"=\"park\"]",
+    "customHelp": "Ein einzelnes Element, in <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
+    "snapLabel": "Max. Fangdistanz:",
+    "reverse": "Trackrichtung umkehren"
+  },
+  "btn": { "generate": "Wegpunkte erzeugen", "download": "⬇ GPX herunterladen" },
+  "toolbar": { "noTrack": "Kein Track" },
+  "stat": { "distance": "Distanz", "dplus": "Aufstieg", "altmax": "max. Höhe", "waypoints": "Wegpunkte" },
+  "profile": { "waypoints": "Wegpunkte", "noElevation": "Keine Höhendaten" },
+  "overlay": {
+    "querying": "OpenStreetMap wird abgefragt…",
+    "queryingProgress": "OpenStreetMap wird abgefragt… {done}/{total}"
+  },
+  "map": { "start": "Start", "end": "Ziel" },
+  "popup": { "rename": "Umbenennen", "delete": "Vom Track entfernen", "nameAria": "Wegpunktname" },
+  "layers": {
+    "opentopo": "OpenTopoMap",
+    "osm": "OpenStreetMap",
+    "satellite": "Satellit",
+    "trails": "Wege (waymarked)",
+    "water": "Wasserstellen"
+  },
+  "water": { "default": "Wasserstelle", "zoomIn": "Zoomen Sie hinein, um Wasserstellen zu laden" },
+  "toast": {
+    "notGpx": "Bitte eine .gpx-Datei angeben",
+    "gpxError": "Fehler beim Lesen der GPX",
+    "trackLoaded": "Track geladen: {n} Punkte",
+    "needTrack": "Laden Sie zuerst einen GPX-Track",
+    "selectPoi": "Wählen Sie mindestens einen POI-Typ",
+    "renamed": "Umbenannt in „{name}“",
+    "removed": "„{name}“ vom Track entfernt",
+    "snapped": "{n} Wegpunkt(e) am Track eingerastet",
+    "partialFail": "{n} Wegpunkt(e) — {failed}/{total} Abschnitt(e) der Strecke konnten nicht abgefragt werden, bitte erneut versuchen",
+    "overpassError": "Overpass: {msg}"
+  },
+  "error": {
+    "gpxInvalidXml": "Ungültige GPX-Datei: Das XML konnte nicht gelesen werden.",
+    "gpxNoPoints": "Keine Spur (trkpt) oder Route (rtept) in der GPX gefunden.",
+    "overpassTimeout": "Zeitüberschreitung ({host})",
+    "overpassNoServer": "Kein Overpass-Server antwortet.",
+    "overpassHttp": "Overpass HTTP {status}",
+    "requestFailed": "Anfrage fehlgeschlagen"
+  },
+  "group": {
+    "summits": "Gipfel & Panorama",
+    "shelter": "Unterkünfte & Schutz",
+    "water": "Wasser & Gelände",
+    "landmark": "Sehenswürdigkeiten",
+    "misc": "Sonstiges"
+  },
+  "poi": {
+    "peak": "Gipfel",
+    "saddle": "Pass",
+    "volcano": "Vulkan",
+    "viewpoint": "Aussichtspunkt",
+    "toposcope": "Orientierungstafel",
+    "attraction": "Attraktion",
+    "alpine_hut": "Bewirtschaftete Hütte",
+    "wilderness_hut": "Unbewirtschaftete Hütte",
+    "shelter": "Unterstand",
+    "camp_site": "Campingplatz",
+    "hostel": "Jugendherberge",
+    "hotel": "Hotel",
+    "drinking_water": "Trinkwasser",
+    "fountain": "Brunnen",
+    "spring": "Quelle",
+    "waterfall": "Wasserfall",
+    "lake": "See",
+    "glacier": "Gletscher",
+    "ford": "Furt",
+    "guidepost": "Wegweiser",
+    "cave_entrance": "Höhle",
+    "chapel": "Kapelle",
+    "castle": "Burg",
+    "ruins": "Ruine",
+    "observatory": "Sternwarte",
+    "tree": "Markanter Baum",
+    "locality": "Örtlichkeit",
+    "toilets": "Toiletten",
+    "barrier": "Schranke",
+    "tunnel": "Tunnel"
+  }
+}

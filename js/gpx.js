@@ -2,6 +2,14 @@
  * gpx.js — parse an uploaded GPX and rebuild one with snapped waypoints.
  * Browser port of parse_route() and build_and_save_gpx() from wpts/main.py.
  */
+/** Build an Error carrying an i18n `code` (translated at the display site). */
+function errWithCode(code, params) {
+  const e = new Error(code);
+  e.code = code;
+  if (params) e.params = params;
+  return e;
+}
+
 /**
  * Parse a GPX string into { name, lat[], lon[], ele[], waypoints[] }.
  * Handles both <trk>/<trkseg>/<trkpt> and <rte>/<rtept>.
@@ -9,7 +17,7 @@
 export function parse(xmlString) {
   const doc = new DOMParser().parseFromString(xmlString, 'application/xml');
   if (doc.querySelector('parsererror')) {
-    throw new Error('Fichier GPX invalide : le XML ne peut pas être lu.');
+    throw errWithCode('error.gpxInvalidXml');
   }
 
   let pts = Array.from(doc.getElementsByTagName('trkpt'));
@@ -17,7 +25,7 @@ export function parse(xmlString) {
     pts = Array.from(doc.getElementsByTagName('rtept'));
   }
   if (pts.length === 0) {
-    throw new Error('Aucune trace (trkpt) ni itinéraire (rtept) trouvé dans le GPX.');
+    throw errWithCode('error.gpxNoPoints');
   }
 
   const lat = [];
@@ -42,8 +50,9 @@ export function parse(xmlString) {
     type: (w.getElementsByTagName('type')[0] || {}).textContent || '',
   }));
 
+  // Empty when the GPX carries no name; the UI falls back to the file name.
   const nameNode = doc.getElementsByTagName('name')[0];
-  const name = nameNode ? nameNode.textContent.trim() : 'Trace';
+  const name = nameNode ? nameNode.textContent.trim() : '';
 
   return { name, lat, lon, ele, waypoints };
 }

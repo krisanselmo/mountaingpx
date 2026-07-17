@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "Mountain GPX — automatic waypoints",
+    "description": "Automatically add waypoints (peaks, passes, mountain huts, fountains…) to your GPX track. Entirely in the browser, no server."
+  },
+  "lang": { "aria": "Language" },
+  "menu": { "open": "Open menu", "close": "Close menu" },
+  "brand": { "tagline": "Automatic waypoints" },
+  "dropzone": {
+    "drop": "Drop your GPX file",
+    "or": "or",
+    "openBtn": "Choose a file",
+    "openTitle": "Nothing is sent to a server — everything stays on your device."
+  },
+  "panel": { "poiHeading": "Points of interest" },
+  "bulk": { "all": "All", "none": "None", "default": "Default" },
+  "th": {
+    "named": "Named",
+    "namedTitle": "Include POIs that have a name in OpenStreetMap — the waypoint reuses that name (e.g. “Col de la Vache”).",
+    "noname": "Unnamed",
+    "nonameTitle": "Also include POIs without a name in OpenStreetMap — a numbered generic name is assigned (e.g. saddle1, spring2)."
+  },
+  "advanced": {
+    "summary": "Advanced options",
+    "customLabel": "Custom Overpass query",
+    "customPlaceholder": "e.g. way[\"leisure\"=\"park\"]",
+    "customHelp": "A single element, in <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
+    "snapLabel": "Max snapping distance:",
+    "reverse": "Reverse track direction"
+  },
+  "btn": { "generate": "Generate waypoints", "download": "⬇ Download GPX" },
+  "toolbar": { "noTrack": "No track" },
+  "stat": { "distance": "distance", "dplus": "D+", "altmax": "max alt.", "waypoints": "waypoints" },
+  "profile": { "waypoints": "Waypoints", "noElevation": "No elevation data" },
+  "overlay": {
+    "querying": "Querying OpenStreetMap…",
+    "queryingProgress": "Querying OpenStreetMap… {done}/{total}"
+  },
+  "map": { "start": "Start", "end": "Finish" },
+  "popup": { "rename": "Rename", "delete": "Remove from track", "nameAria": "Waypoint name" },
+  "layers": {
+    "opentopo": "OpenTopoMap",
+    "osm": "OpenStreetMap",
+    "satellite": "Satellite",
+    "trails": "Trails (waymarked)",
+    "water": "Water points"
+  },
+  "water": { "default": "Water point", "zoomIn": "Zoom in to load water points" },
+  "toast": {
+    "notGpx": "Please provide a .gpx file",
+    "gpxError": "Error reading the GPX",
+    "trackLoaded": "Track loaded: {n} points",
+    "needTrack": "Load a GPX track first",
+    "selectPoi": "Select at least one POI type",
+    "renamed": "Renamed to “{name}”",
+    "removed": "“{name}” removed from track",
+    "snapped": "{n} waypoint(s) snapped to the track",
+    "partialFail": "{n} waypoint(s) — {failed}/{total} section(s) of the route could not be queried, try again",
+    "overpassError": "Overpass: {msg}"
+  },
+  "error": {
+    "gpxInvalidXml": "Invalid GPX file: the XML could not be read.",
+    "gpxNoPoints": "No track (trkpt) or route (rtept) found in the GPX.",
+    "overpassTimeout": "timed out ({host})",
+    "overpassNoServer": "No Overpass server is responding.",
+    "overpassHttp": "Overpass HTTP {status}",
+    "requestFailed": "request failed"
+  },
+  "group": {
+    "summits": "Summits & views",
+    "shelter": "Lodging & shelters",
+    "water": "Water & terrain",
+    "landmark": "Landmarks",
+    "misc": "Other"
+  },
+  "poi": {
+    "peak": "Peak",
+    "saddle": "Pass",
+    "volcano": "Volcano",
+    "viewpoint": "Viewpoint",
+    "toposcope": "Toposcope",
+    "attraction": "Attraction",
+    "alpine_hut": "Staffed hut",
+    "wilderness_hut": "Unstaffed hut",
+    "shelter": "Shelter",
+    "camp_site": "Campsite",
+    "hostel": "Hostel",
+    "hotel": "Hotel",
+    "drinking_water": "Drinking water",
+    "fountain": "Fountain",
+    "spring": "Spring",
+    "waterfall": "Waterfall",
+    "lake": "Lake",
+    "glacier": "Glacier",
+    "ford": "Ford",
+    "guidepost": "Signpost",
+    "cave_entrance": "Cave",
+    "chapel": "Chapel",
+    "castle": "Castle",
+    "ruins": "Ruins",
+    "observatory": "Observatory",
+    "tree": "Notable tree",
+    "locality": "Locality",
+    "toilets": "Toilets",
+    "barrier": "Barrier",
+    "tunnel": "Tunnel"
+  }
+}
