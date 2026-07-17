@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mountain GPX — waypoints automatiques</title>
   <meta name="description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, fontaines…) sur votre trace GPX. Entièrement dans le navigateur, sans serveur.">
-  <link rel="icon" href="../static/favicon.ico">
-  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -92,12 +91,6 @@
 
   <div id="toast" class="toast"></div>
 
-  <script src="vendor/leaflet.js"></script>
-  <script src="js/geometry.js"></script>
-  <script src="js/poi.js"></script>
-  <script src="js/icons.js"></script>
-  <script src="js/gpx.js"></script>
-  <script src="js/overpass.js"></script>
-  <script src="js/app.js"></script>
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>

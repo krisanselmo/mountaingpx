@@ -32,32 +32,36 @@ l'utilisateur.
 
 ## Lancer l'application
 
-Aucune installation ni build. Il suffit d'un simple serveur de fichiers
-statiques (pour éviter les restrictions `file://`).
+Le projet est construit avec [Vite](https://vite.dev) ; Leaflet est géré comme
+dépendance npm (plus de copie vendorée).
 
 ```bash
-# depuis la racine du dépôt
-python3 -m http.server 8000
-# puis ouvrir http://localhost:8000/webapp/
+cd webapp
+npm install
+npm run dev        # serveur de développement (http://localhost:5173)
+npm run build      # build de production dans dist/
+npm run preview    # sert le build de production en local
 ```
 
-Hébergement possible tel quel sur n'importe quel hébergeur statique
-(GitHub Pages, Netlify, S3…).
+Le contenu de `dist/` (chemins relatifs, `base: './'`) se déploie tel quel sur
+n'importe quel hébergeur statique (GitHub Pages, Netlify, S3…).
 
 ## Structure
 
 ```
 webapp/
-├── index.html          # interface (SPA)
+├── index.html          # interface (SPA), point d'entrée Vite
+├── package.json        # dépendances (leaflet) et scripts (dev/build/preview)
+├── vite.config.js
+├── public/             # assets copiés tels quels (favicon)
 ├── css/style.css       # thème sombre responsive
-├── js/
-│   ├── geometry.js     # Haversine, plus proche point, projection (port de geometry.py)
-│   ├── poi.js          # catalogue POI, requêtes Overpass, détection de type (port de osm.py)
-│   ├── icons.js        # icônes SVG inline (Lucide + glyphes maison), pins Leaflet
-│   ├── gpx.js          # parsing et génération GPX (port de main.py)
-│   ├── overpass.js     # appels API Overpass segmentés + accrochage
-│   └── app.js          # carte Leaflet, UI, orchestration
-└── vendor/             # Leaflet 1.9.4 embarqué (aucune dépendance CDN)
+└── js/                 # modules ES
+    ├── geometry.js     # Haversine, plus proche point, projection (port de geometry.py)
+    ├── poi.js          # catalogue POI, requêtes Overpass, détection de type (port de osm.py)
+    ├── icons.js        # icônes SVG inline (Lucide + glyphes maison), pins Leaflet
+    ├── gpx.js          # parsing et génération GPX (port de main.py)
+    ├── overpass.js     # appels API Overpass segmentés + accrochage
+    └── app.js          # carte Leaflet, UI, orchestration
 ```
 
 ## Notes
