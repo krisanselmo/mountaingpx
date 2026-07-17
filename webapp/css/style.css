@@ -73,7 +73,6 @@ body {
 .dropzone p { margin: 6px 0; font-size: 13px; color: var(--muted); }
 .dropzone strong { color: var(--text); }
 .dz-icon { font-size: 30px; margin: 0 0 4px !important; }
-.dz-hint { font-size: 11px !important; margin-top: 10px !important; }
 
 /* ---------------- POI table ---------------- */
 .poi-group { margin-bottom: 8px; }
@@ -84,13 +83,22 @@ body {
 .poi-group > summary::-webkit-details-marker { display: none; }
 .poi-group > summary::before { content: "▸ "; color: var(--accent-2); }
 .poi-group[open] > summary::before { content: "▾ "; }
-.poi-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 2px 0 8px; }
+.poi-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 2px 0 8px; table-layout: fixed; }
+/* Fixed-width checkbox columns so every group lines up the same way. */
+.poi-table th:nth-child(2), .poi-table td:nth-child(2),
+.poi-table th:nth-child(3), .poi-table td:nth-child(3) { width: 66px; white-space: nowrap; }
+.poi-table .cnt {
+  display: inline-block; min-width: 20px; margin-left: 4px;
+  font-size: 10px; color: var(--accent-2); text-align: left; vertical-align: 2px;
+}
+.poi-table .cnt.zero { color: var(--muted); opacity: .55; }
 .poi-table th {
   font-weight: 500; color: var(--muted); font-size: 11px; text-align: center; padding: 2px;
 }
+.poi-table th[title] { cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
 .poi-table td { padding: 3px 2px; text-align: center; }
 .poi-table td.poi-name { text-align: left; display: flex; align-items: center; gap: 7px; }
-.poi-table img { border-radius: 3px; }
+.poi-table td.poi-name svg { flex-shrink: 0; }
 .poi-table input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
 /* ---------------- Advanced fields ---------------- */
@@ -103,7 +111,7 @@ body {
 }
 .field input[type=range] { width: 100%; accent-color: var(--accent); }
 .field small { color: var(--muted); font-size: 11px; }
-.field small a, .dz-hint a { color: var(--accent-2); }
+.field small a { color: var(--accent-2); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; }
 .check input { accent-color: var(--accent); }
 
@@ -112,7 +120,7 @@ body {
 .btn {
   border: none; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: filter .15s, transform .05s; color: #fff;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -121,9 +129,62 @@ body {
 .btn-ok { background: var(--panel-2); border: 1px solid var(--line); }
 .btn-ok:hover:not(:disabled) { border-color: var(--ok); color: var(--ok); }
 .btn-ghost { background: var(--panel-2); border: 1px solid var(--line); padding: 8px 14px; }
+/* Holographic sweep hinting that a new generation is needed. */
+.btn-primary.holo { position: relative; overflow: hidden; animation: holo-glow 1.2s ease; }
+.btn-primary.holo::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg,
+    transparent 20%,
+    rgba(255, 255, 255, .35) 38%,
+    rgba(130, 220, 255, .55) 48%,
+    rgba(255, 170, 255, .45) 58%,
+    transparent 80%);
+  transform: translateX(-110%) skewX(-12deg);
+  animation: holo-sweep 1.2s ease;
+}
+@keyframes holo-sweep { to { transform: translateX(110%) skewX(-12deg); } }
+@keyframes holo-glow {
+  35% { box-shadow: 0 0 16px rgba(130, 210, 255, .8), 0 0 30px rgba(255, 170, 255, .35); }
+}
+
 .spinner { display: none; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; }
 .btn.loading .spinner { display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------- Map marker pins ---------------- */
+/* The pin is a rotated square with one sharp corner; the wrapper (.poi-pin)
+   stays untransformed because Leaflet positions it with an inline transform. */
+.poi-pin { background: none; border: none; }
+.poi-marker {
+  --mc: #64748b;
+  box-sizing: border-box;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--mc);
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+}
+.poi-marker svg {
+  width: 15px; height: 15px;
+  transform: rotate(45deg);
+  color: #fff;
+}
+
+/* Small round dot for the "Points d'eau" overlay. */
+.water-dot { background: none; border: none; }
+.water-dot-inner {
+  box-sizing: border-box;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: #2f8fd0;
+  border: 2px solid rgba(255, 255, 255, .95);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.water-dot-inner svg { width: 10px; height: 10px; color: #fff; }
 
 /* ---------------- Main / map ---------------- */
 #main { position: relative; display: flex; flex-direction: column; min-width: 0; }
@@ -141,20 +202,19 @@ body {
 
 #map { flex: 1; background: #0b1118; z-index: 1; }
 
-.profile-wrap { height: 120px; background: var(--panel); border-top: 1px solid var(--line); }
+.profile-wrap { position: relative; height: 120px; background: var(--panel); border-top: 1px solid var(--line); }
 .profile-wrap.empty { display: none; }
-#profile { width: 100%; height: 120px; }
+.profile-toggle {
+  position: absolute; top: 6px; right: 12px; z-index: 5;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--muted); cursor: pointer;
+  background: rgba(15, 21, 28, .75); padding: 2px 8px; border-radius: 6px;
+}
+.profile-toggle input { width: 13px; height: 13px; accent-color: var(--accent); cursor: pointer; }
+#profile { width: 100%; height: 120px; cursor: crosshair; }
 #profile .ax { fill: var(--muted); font-size: 10px; }
 
-/* ---------------- Empty state / overlay ---------------- */
-.empty-hint {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  text-align: center; padding: 30px; pointer-events: none; z-index: 400;
-}
-.empty-hint .big { font-size: 60px; margin: 0; }
-.empty-hint h2 { margin: 12px 0 8px; }
-.empty-hint p { color: var(--muted); max-width: 420px; margin: 0 auto; }
-
+/* ---------------- Busy overlay ---------------- */
 .overlay {
   position: absolute; inset: 0; background: rgba(10,15,20,.7); backdrop-filter: blur(2px);
   display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
@@ -178,6 +238,21 @@ body {
 
 /* ---------------- Popups ---------------- */
 .wpt-popup h3 { margin: 0 0 6px; font-size: 15px; }
+.wpt-edit { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.wpt-name-input {
+  flex: 1; min-width: 0;
+  font-size: 14px; font-weight: 600; color: #222;
+  border: 1px solid #ccc; border-radius: 6px; padding: 4px 8px;
+}
+.wpt-name-input:focus { outline: none; border-color: var(--accent); }
+.wpt-ele { font-size: 12px; color: #777; white-space: nowrap; }
+.wpt-actions { display: flex; gap: 8px; margin-top: 8px; }
+.wpt-btn {
+  border: 1px solid #ccc; border-radius: 6px; background: #f6f6f6; color: #333;
+  font-size: 12px; padding: 4px 10px; cursor: pointer;
+}
+.wpt-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.wpt-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
 .wpt-popup .tags { border-collapse: collapse; font-size: 12px; margin: 4px 0; }
 .wpt-popup .tags th { text-align: left; color: #555; padding-right: 8px; vertical-align: top; font-weight: 600; }
 .wpt-popup .tags td { padding: 1px 0; }

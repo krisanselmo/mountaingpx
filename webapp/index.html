@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mountain GPX — waypoints automatiques (100% navigateur)</title>
+  <title>Mountain GPX — waypoints automatiques</title>
   <meta name="description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, fontaines…) sur votre trace GPX. Entièrement dans le navigateur, sans serveur.">
   <link rel="icon" href="../static/favicon.ico">
   <link rel="stylesheet" href="vendor/leaflet.css">
@@ -15,7 +15,7 @@
       <div class="logo">⛰️</div>
       <div>
         <h1>Mountain GPX</h1>
-        <p class="tagline">Waypoints automatiques · 100% navigateur</p>
+        <p class="tagline">Waypoints automatiques</p>
       </div>
     </header>
 
@@ -24,8 +24,7 @@
         <input type="file" id="file-input" accept=".gpx" hidden>
         <p class="dz-icon">📂</p>
         <p><strong>Glissez votre fichier GPX</strong><br>ou</p>
-        <button id="btn-open" class="btn btn-ghost" type="button">Choisir un fichier</button>
-        <p class="dz-hint">Rien n'est envoyé sur un serveur — tout reste sur votre appareil.</p>
+        <button id="btn-open" class="btn btn-ghost" type="button" title="Rien n'est envoyé sur un serveur — tout reste sur votre appareil.">Choisir un fichier</button>
       </div>
     </section>
 
@@ -79,21 +78,15 @@
     <div id="map"></div>
 
     <div id="profile-wrap" class="profile-wrap empty">
+      <label id="profile-wpts-toggle-wrap" class="profile-toggle" hidden>
+        <input type="checkbox" id="profile-wpts-toggle" checked> Waypoints
+      </label>
       <svg id="profile" preserveAspectRatio="none"></svg>
-    </div>
-
-    <div id="empty-hint" class="empty-hint">
-      <div>
-        <p class="big">⛰️</p>
-        <h2>Chargez une trace GPX pour commencer</h2>
-        <p>Mountain GPX interroge OpenStreetMap et accroche automatiquement les
-           sommets, cols, refuges, fontaines et autres points d'intérêt sur votre parcours.</p>
-      </div>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="loader"></div>
-      <p>Interrogation d'OpenStreetMap…</p>
+      <p id="overlay-msg">Interrogation d'OpenStreetMap…</p>
     </div>
   </main>
 
@@ -102,6 +95,7 @@
   <script src="vendor/leaflet.js"></script>
   <script src="js/geometry.js"></script>
   <script src="js/poi.js"></script>
+  <script src="js/icons.js"></script>
   <script src="js/gpx.js"></script>
   <script src="js/overpass.js"></script>
   <script src="js/app.js"></script>

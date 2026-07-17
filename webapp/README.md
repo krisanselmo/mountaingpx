@@ -33,9 +33,7 @@ l'utilisateur.
 ## Lancer l'application
 
 Aucune installation ni build. Il suffit d'un simple serveur de fichiers
-statiques (nécessaire pour que les chemins relatifs vers les icônes de
-`../static/img/markers/` se résolvent et pour éviter les restrictions
-`file://`).
+statiques (pour éviter les restrictions `file://`).
 
 ```bash
 # depuis la racine du dépôt
@@ -55,15 +53,18 @@ webapp/
 ├── js/
 │   ├── geometry.js     # Haversine, plus proche point, projection (port de geometry.py)
 │   ├── poi.js          # catalogue POI, requêtes Overpass, détection de type (port de osm.py)
+│   ├── icons.js        # icônes SVG inline (Lucide + glyphes maison), pins Leaflet
 │   ├── gpx.js          # parsing et génération GPX (port de main.py)
-│   ├── overpass.js     # appels API Overpass + accrochage
+│   ├── overpass.js     # appels API Overpass segmentés + accrochage
 │   └── app.js          # carte Leaflet, UI, orchestration
 └── vendor/             # Leaflet 1.9.4 embarqué (aucune dépendance CDN)
 ```
 
 ## Notes
 
-- Les icônes de marqueurs sont réutilisées depuis `../static/img/markers/`.
+- Les icônes de marqueurs sont des SVG inline embarqués dans `js/icons.js`
+  (glyphes [Lucide](https://lucide.dev), licence ISC, plus quelques glyphes
+  maison), rendus en pins Leaflet colorés par groupe — aucun asset image.
 - Les segments Strava (présents dans la version Python via l'API Strava) ne sont
   pas inclus : ils nécessitent une authentification OAuth incompatible avec une
   app purement client-side sans secret serveur.
