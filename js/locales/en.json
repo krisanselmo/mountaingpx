@@ -28,7 +28,7 @@
     "snapLabel": "Max snapping distance:",
     "reverse": "Reverse track direction"
   },
-  "btn": { "generate": "Generate waypoints", "download": "⬇ Download GPX", "downloadTcx": "⬇ Download TCX (Garmin)" },
+  "btn": { "generate": "Generate waypoints", "download": "⬇ Download GPX", "downloadTcx": "⬇ Download TCX" },
   "toolbar": { "noTrack": "No track" },
   "stat": { "distance": "distance", "dplus": "D+", "altmax": "max alt.", "waypoints": "waypoints" },
   "profile": { "waypoints": "Waypoints", "noElevation": "No elevation data" },
