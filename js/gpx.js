@@ -144,24 +144,33 @@ export function build(route, pts, keepOld) {
     }
   }
   for (const p of pts) {
-    xml += wptXml(p.lat, p.lon, p.ele, p.name, p.queryName, p.description);
+    xml += wptXml(p.lat, p.lon, p.ele, p.name, courseType(p.queryName), p.descText);
   }
   xml += '</gpx>\n';
   return xml;
+}
+
+// Garmin Connect classifies imported waypoints by <type> (its course-point
+// vocabulary), not by <sym>. Map our POI types to it; anything else is generic.
+const COURSE_TYPE = {
+  peak: 'summit', saddle: 'summit', volcano: 'summit', cairn: 'summit',
+  viewpoint: 'overlook', toposcope: 'overlook', attraction: 'overlook', glacier: 'overlook',
+  alpine_hut: 'shelter', wilderness_hut: 'shelter', shelter: 'shelter', hostel: 'shelter', hotel: 'shelter',
+  camp_site: 'campsite',
+  drinking_water: 'water', fountain: 'water', spring: 'water', waterfall: 'water', lake: 'water', ford: 'water',
+  toilets: 'toilet', barrier: 'danger', tunnel: 'danger',
+};
+
+function courseType(type) {
+  return COURSE_TYPE[type] || 'generic';
 }
 
 function wptXml(lat, lon, ele, name, type, desc) {
   let s = '  <wpt lat="' + lat + '" lon="' + lon + '">';
   if (ele) s += '<ele>' + ele + '</ele>';
   if (name) s += '<name>' + esc(name) + '</name>';
-  if (desc) s += '<cmt>' + esc(stripHtml(desc)) + '</cmt>';
-  if (type) s += '<sym>' + esc(type) + '</sym><type>' + esc(type) + '</type>';
+  if (desc) s += '<cmt>' + esc(desc) + '</cmt>';
+  if (type) s += '<type>' + esc(type) + '</type>';
   s += '</wpt>\n';
   return s;
-}
-
-export function stripHtml(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return (tmp.textContent || '').replace(/\s+/g, ' ').trim();
 }

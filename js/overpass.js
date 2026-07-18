@@ -231,6 +231,25 @@ export function describeOsm(type, id, tags) {
   return html;
 }
 
+// Readable one-line note for GPX/TCX (describeOsm's HTML table is popup-only).
+export function describeText(tags) {
+  if (!tags) return '';
+  const parts = [];
+  if (tags.ele) {
+    const e = Math.round(parseFloat(tags.ele));
+    if (!Number.isNaN(e)) parts.push(e + ' m');
+  }
+  if (tags.description) parts.push(tags.description);
+  if (tags.operator) parts.push(tags.operator);
+  if (tags.capacity) parts.push(tags.capacity + ' places');
+  if (tags.opening_hours) parts.push(tags.opening_hours);
+  const phone = tags.phone || tags['contact:phone'];
+  if (phone) parts.push(phone);
+  const website = tags.website || tags['contact:website'];
+  if (website) parts.push(website);
+  return parts.join(' · ');
+}
+
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -363,6 +382,7 @@ function processWithProjection(elements, route, limDist, indexUsed, pts) {
       hasName,
       tags,
       description: describeOsm(el.type, el.id, tags),
+      descText: describeText(tags),
     });
     indexUsed.add(index);
   }

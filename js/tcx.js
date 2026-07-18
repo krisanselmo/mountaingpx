@@ -8,7 +8,7 @@
  * cumulative distance, both of which the TCX schema requires.
  */
 import { haversine } from './geometry.js';
-import { densify, esc, stripHtml } from './gpx.js';
+import { densify, esc } from './gpx.js';
 
 // TCX CoursePointType_t only allows a fixed vocabulary; anything unmapped
 // falls back to "Generic". Keys are POI types (poi.js `queryName`) or the raw
@@ -79,7 +79,7 @@ export function build(route, pts, keepOld) {
     }
   }
   for (const p of pts) {
-    cps.push({ lat: p.lat, lon: p.lon, name: p.name, type: p.queryName, notes: p.description });
+    cps.push({ lat: p.lat, lon: p.lon, name: p.name, type: p.queryName, notes: p.descText });
   }
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -124,21 +124,24 @@ export function build(route, pts, keepOld) {
   }
   xml += '      </Track>\n';
 
-  // Course points, anchored to the nearest track point (for time/order).
+  // Emit course points in track order, snapped onto a track point: Garmin drops
+  // those with non-increasing <Time> or a <Position> off the track.
   for (const cp of cps) {
-    const idx = nearestIndex(lon, lat, cp.lon, cp.lat);
+    cp.idx = nearestIndex(lon, lat, cp.lon, cp.lat);
+  }
+  cps.sort((a, b) => a.idx - b.idx);
+
+  for (const cp of cps) {
+    const idx = cp.idx;
     xml += '      <CoursePoint>\n';
     xml += '        <Name>' + esc(cp.name || '') + '</Name>\n';
     xml += '        <Time>' + timeAt(idx) + '</Time>\n';
     xml += '        <Position>\n';
-    xml += '          <LatitudeDegrees>' + cp.lat + '</LatitudeDegrees>\n';
-    xml += '          <LongitudeDegrees>' + cp.lon + '</LongitudeDegrees>\n';
+    xml += '          <LatitudeDegrees>' + lat[idx] + '</LatitudeDegrees>\n';
+    xml += '          <LongitudeDegrees>' + lon[idx] + '</LongitudeDegrees>\n';
     xml += '        </Position>\n';
     xml += '        <PointType>' + pointType(cp.type) + '</PointType>\n';
-    if (cp.notes) {
-      const notes = stripHtml(cp.notes);
-      if (notes) xml += '        <Notes>' + esc(notes) + '</Notes>\n';
-    }
+    if (cp.notes) xml += '        <Notes>' + esc(cp.notes) + '</Notes>\n';
     xml += '      </CoursePoint>\n';
   }
 
