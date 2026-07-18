@@ -11,8 +11,15 @@ import { haversine } from './geometry.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME } from './poi.js';
+import {
+  t, translateDom, detectLang, getLang, setLang, saveLang,
+  SUPPORTED, LANG_NAMES,
+} from './i18n.js';
 
 const LS_KEY = 'mountaingpx.settings.v1';
+const LS_VIEW_KEY = 'mountaingpx.view.v1';
+const LS_LAYERS_KEY = 'mountaingpx.layers.v1';
+const DEFAULT_VIEW = { lat: 45.9, lon: 6.87, zoom: 12 };
 
 // ---- Application state -------------------------------------------------
 const state = {
@@ -57,6 +64,7 @@ function saveSettings(s) {
 // ---- POI selection panel ---------------------------------------------
 function buildPoiPanel() {
   const container = $('#poi-list');
+  container.innerHTML = '';
   const saved = loadSettings();
   const savedWith = new Set(saved.withName || DEFAULT_WITH_NAME);
   const savedNo = new Set(saved.noName || []);
@@ -67,23 +75,23 @@ function buildPoiPanel() {
     (groups[cfg.group] = groups[cfg.group] || []).push([type, cfg]);
   }
 
-  for (const [gkey, gname] of Object.entries(GROUPS)) {
+  for (const gkey of GROUPS) {
     const details = el('details', 'poi-group');
     details.open = true;
-    const summary = el('summary', null, gname);
+    const summary = el('summary', null, escapeHtml(t('group.' + gkey)));
     details.appendChild(summary);
 
     const table = el('table', 'poi-table');
     const head = el('tr', null,
       '<th></th>' +
-      '<th title="Inclure les POI qui ont un nom dans OpenStreetMap — le waypoint reprend ce nom (ex. « Col de la Vache »).">Nommé</th>' +
-      '<th title="Inclure aussi les POI sans nom dans OpenStreetMap — un nom générique numéroté est attribué (ex. saddle1, spring2).">Sans&nbsp;nom</th>');
+      `<th title="${escapeAttr(t('th.namedTitle'))}">${escapeHtml(t('th.named'))}</th>` +
+      `<th title="${escapeAttr(t('th.nonameTitle'))}">${escapeHtml(t('th.noname'))}</th>`);
     table.appendChild(head);
 
     for (const [type, cfg] of (groups[gkey] || [])) {
       const tr = el('tr');
       const tdName = el('td', 'poi-name');
-      tdName.innerHTML = `${Icons.svgFor(type, 18)} ${cfg.label}`;
+      tdName.innerHTML = `${Icons.svgFor(type, 18)} ${escapeHtml(t('poi.' + type))}`;
       tr.appendChild(tdName);
 
       const mkCell = (kind, saved) => {
@@ -138,9 +146,44 @@ function persistSelection() {
   });
 }
 
+// ---- Map view persistence ---------------------------------------------
+function loadView() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_VIEW_KEY));
+    if (v && isFinite(v.lat) && isFinite(v.lon) && isFinite(v.zoom)) return v;
+  } catch (_) {}
+  return null;
+}
+function saveView(map) {
+  const c = map.getCenter();
+  try {
+    localStorage.setItem(
+      LS_VIEW_KEY,
+      JSON.stringify({ lat: c.lat, lon: c.lng, zoom: map.getZoom() })
+    );
+  } catch (_) {}
+}
+
+function loadLayers() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS_LAYERS_KEY));
+    if (v && typeof v.base === 'string' && Array.isArray(v.overlays)) return v;
+  } catch (_) {}
+  return null;
+}
+function saveLayers(base, overlays) {
+  try {
+    localStorage.setItem(LS_LAYERS_KEY, JSON.stringify({ base, overlays }));
+  } catch (_) {}
+}
+
 // ---- Map --------------------------------------------------------------
 function initMap() {
-  const map = L.map('map', { zoomControl: true }).setView([45.9, 6.87], 12);
+  // Restore the last view: the URL hash wins (shareable links), otherwise
+  // fall back to the position saved from the previous session.
+  const saved = parseMapHash(location.hash) || loadView() || DEFAULT_VIEW;
+  const map = L.map('map', { zoomControl: true })
+    .setView([saved.lat, saved.lon], saved.zoom);
 
   const opentopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
@@ -159,24 +202,51 @@ function initMap() {
     opacity: 0.7,
   });
 
-  opentopo.addTo(map);
-  L.control
-    .layers(
-      { 'OpenTopoMap': opentopo, 'OpenStreetMap': osm, 'Satellite': sat },
-      { 'Sentiers (waymarked)': cycl, "Points d'eau": initWaterOverlay(map) }
-    )
-    .addTo(map);
+  // Layers keyed by a stable id (used for persistence) with the display name
+  // resolved through i18n, so switching language never breaks the saved
+  // selection and the control can simply be rebuilt with new labels.
+  state.baseLayers = [
+    { key: 'opentopo', i18n: 'layers.opentopo', layer: opentopo },
+    { key: 'osm', i18n: 'layers.osm', layer: osm },
+    { key: 'satellite', i18n: 'layers.satellite', layer: sat },
+  ];
+  state.overlayLayers = [
+    { key: 'trails', i18n: 'layers.trails', layer: cycl },
+    { key: 'water', i18n: 'layers.water', layer: initWaterOverlay(map) },
+  ];
 
   state.map = map;
+
+  // Restore the base map and overlays chosen in the previous session.
+  const savedLayers = loadLayers();
+  const baseDef = (savedLayers && state.baseLayers.find((d) => d.key === savedLayers.base))
+    || state.baseLayers[0];
+  baseDef.layer.addTo(map);
+
+  buildLayersControl();
+
+  // Add restored overlays after the control exists, firing `overlayadd` so
+  // dependent layers (e.g. the on-demand water points) load their data.
+  if (savedLayers) {
+    for (const def of state.overlayLayers) {
+      if (savedLayers.overlays.includes(def.key) && !map.hasLayer(def.layer)) {
+        def.layer.addTo(map);
+        map.fire('overlayadd', { layer: def.layer, name: t(def.i18n) });
+      }
+    }
+  }
+
+  map.on('baselayerchange overlayadd overlayremove', persistLayers);
+
   state.markerLayer = L.layerGroup().addTo(map);
 
   // Keep the map position in the URL (OSM-style #map=zoom/lat/lon) so the
-  // view survives reloads and can be shared.
-  const fromHash = parseMapHash(location.hash);
-  if (fromHash) map.setView([fromHash.lat, fromHash.lon], fromHash.zoom);
+  // view can be shared, and persist it to localStorage so it is restored
+  // whenever the app is reopened (even without the hash, e.g. as a PWA).
   map.on('moveend', () => {
     const c = map.getCenter();
     history.replaceState(null, '', `#map=${map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`);
+    saveView(map);
   });
 }
 
@@ -184,6 +254,26 @@ function parseMapHash(hash) {
   const m = /^#map=(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/.exec(hash || '');
   if (!m) return null;
   return { zoom: parseFloat(m[1]), lat: parseFloat(m[2]), lon: parseFloat(m[3]) };
+}
+
+/** (Re)build the Leaflet layers control with the current-language labels. */
+function buildLayersControl() {
+  if (state.layersControl) state.map.removeControl(state.layersControl);
+  const bases = {};
+  for (const d of state.baseLayers) bases[t(d.i18n)] = d.layer;
+  const overs = {};
+  for (const d of state.overlayLayers) overs[t(d.i18n)] = d.layer;
+  state.layersControl = L.control.layers(bases, overs).addTo(state.map);
+}
+
+/** Persist the active base map / overlays (by stable key) after any change. */
+function persistLayers() {
+  let baseKey = state.baseLayers[0].key;
+  for (const d of state.baseLayers) if (state.map.hasLayer(d.layer)) baseKey = d.key;
+  const on = state.overlayLayers
+    .filter((d) => state.map.hasLayer(d.layer))
+    .map((d) => d.key);
+  saveLayers(baseKey, on);
 }
 
 // ---- "Points d'eau" overlay --------------------------------------------
@@ -247,11 +337,11 @@ function initWaterOverlay(map) {
         seen.add(key);
         const tags = el.tags || {};
         const marker = L.marker([el.lat, el.lon], {
-          title: tags.name || "Point d'eau",
+          title: tags.name || t('water.default'),
           icon: Icons.waterDotIcon(),
         });
         marker.bindPopup(
-          `<div class="wpt-popup"><h3>${escapeHtml(tags.name || "Point d'eau")}</h3>` +
+          `<div class="wpt-popup"><h3>${escapeHtml(tags.name || t('water.default'))}</h3>` +
           Overpass.describeOsm(el.type, el.id, tags) + '</div>'
         );
         markers.push(marker);
@@ -275,7 +365,7 @@ function initWaterOverlay(map) {
   map.on('overlayadd', (e) => {
     if (e.layer !== layer) return;
     if (boundsAreaKm2(map.getBounds()) > WATER_MAX_AREA_KM2) {
-      toast("Zoomez pour charger les points d'eau", 'warn');
+      toast(t('water.zoomIn'), 'warn');
     } else {
       refresh();
     }
@@ -283,7 +373,7 @@ function initWaterOverlay(map) {
   return layer;
 }
 
-function drawRoute() {
+function drawRoute(fit = true) {
   const { lat, lon } = state.route;
   if (state.trackLayer) state.map.removeLayer(state.trackLayer);
   const coords = lat.map((la, i) => [la, lon[i]]);
@@ -295,11 +385,11 @@ function drawRoute() {
   // Group the polyline and the start/end markers so they toggle together.
   state.trackLayer = L.featureGroup([
     line,
-    mk('start', coords[0], 'Départ'),
-    mk('end', coords[coords.length - 1], 'Arrivée'),
+    mk('start', coords[0], t('map.start')),
+    mk('end', coords[coords.length - 1], t('map.end')),
   ]).addTo(state.map);
 
-  state.map.fitBounds(line.getBounds(), { padding: [30, 30] });
+  if (fit) state.map.fitBounds(line.getBounds(), { padding: [30, 30] });
 }
 
 function drawWaypoints() {
@@ -327,13 +417,13 @@ function popupHtml(p) {
   const ele = p.ele ? `<span class="wpt-ele">${Math.round(p.ele)} m</span>` : '';
   return `<div class="wpt-popup">` +
     `<div class="wpt-edit">` +
-    `<input class="wpt-name-input" value="${escapeAttr(p.name)}" maxlength="100" aria-label="Nom du waypoint">` +
+    `<input class="wpt-name-input" value="${escapeAttr(p.name)}" maxlength="100" aria-label="${escapeAttr(t('popup.nameAria'))}">` +
     ele +
     `</div>` +
     p.description +
     `<div class="wpt-actions">` +
-    `<button type="button" class="wpt-btn wpt-save">Renommer</button>` +
-    `<button type="button" class="wpt-btn danger wpt-delete">Retirer de la trace</button>` +
+    `<button type="button" class="wpt-btn wpt-save">${escapeHtml(t('popup.rename'))}</button>` +
+    `<button type="button" class="wpt-btn danger wpt-delete">${escapeHtml(t('popup.delete'))}</button>` +
     `</div></div>`;
 }
 
@@ -362,7 +452,7 @@ function renameWpt(p, newName) {
   p.name = name;
   state.map.closePopup();
   syncWaypointUI();
-  toast(`Renommé en « ${name} »`, 'ok');
+  toast(t('toast.renamed', { name }), 'ok');
 }
 
 function removeWpt(p) {
@@ -370,7 +460,7 @@ function removeWpt(p) {
   state.pts = state.pts.filter((q) => q !== p);
   state.map.closePopup();
   syncWaypointUI();
-  toast(`« ${p.name} » retiré de la trace`, 'ok');
+  toast(t('toast.removed', { name: p.name }), 'ok');
 }
 
 /** Drop removed waypoints and re-apply renames after a (re-)snap. */
@@ -400,7 +490,7 @@ function drawProfile() {
   const svg = $('#profile');
   const { lat, lon, ele } = state.route;
   if (!ele.some((e) => e > 0)) {
-    svg.innerHTML = '<text x="12" y="24" fill="#889">Pas de données d\'altitude</text>';
+    svg.innerHTML = `<text x="12" y="24" fill="#889">${escapeHtml(t('profile.noElevation'))}</text>`;
     $('#profile-wrap').classList.add('empty');
     return;
   }
@@ -527,7 +617,7 @@ function profileLeave() {
 // ---- File handling ----------------------------------------------------
 function handleFile(file) {
   if (!file.name.toLowerCase().endsWith('.gpx')) {
-    toast('Merci de fournir un fichier .gpx', 'error');
+    toast(t('toast.notGpx'), 'error');
     return;
   }
   const reader = new FileReader();
@@ -544,13 +634,14 @@ function handleFile(file) {
       state.markerLayer.clearLayers();
       drawRoute();
       drawProfile();
-      $('#track-name').textContent = route.name || file.name;
+      state.trackName = route.name || file.name;
+      $('#track-name').textContent = state.trackName;
       $('#toolbar').classList.add('active');
       $('#btn-download').disabled = true;
       updatePoiCounts();
-      toast(`Trace chargée : ${route.lat.length} points`, 'ok');
+      toast(t('toast.trackLoaded', { n: route.lat.length }), 'ok');
     } catch (err) {
-      toast(err.message || 'Erreur de lecture du GPX', 'error');
+      toast(err.code ? t(err.code, err.params) : (err.message || t('toast.gpxError')), 'error');
     }
   };
   reader.readAsText(file);
@@ -565,13 +656,13 @@ function reverseRoute(route) {
 // ---- Waypoint generation ----------------------------------------------
 async function generate() {
   if (!state.route) {
-    toast('Chargez d\'abord une trace GPX', 'error');
+    toast(t('toast.needTrack'), 'error');
     return;
   }
   persistSelection();
   const sel = getSelection();
   if (!sel.withName.size && !sel.noName.size && !sel.custom) {
-    toast('Sélectionnez au moins un type de POI', 'error');
+    toast(t('toast.selectPoi'), 'error');
     return;
   }
   const limDist = parseInt($('#snap-dist').value, 10) / 1000; // m -> km
@@ -580,8 +671,8 @@ async function generate() {
   try {
     const res = await Overpass.findWaypoints(state.route, sel, limDist, (done, total) => {
       $('#overlay-msg').textContent = total > 1
-        ? `Interrogation d'OpenStreetMap… ${done}/${total}`
-        : "Interrogation d'OpenStreetMap…";
+        ? t('overlay.queryingProgress', { done, total })
+        : t('overlay.querying');
     });
     state.genElements = res.elements;
     state.genCustom = sel.custom;
@@ -591,13 +682,14 @@ async function generate() {
     setMenu(false); // reveal the map with the fresh waypoints (mobile)
     const n = state.pts.length;
     if (res.failedSegments) {
-      toast(`${n} waypoint(s) — ${res.failedSegments}/${res.totalSegments} portion(s) du parcours n'ont pas pu être interrogées, réessayez`, 'warn');
+      toast(t('toast.partialFail', { n, failed: res.failedSegments, total: res.totalSegments }), 'warn');
     } else {
-      toast(`${n} waypoint(s) accroché(s) à la trace`, n ? 'ok' : 'warn');
+      toast(t('toast.snapped', { n }), n ? 'ok' : 'warn');
     }
   } catch (err) {
     console.error(err);
-    toast('Overpass : ' + (err.message || 'échec de la requête'), 'error');
+    const msg = err.code ? t(err.code, err.params) : (err.message || t('error.requestFailed'));
+    toast(t('toast.overpassError', { msg }), 'error');
   } finally {
     setBusy(false);
   }
@@ -796,10 +888,55 @@ function wire() {
     if (g) g.style.display = state.showProfileWpts ? '' : 'none';
   });
 
+  $('#lang-select').addEventListener('change', (e) => setLanguage(e.target.value));
+
   window.addEventListener('resize', () => state.route && drawProfile());
 }
 
+// ---- Internationalization ---------------------------------------------
+/** Fill the language selector with the supported languages' endonyms. */
+function buildLangSelector() {
+  const sel = $('#lang-select');
+  sel.innerHTML = '';
+  for (const code of SUPPORTED) {
+    const opt = el('option');
+    opt.value = code;
+    opt.textContent = LANG_NAMES[code];
+    sel.appendChild(opt);
+  }
+  sel.value = getLang();
+}
+
+/** Apply the current language to every static and dynamic part of the UI. */
+function applyLanguage() {
+  document.documentElement.lang = getLang();
+  document.title = t('meta.title');
+  const desc = document.querySelector('meta[name="description"]');
+  if (desc) desc.setAttribute('content', t('meta.description'));
+  translateDom();
+  // The track name is user data, not a translatable label.
+  if (state.trackName) $('#track-name').textContent = state.trackName;
+}
+
+/** Switch language at runtime: persist, then re-render everything. */
+function setLanguage(lang) {
+  setLang(lang);
+  saveLang(getLang());
+  applyLanguage();
+  buildPoiPanel();
+  buildLayersControl();
+  if (state.route) {
+    drawRoute(false); // refresh start/end labels without moving the view
+    drawProfile();
+    syncWaypointUI();
+  }
+  updatePoiCounts();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  setLang(detectLang());
+  buildLangSelector();
+  applyLanguage();
   initMap();
   buildPoiPanel();
   wire();

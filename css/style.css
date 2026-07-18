@@ -47,6 +47,22 @@ body {
 .brand h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
 .tagline { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 
+/* Language selector, pushed to the right of the brand header. */
+.lang-select {
+  margin-left: auto;
+  align-self: center;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  cursor: pointer;
+}
+.lang-select:hover { border-color: var(--muted); }
+/* Sit next to the close button on mobile instead of taking its slot. */
+.menu-close { margin-left: 8px; }
+
 /* ---------------- Drawer controls (mobile only) ---------------- */
 .menu-btn {
   display: none;

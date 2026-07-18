@@ -30,6 +30,14 @@ const HARD_TIMEOUT_MS = 60000;
 // Instances that failed in this session get deprioritized.
 const failures = new Map();
 
+/** Build an Error carrying an i18n `code` (translated at the display site). */
+function errWithCode(code, params) {
+  const e = new Error(code);
+  e.code = code;
+  if (params) e.params = params;
+  return e;
+}
+
 /**
  * Compute a bounding box (with a margin) from coordinate arrays.
  * Returns "south,west,north,east".
@@ -166,7 +174,7 @@ function runHedged(query, order) {
         signal: attempt.ctrl.signal,
       })
         .then((resp) => {
-          if (!resp.ok) throw new Error('Overpass HTTP ' + resp.status);
+          if (!resp.ok) throw errWithCode('error.overpassHttp', { status: resp.status });
           return resp.json();
         })
         .then((json) => {
@@ -179,11 +187,11 @@ function runHedged(query, order) {
           if (settled) return;
           markFailed(url);
           lastErr = err && err.name === 'AbortError'
-            ? new Error('délai dépassé (' + new URL(url).host + ')')
+            ? errWithCode('error.overpassTimeout', { host: new URL(url).host })
             : err;
           if (attempts.length < order.length) launch();
           else if (inFlight === 0) {
-            settle(null, reject, lastErr || new Error('Aucun serveur Overpass ne répond.'));
+            settle(null, reject, lastErr || errWithCode('error.overpassNoServer'));
           }
         });
     }

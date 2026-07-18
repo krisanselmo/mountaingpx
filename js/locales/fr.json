@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "title": "Mountain GPX — waypoints automatiques",
+    "description": "Ajoutez automatiquement des waypoints (sommets, cols, refuges, fontaines…) sur votre trace GPX. Entièrement dans le navigateur, sans serveur."
+  },
+  "lang": { "aria": "Langue" },
+  "menu": { "open": "Ouvrir le menu", "close": "Fermer le menu" },
+  "brand": { "tagline": "Waypoints automatiques" },
+  "dropzone": {
+    "drop": "Glissez votre fichier GPX",
+    "or": "ou",
+    "openBtn": "Choisir un fichier",
+    "openTitle": "Rien n'est envoyé sur un serveur — tout reste sur votre appareil."
+  },
+  "panel": { "poiHeading": "Points d'intérêt" },
+  "bulk": { "all": "Tout", "none": "Rien", "default": "Défaut" },
+  "th": {
+    "named": "Nommé",
+    "namedTitle": "Inclure les POI qui ont un nom dans OpenStreetMap — le waypoint reprend ce nom (ex. « Col de la Vache »).",
+    "noname": "Sans nom",
+    "nonameTitle": "Inclure aussi les POI sans nom dans OpenStreetMap — un nom générique numéroté est attribué (ex. saddle1, spring2)."
+  },
+  "advanced": {
+    "summary": "Options avancées",
+    "customLabel": "Requête Overpass personnalisée",
+    "customPlaceholder": "ex : way[\"leisure\"=\"park\"]",
+    "customHelp": "Un seul élément, en <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
+    "snapLabel": "Distance max d'accrochage :",
+    "reverse": "Inverser le sens de la trace"
+  },
+  "btn": { "generate": "Générer les waypoints", "download": "⬇ Télécharger le GPX" },
+  "toolbar": { "noTrack": "Aucune trace" },
+  "stat": { "distance": "distance", "dplus": "D+", "altmax": "alt. max", "waypoints": "waypoints" },
+  "profile": { "waypoints": "Waypoints", "noElevation": "Pas de données d'altitude" },
+  "overlay": {
+    "querying": "Interrogation d'OpenStreetMap…",
+    "queryingProgress": "Interrogation d'OpenStreetMap… {done}/{total}"
+  },
+  "map": { "start": "Départ", "end": "Arrivée" },
+  "popup": { "rename": "Renommer", "delete": "Retirer de la trace", "nameAria": "Nom du waypoint" },
+  "layers": {
+    "opentopo": "OpenTopoMap",
+    "osm": "OpenStreetMap",
+    "satellite": "Satellite",
+    "trails": "Sentiers (waymarked)",
+    "water": "Points d'eau"
+  },
+  "water": { "default": "Point d'eau", "zoomIn": "Zoomez pour charger les points d'eau" },
+  "toast": {
+    "notGpx": "Merci de fournir un fichier .gpx",
+    "gpxError": "Erreur de lecture du GPX",
+    "trackLoaded": "Trace chargée : {n} points",
+    "needTrack": "Chargez d'abord une trace GPX",
+    "selectPoi": "Sélectionnez au moins un type de POI",
+    "renamed": "Renommé en « {name} »",
+    "removed": "« {name} » retiré de la trace",
+    "snapped": "{n} waypoint(s) accroché(s) à la trace",
+    "partialFail": "{n} waypoint(s) — {failed}/{total} portion(s) du parcours n'ont pas pu être interrogées, réessayez",
+    "overpassError": "Overpass : {msg}"
+  },
+  "error": {
+    "gpxInvalidXml": "Fichier GPX invalide : le XML ne peut pas être lu.",
+    "gpxNoPoints": "Aucune trace (trkpt) ni itinéraire (rtept) trouvé dans le GPX.",
+    "overpassTimeout": "délai dépassé ({host})",
+    "overpassNoServer": "Aucun serveur Overpass ne répond.",
+    "overpassHttp": "Overpass HTTP {status}",
+    "requestFailed": "échec de la requête"
+  },
+  "group": {
+    "summits": "Sommets & panoramas",
+    "shelter": "Hébergements & abris",
+    "water": "Eau & relief",
+    "landmark": "Points remarquables",
+    "misc": "Divers"
+  },
+  "poi": {
+    "peak": "Sommet",
+    "saddle": "Col",
+    "volcano": "Volcan",
+    "viewpoint": "Point de vue",
+    "toposcope": "Table d'orientation",
+    "attraction": "Attraction",
+    "alpine_hut": "Refuge gardé",
+    "wilderness_hut": "Refuge non gardé",
+    "shelter": "Abri",
+    "camp_site": "Camping",
+    "hostel": "Auberge de jeunesse",
+    "hotel": "Hôtel",
+    "drinking_water": "Eau potable",
+    "fountain": "Fontaine",
+    "spring": "Source",
+    "waterfall": "Cascade",
+    "lake": "Lac",
+    "glacier": "Glacier",
+    "ford": "Gué",
+    "guidepost": "Panneau",
+    "cave_entrance": "Grotte",
+    "chapel": "Chapelle",
+    "castle": "Château",
+    "ruins": "Ruines",
+    "observatory": "Observatoire",
+    "tree": "Arbre remarquable",
+    "locality": "Lieu-dit",
+    "toilets": "Toilettes",
+    "barrier": "Barrière",
+    "tunnel": "Tunnel"
+  }
+}
