@@ -43,7 +43,9 @@ body {
   border-bottom: 1px solid var(--line);
   background: linear-gradient(135deg, #1b2836, #17212b);
 }
-.brand .logo { font-size: 34px; line-height: 1; }
+/* Radius matches the SVG's own rx (96/512) so the clip aligns with the artwork
+   and leaves no transparent corner sliver. Light ring sits outside the art. */
+.brand .logo { width: 36px; height: 36px; border-radius: 6.75px; display: block; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .5), 0 2px 8px rgba(0, 0, 0, .45); }
 .brand h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
 .tagline { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 

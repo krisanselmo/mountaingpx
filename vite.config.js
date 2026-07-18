@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Mountain GPX — waypoints automatiques',
         short_name: 'Mountain GPX',
@@ -36,7 +36,7 @@ export default defineConfig({
       },
       workbox: {
         // Precache the built app shell.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // The map/POI data comes from third-party APIs; cache it at runtime
         // so a previously loaded area stays usable offline.
         runtimeCaching: [
