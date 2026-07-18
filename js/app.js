@@ -11,7 +11,7 @@ import * as TCX from './tcx.js';
 import { haversine } from './geometry.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
-import { POI, GROUPS, DEFAULT_WITH_NAME } from './poi.js';
+import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME } from './poi.js';
 import {
   t, translateDom, detectLang, getLang, setLang, saveLang,
   SUPPORTED, LANG_NAMES,
@@ -69,7 +69,7 @@ function buildPoiPanel() {
   container.innerHTML = '';
   const saved = loadSettings();
   const savedWith = new Set(saved.withName || DEFAULT_WITH_NAME);
-  const savedNo = new Set(saved.noName || []);
+  const savedNo = new Set(saved.noName || DEFAULT_NO_NAME);
 
   // Group POI types.
   const groups = {};
@@ -798,15 +798,17 @@ function setBusy(b) {
 }
 
 // ---- Bulk selection helpers ------------------------------------------
-function selectAll(kind, checked) {
-  document.querySelectorAll(`#poi-list input[data-kind="${kind}"]`).forEach((cb) => {
+// "Tout" / "Rien" toggle both columns (named and unnamed POIs).
+function selectAll(checked) {
+  document.querySelectorAll('#poi-list input[type=checkbox]').forEach((cb) => {
     cb.checked = checked;
   });
   onSelectionChanged();
 }
 function resetDefaults() {
   document.querySelectorAll('#poi-list input[type=checkbox]').forEach((cb) => {
-    cb.checked = cb.dataset.kind === 'with' && DEFAULT_WITH_NAME.includes(cb.dataset.type);
+    const defaults = cb.dataset.kind === 'with' ? DEFAULT_WITH_NAME : DEFAULT_NO_NAME;
+    cb.checked = defaults.includes(cb.dataset.type);
   });
   onSelectionChanged();
 }
@@ -893,8 +895,8 @@ function wire() {
     refreshFromMemory();
     updatePoiCounts();
   });
-  $('#sel-all-with').addEventListener('click', () => selectAll('with', true));
-  $('#sel-none-with').addEventListener('click', () => selectAll('with', false));
+  $('#sel-all-with').addEventListener('click', () => selectAll(true));
+  $('#sel-none-with').addEventListener('click', () => selectAll(false));
   $('#btn-defaults').addEventListener('click', resetDefaults);
 
   $('#profile').addEventListener('mousemove', profileHover);

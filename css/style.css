@@ -160,6 +160,8 @@ body {
 
 /* ---------------- Buttons ---------------- */
 .actions { padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; }
+.actions-row { display: flex; gap: 10px; }
+.actions-row .btn { flex: 1 1 0; min-width: 0; }
 .btn {
   border: none; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: filter .15s, transform .05s; color: #fff;

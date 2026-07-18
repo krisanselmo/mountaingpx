@@ -54,7 +54,10 @@ export const POI = {
 export const GROUPS = ['summits', 'shelter', 'water', 'landmark', 'misc'];
 
 // Defaults enabled on first visit (mirrors the original default cookie).
-export const DEFAULT_WITH_NAME = ['peak', 'saddle', 'alpine_hut', 'wilderness_hut', 'viewpoint', 'lake', 'waterfall', 'fountain', 'drinking_water', 'chapel', 'guidepost'];
+export const DEFAULT_WITH_NAME = ['peak', 'saddle', 'volcano', 'alpine_hut', 'wilderness_hut', 'viewpoint', 'lake', 'waterfall', 'fountain', 'drinking_water', 'spring'];
+
+// Unnamed POIs enabled by default: water points are useful even without a name.
+export const DEFAULT_NO_NAME = ['drinking_water', 'fountain', 'spring'];
 
 /*
  * Priority-ordered list used to detect a waypoint's type from OSM tags.
