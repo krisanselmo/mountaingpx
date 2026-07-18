@@ -28,7 +28,7 @@
     "snapLabel": "Max. Fangdistanz:",
     "reverse": "Trackrichtung umkehren"
   },
-  "btn": { "generate": "Wegpunkte erzeugen", "download": "⬇ GPX herunterladen" },
+  "btn": { "generate": "Wegpunkte erzeugen", "download": "⬇ GPX herunterladen", "downloadTcx": "⬇ TCX herunterladen (Garmin)" },
   "toolbar": { "noTrack": "Kein Track" },
   "stat": { "distance": "Distanz", "dplus": "Aufstieg", "altmax": "max. Höhe", "waypoints": "Wegpunkte" },
   "profile": { "waypoints": "Wegpunkte", "noElevation": "Keine Höhendaten" },

@@ -21,6 +21,8 @@ Déployée sur https://krisanselmo.github.io/mountaingpx/
   suppression des waypoints depuis la carte.
 - Profil altimétrique et statistiques (distance, D+, altitude max).
 - Export GPX enrichi des waypoints, téléchargé localement.
+- Export TCX (parcours Garmin) : la trace enrichie et les waypoints typés
+  (`CoursePoint` : sommet, eau, ravitaillement…) importables dans Garmin Connect.
 - Préférences mémorisées dans `localStorage`.
 - **PWA installable** : l'application peut être ajoutée à l'écran d'accueil
   (mobile) ou installée comme app de bureau, et fonctionne hors-ligne grâce à
@@ -52,6 +54,7 @@ n'importe quel hébergeur statique.
     ├── poi.js          # catalogue POI, filtres Overpass, détection de type
     ├── icons.js        # icônes SVG inline (Lucide, licence ISC + glyphes maison), pins Leaflet
     ├── gpx.js          # parsing et génération GPX
+    ├── tcx.js          # génération TCX (parcours Garmin)
     ├── overpass.js     # requêtes Overpass segmentées et hedgées, accrochage
     └── app.js          # carte Leaflet, UI, orchestration
 ```
