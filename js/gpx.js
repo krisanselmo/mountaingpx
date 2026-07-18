@@ -57,7 +57,7 @@ export function parse(xmlString) {
   return { name, lat, lon, ele, waypoints };
 }
 
-function esc(s) {
+export function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -80,12 +80,12 @@ function dedupe(lat, lon, ele) {
 }
 
 /**
- * Build a GPX XML string from the original route + detected waypoints.
- * `pts` are Waypoint objects (see overpass.js); `keepOld` preserves the
- * waypoints already present in the source file.
+ * Rebuild the route coordinates with each snapped waypoint projected onto the
+ * track (inserted before/after its anchor route point), then de-duplicated.
+ * Shared by the GPX and TCX exporters. Returns { lat[], lon[], ele[] }.
  */
-export function build(route, pts, keepOld) {
-  const { name, lat, lon, ele } = route;
+export function densify(route, pts) {
+  const { lat, lon, ele } = route;
   const byIndex = new Map();
   for (const p of pts) byIndex.set(p.index, p);
 
@@ -112,6 +112,17 @@ export function build(route, pts, keepOld) {
   }
 
   const [dLat, dLon, dEle] = dedupe(_lat, _lon, _ele);
+  return { lat: dLat, lon: dLon, ele: dEle };
+}
+
+/**
+ * Build a GPX XML string from the original route + detected waypoints.
+ * `pts` are Waypoint objects (see overpass.js); `keepOld` preserves the
+ * waypoints already present in the source file.
+ */
+export function build(route, pts, keepOld) {
+  const { name } = route;
+  const { lat: dLat, lon: dLon, ele: dEle } = densify(route, pts);
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<gpx version="1.1" creator="Mountain GPX" xmlns="http://www.topografix.com/GPX/1/1">\n';
@@ -149,7 +160,7 @@ function wptXml(lat, lon, ele, name, type, desc) {
   return s;
 }
 
-function stripHtml(html) {
+export function stripHtml(html) {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return (tmp.textContent || '').replace(/\s+/g, ' ').trim();

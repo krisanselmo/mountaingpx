@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import * as GPX from './gpx.js';
+import * as TCX from './tcx.js';
 import { haversine } from './geometry.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
@@ -31,6 +32,7 @@ const state = {
   markerLayer: null,
   endpoints: null,
   lastGpx: null,
+  lastTcx: null,
   showProfileWpts: true,
   genElements: null, // raw OSM elements of the last generation (all types)
   genCustom: '',     // custom query used by the last generation
@@ -481,8 +483,10 @@ function syncWaypointUI() {
   drawWaypoints();
   renderProfileWaypoints();
   state.lastGpx = GPX.build(state.route, state.pts, true);
+  state.lastTcx = TCX.build(state.route, state.pts, true);
   $('#stat-wpt').textContent = state.pts.length;
   $('#btn-download').disabled = state.pts.length === 0;
+  $('#btn-download-tcx').disabled = state.pts.length === 0;
 }
 
 // ---- Elevation profile (lightweight SVG) ------------------------------
@@ -628,6 +632,7 @@ function handleFile(file) {
       state.route = route;
       state.pts = [];
       state.lastGpx = null;
+      state.lastTcx = null;
       state.genElements = null;
       state.genCustom = '';
       state.overrides = new Map();
@@ -638,6 +643,7 @@ function handleFile(file) {
       $('#track-name').textContent = state.trackName;
       $('#toolbar').classList.add('active');
       $('#btn-download').disabled = true;
+      $('#btn-download-tcx').disabled = true;
       updatePoiCounts();
       toast(t('toast.trackLoaded', { n: route.lat.length }), 'ok');
     } catch (err) {
@@ -754,18 +760,26 @@ function flashGenerate() {
   flashGenerate._t = setTimeout(() => b.classList.remove('holo'), 1300);
 }
 
-function download() {
-  if (!state.lastGpx) return;
+function saveFile(content, ext, mime) {
+  if (!content) return;
   const base = (state.route.name || 'mountaingpx').replace(/[^\w.-]+/g, '_');
-  const blob = new Blob([state.lastGpx], { type: 'application/gpx+xml' });
+  const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = el('a');
   a.href = url;
-  a.download = base + '_wpt.gpx';
+  a.download = base + '_wpt.' + ext;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function download() {
+  saveFile(state.lastGpx, 'gpx', 'application/gpx+xml');
+}
+
+function downloadTcx() {
+  saveFile(state.lastTcx, 'tcx', 'application/vnd.garmin.tcx+xml');
 }
 
 // ---- UI feedback ------------------------------------------------------
@@ -847,6 +861,7 @@ function wire() {
 
   $('#btn-generate').addEventListener('click', generate);
   $('#btn-download').addEventListener('click', download);
+  $('#btn-download-tcx').addEventListener('click', downloadTcx);
   $('#overpass-custom').addEventListener('change', () => {
     persistSelection();
     // The custom query results are not in memory: a new generation is due.
@@ -861,7 +876,9 @@ function wire() {
       state.pts = [];
       state.markerLayer.clearLayers();
       state.lastGpx = null;
+      state.lastTcx = null;
       $('#btn-download').disabled = true;
+      $('#btn-download-tcx').disabled = true;
       drawRoute();
       drawProfile();
       refreshFromMemory();

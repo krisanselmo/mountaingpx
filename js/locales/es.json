@@ -28,7 +28,7 @@
     "snapLabel": "Distancia máx. de enganche:",
     "reverse": "Invertir el sentido del track"
   },
-  "btn": { "generate": "Generar waypoints", "download": "⬇ Descargar el GPX" },
+  "btn": { "generate": "Generar waypoints", "download": "⬇ Descargar el GPX", "downloadTcx": "⬇ Descargar el TCX (Garmin)" },
   "toolbar": { "noTrack": "Sin track" },
   "stat": { "distance": "distancia", "dplus": "D+", "altmax": "alt. máx.", "waypoints": "waypoints" },
   "profile": { "waypoints": "Waypoints", "noElevation": "Sin datos de altitud" },
