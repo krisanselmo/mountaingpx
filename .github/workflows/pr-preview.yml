@@ -33,6 +33,8 @@ jobs:
       - if: github.event.action != 'closed'
         run: npm ci
       - if: github.event.action != 'closed'
+        run: npm test
+      - if: github.event.action != 'closed'
         run: npm run build
       - uses: rossjrw/pr-preview-action@v1
         with:

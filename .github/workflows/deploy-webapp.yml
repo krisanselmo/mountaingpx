@@ -6,17 +6,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # push the gh-pages mirror
-  pages: write
-  id-token: write
+  contents: write # push to the gh-pages branch
 
 # One deployment at a time; let a running one finish.
 concurrency:
   group: pages
   cancel-in-progress: false
 
+# GitHub Pages serves the gh-pages branch (Settings > Pages > Deploy from a
+# branch). This workflow tests, builds and pushes dist/ to the root of that
+# branch; the PR previews live under pr-preview/ (see pr-preview.yml).
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -25,31 +26,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-      # Mirror the build to the root of the gh-pages branch so Pages can be
-      # served from that branch, with the PR previews living in pr-preview/
-      # (see pr-preview.yml). `clean-exclude` keeps the previews alive and
-      # `force: false` rebases instead of clobbering a concurrent preview push.
+      # `clean-exclude` keeps the PR previews alive and `force: false`
+      # rebases instead of clobbering a concurrent preview push.
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
           clean-exclude: pr-preview
           force: false
-
-  # Direct Pages deployment, used while the Pages source is "GitHub Actions".
-  # Once the source is switched to the gh-pages branch (required for the PR
-  # previews to be served) this job is expected to fail, hence continue-on-error.
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

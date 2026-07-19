@@ -65,8 +65,9 @@ n'importe quel hébergeur statique.
 ## Déploiement
 
 `.github/workflows/deploy-webapp.yml` : à chaque push sur `master`,
-`npm ci && npm run build` puis publication de `dist/` sur GitHub Pages
-(et copie miroir à la racine de la branche `gh-pages`).
+`npm ci && npm test && npm run build` puis publication de `dist/` à la
+racine de la branche `gh-pages`, servie par GitHub Pages. Si les tests ou
+le build échouent, rien n'est déployé.
 
 `.github/workflows/pr-preview.yml` : chaque pull request est déployée en
 préversion sous `pr-preview/pr-<n>/` de la branche `gh-pages`, et le lien de
