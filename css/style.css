@@ -420,6 +420,16 @@ body {
 
   /* Stats toolbar: leave space for the menu button, let it wrap. */
   .toolbar { flex-wrap: wrap; gap: 6px 12px; padding: 8px 14px 8px 64px; }
-  .track-name { font-size: 13px; }
-  .stats { flex: 1 1 100%; justify-content: space-between; gap: 8px; }
+  .track-name { font-size: 13px; order: 1; flex: 1; min-width: 0; }
+  .stats { flex: 1 1 100%; justify-content: space-between; gap: 8px; order: 3; }
+
+  /* Roadbook toggle: icon-only, top right of the toolbar (same row as the
+     track name) instead of a full extra row below the stats. */
+  #btn-roadbook { order: 2; padding: 7px; }
+  #btn-roadbook span { display: none; }
+}
+
+@media (max-width: 500px) {
+  /* Full-width roadbook on phones: a 50px sliver of map is just noise. */
+  .roadbook { width: 100%; border-left: none; }
 }
