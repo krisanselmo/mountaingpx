@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mountain GPX</title>
+  <meta name="description" content="">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <meta name="theme-color" content="#0f1720">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mountain GPX">
+  <script type="module" crossorigin src="./assets/index-gzWspZI4.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DiU5hm2i.css">
+<link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+<body>
+  <button id="menu-btn" class="menu-btn" type="button" data-i18n-aria-label="menu.open" aria-controls="sidebar" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+  <div id="backdrop" class="backdrop" hidden></div>
+
+  <aside id="sidebar">
+    <header class="brand">
+      <img class="logo" src="icon.svg" alt="" width="34" height="34">
+      <div>
+        <h1>Mountain GPX</h1>
+        <p class="tagline" data-i18n="brand.tagline">Waypoints automatiques</p>
+      </div>
+      <select id="lang-select" class="lang-select" data-i18n-aria-label="lang.aria"></select>
+      <button id="menu-close" class="menu-close" type="button" data-i18n-aria-label="menu.close">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+    </header>
+
+    <section class="panel">
+      <div id="dropzone" class="dropzone">
+        <input type="file" id="file-input" accept=".gpx" hidden>
+        <p class="dz-icon">📂</p>
+        <p><strong data-i18n="dropzone.drop">Glissez votre fichier GPX</strong><br><span data-i18n="dropzone.or">ou</span></p>
+        <button id="btn-open" class="btn btn-ghost" type="button" data-i18n="dropzone.openBtn" data-i18n-title="dropzone.openTitle">Choisir un fichier</button>
+      </div>
+    </section>
+
+    <section class="panel scroll">
+      <div class="panel-head">
+        <h2 data-i18n="panel.poiHeading">Points d'intérêt</h2>
+        <div class="bulk">
+          <button id="sel-all-with" class="link" type="button" data-i18n="bulk.all">Tout</button>
+          <button id="sel-none-with" class="link" type="button" data-i18n="bulk.none">Rien</button>
+          <button id="btn-defaults" class="link" type="button" data-i18n="bulk.default">Défaut</button>
+        </div>
+      </div>
+      <div id="poi-list"></div>
+
+      <details class="poi-group advanced">
+        <summary data-i18n="advanced.summary">Options avancées</summary>
+        <label class="field">
+          <span data-i18n="advanced.customLabel">Requête Overpass personnalisée</span>
+          <input type="text" id="overpass-custom" data-i18n-placeholder="advanced.customPlaceholder" placeholder='ex : way["leisure"="park"]'>
+          <small data-i18n-html="advanced.customHelp">Un seul élément, en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide" target="_blank" rel="noopener">Overpass QL</a>.</small>
+        </label>
+        <label class="field">
+          <span><span data-i18n="advanced.snapLabel">Distance max d'accrochage :</span> <b id="snap-dist-val">50 m</b></span>
+          <input type="range" id="snap-dist" min="10" max="500" step="10" value="50">
+        </label>
+        <label class="check">
+          <input type="checkbox" id="reverse"> <span data-i18n="advanced.reverse">Inverser le sens de la trace</span>
+        </label>
+      </details>
+    </section>
+
+    <footer class="actions">
+      <button id="btn-generate" class="btn btn-primary" type="button">
+        <span class="spinner"></span> <span data-i18n="btn.generate">Générer les waypoints</span>
+      </button>
+      <div class="actions-row">
+        <button id="btn-download" class="btn btn-ok" type="button" data-i18n="btn.download" disabled>⬇ Télécharger le GPX</button>
+        <button id="btn-download-tcx" class="btn btn-ok" type="button" data-i18n="btn.downloadTcx" disabled>⬇ Télécharger le TCX</button>
+      </div>
+    </footer>
+  </aside>
+
+  <main id="main">
+    <div id="toolbar" class="toolbar">
+      <span id="track-name" class="track-name" data-i18n="toolbar.noTrack">Aucune trace</span>
+      <div class="stats">
+        <span class="stat"><b id="stat-dist">—</b><small data-i18n="stat.distance">distance</small></span>
+        <span class="stat"><b id="stat-dplus">—</b><small data-i18n="stat.dplus">D+</small></span>
+        <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. max</small></span>
+        <span class="stat"><b id="stat-wpt">0</b><small data-i18n="stat.waypoints">waypoints</small></span>
+      </div>
+      <button id="btn-roadbook" class="rb-btn" type="button" hidden aria-controls="roadbook" aria-expanded="false" data-i18n-aria-label="roadbook.btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="0.5"/><circle cx="4" cy="12" r="0.5"/><circle cx="4" cy="18" r="0.5"/></svg>
+        <span data-i18n="roadbook.btn">Roadbook</span>
+      </button>
+    </div>
+
+    <div id="map-wrap">
+      <div id="map"></div>
+
+      <aside id="roadbook" class="roadbook" data-i18n-aria-label="roadbook.title" aria-label="Roadbook">
+        <header class="rb-head">
+          <h2 data-i18n="roadbook.title">Roadbook</h2>
+          <div class="rb-actions">
+            <button id="rb-print" class="link" type="button" data-i18n="roadbook.print">Imprimer</button>
+            <button id="rb-close" class="rb-close" type="button" data-i18n-aria-label="roadbook.close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="rb-print-head">
+          <b id="rb-track"></b>
+          <span id="rb-stats"></span>
+        </div>
+        <div id="roadbook-body" class="rb-body"></div>
+      </aside>
+    </div>
+
+    <div id="profile-wrap" class="profile-wrap empty">
+      <label id="profile-wpts-toggle-wrap" class="profile-toggle" hidden>
+        <input type="checkbox" id="profile-wpts-toggle" checked> <span data-i18n="profile.waypoints">Waypoints</span>
+      </label>
+      <svg id="profile" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="loader"></div>
+      <p id="overlay-msg" data-i18n="overlay.querying">Interrogation d'OpenStreetMap…</p>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+</body>
+</html>
