@@ -6,17 +6,18 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write # push to the gh-pages branch
 
 # One deployment at a time; let a running one finish.
 concurrency:
   group: pages
   cancel-in-progress: false
 
+# GitHub Pages serves the gh-pages branch (Settings > Pages > Deploy from a
+# branch). This workflow tests, builds and pushes dist/ to the root of that
+# branch; the PR previews live under pr-preview/ (see pr-preview.yml).
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -25,17 +26,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      # `clean-exclude` keeps the PR previews alive and `force: false`
+      # rebases instead of clobbering a concurrent preview push.
+      - uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          folder: dist
+          branch: gh-pages
+          clean-exclude: pr-preview
+          force: false

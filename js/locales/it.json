@@ -32,6 +32,12 @@
   "toolbar": { "noTrack": "Nessuna traccia" },
   "stat": { "distance": "distanza", "dplus": "dislivello", "altmax": "alt. max", "waypoints": "waypoint" },
   "profile": { "waypoints": "Waypoint", "noElevation": "Nessun dato di altitudine" },
+  "roadbook": {
+    "btn": "Roadbook",
+    "title": "Roadbook",
+    "print": "Stampa",
+    "close": "Chiudi il roadbook"
+  },
   "overlay": {
     "querying": "Interrogazione di OpenStreetMap…",
     "queryingProgress": "Interrogazione di OpenStreetMap… {done}/{total}"
