@@ -90,9 +90,32 @@
         <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. max</small></span>
         <span class="stat"><b id="stat-wpt">0</b><small data-i18n="stat.waypoints">waypoints</small></span>
       </div>
+      <button id="btn-roadbook" class="rb-btn" type="button" hidden aria-controls="roadbook" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="0.5"/><circle cx="4" cy="12" r="0.5"/><circle cx="4" cy="18" r="0.5"/></svg>
+        <span data-i18n="roadbook.btn">Roadbook</span>
+      </button>
     </div>
 
-    <div id="map"></div>
+    <div id="map-wrap">
+      <div id="map"></div>
+
+      <aside id="roadbook" class="roadbook" data-i18n-aria-label="roadbook.title" aria-label="Roadbook">
+        <header class="rb-head">
+          <h2 data-i18n="roadbook.title">Roadbook</h2>
+          <div class="rb-actions">
+            <button id="rb-print" class="link" type="button" data-i18n="roadbook.print">Imprimer</button>
+            <button id="rb-close" class="rb-close" type="button" data-i18n-aria-label="roadbook.close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="rb-print-head">
+          <b id="rb-track"></b>
+          <span id="rb-stats"></span>
+        </div>
+        <div id="roadbook-body" class="rb-body"></div>
+      </aside>
+    </div>
 
     <div id="profile-wrap" class="profile-wrap empty">
       <label id="profile-wpts-toggle-wrap" class="profile-toggle" hidden>

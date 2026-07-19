@@ -247,7 +247,57 @@ body {
 .stat b { font-size: 15px; color: var(--accent-2); }
 .stat small { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 
+#map-wrap { flex: 1; position: relative; display: flex; min-height: 0; }
 #map { flex: 1; background: #0b1118; z-index: 1; }
+
+/* ---------------- Roadbook ---------------- */
+.roadbook {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(340px, 100%);
+  z-index: 1050;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  display: none; flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, .35);
+}
+.roadbook.open { display: flex; }
+.rb-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap;
+}
+.rb-btn:hover, .rb-btn[aria-expanded="true"] { border-color: var(--accent-2); color: var(--accent-2); }
+.rb-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+}
+.rb-head h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 0; }
+.rb-actions { display: flex; align-items: center; gap: 10px; }
+.rb-close {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-2); color: var(--muted);
+  border: 1px solid var(--line); cursor: pointer;
+}
+.rb-close:hover { color: var(--text); }
+/* Track name + stats: shown on paper only (the toolbar already has them). */
+.rb-print-head { display: none; }
+.rb-body { flex: 1; overflow-y: auto; min-height: 0; padding: 6px 0; }
+.rb-row {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; text-align: left;
+  background: none; border: none; border-bottom: 1px solid var(--line);
+  color: var(--text); padding: 8px 16px; cursor: pointer; font: inherit;
+}
+.rb-row:hover { background: var(--panel-2); }
+.rb-icon { flex-shrink: 0; display: flex; }
+.rb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rb-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rb-type { font-size: 11px; color: var(--muted); }
+.rb-meta { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.rb-meta b { font-size: 13px; color: var(--accent-2); font-variant-numeric: tabular-nums; }
+.rb-meta span { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 .profile-wrap { position: relative; height: 120px; background: var(--panel); border-top: 1px solid var(--line); }
 .profile-wrap.empty { display: none; }
@@ -305,6 +355,37 @@ body {
 .wpt-popup .tags td { padding: 1px 0; }
 .wpt-popup .osm-link { display: inline-block; margin-top: 4px; font-size: 12px; }
 .leaflet-popup-content { max-height: 260px; overflow-y: auto; }
+
+/* ---------------- Print (roadbook only) ---------------- */
+@media print {
+  body {
+    display: block; height: auto; overflow: visible;
+    background: #fff; color: #000;
+  }
+  #sidebar, #menu-btn, #backdrop, .toolbar, #map, .profile-wrap,
+  .overlay, .toast, .rb-actions {
+    display: none !important;
+  }
+  #main, #map-wrap { display: block; position: static; }
+  .roadbook {
+    display: block !important;
+    position: static; width: 100%;
+    background: #fff; color: #000;
+    border: none; box-shadow: none;
+  }
+  .rb-head { border-bottom: none; padding: 0 0 4px; }
+  .rb-head h2 { color: #000; }
+  .rb-print-head {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 0 0 10px; margin-bottom: 6px;
+    border-bottom: 2px solid #000; font-size: 13px;
+  }
+  .rb-print-head span { color: #444; }
+  .rb-body { overflow: visible; padding: 0; }
+  .rb-row { color: #000; border-bottom: 1px solid #ddd; break-inside: avoid; padding: 6px 0; }
+  .rb-type, .rb-meta span { color: #555; }
+  .rb-meta b { color: #000; }
+}
 
 /* ---------------- Responsive ---------------- */
 @media (max-width: 820px) {

@@ -1,0 +1,42 @@
+name: PR preview
+
+# Deploy every pull request as a preview site under
+# https://krisanselmo.github.io/mountaingpx/pr-preview/pr-<n>/ and post the
+# link as a sticky PR comment, so the page can be tested from the PR itself.
+# The preview is updated on every push and removed when the PR is closed.
+#
+# Previews are served from the gh-pages branch: the repository's Pages
+# source must be set to "Deploy from a branch: gh-pages /(root)"
+# (Settings > Pages). The production build is mirrored to that branch's
+# root by deploy-webapp.yml, so the public URL does not change.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency: pr-preview-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        if: github.event.action != 'closed'
+        with:
+          node-version: 22
+          cache: npm
+      - if: github.event.action != 'closed'
+        run: npm ci
+      - if: github.event.action != 'closed'
+        run: npm run build
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: dist
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto

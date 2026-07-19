@@ -36,6 +36,7 @@ const state = {
   showProfileWpts: true,
   genElements: null, // raw OSM elements of the last generation (all types)
   genCustom: '',     // custom query used by the last generation
+  wptMarkers: new Map(), // waypoint object -> Leaflet marker (roadbook focus)
   // Per-OSM-element user edits ("osmType+id" -> { name?, removed? }),
   // re-applied after every re-snap so they survive selection changes.
   overrides: new Map(),
@@ -396,6 +397,7 @@ function drawRoute(fit = true) {
 
 function drawWaypoints() {
   state.markerLayer.clearLayers();
+  state.wptMarkers = new Map();
   for (const p of state.pts) {
     const marker = L.marker([p.lat, p.lon], {
       title: p.name,
@@ -404,6 +406,7 @@ function drawWaypoints() {
     marker.bindPopup(popupHtml(p));
     marker.on('popupopen', (ev) => bindPopupActions(ev.popup.getElement(), p));
     marker.addTo(state.markerLayer);
+    state.wptMarkers.set(p, marker);
   }
 }
 
@@ -482,11 +485,76 @@ function applyOverrides(pts) {
 function syncWaypointUI() {
   drawWaypoints();
   renderProfileWaypoints();
+  renderRoadbook();
   state.lastGpx = GPX.build(state.route, state.pts, true);
   state.lastTcx = TCX.build(state.route, state.pts, true);
   $('#stat-wpt').textContent = state.pts.length;
   $('#btn-download').disabled = state.pts.length === 0;
   $('#btn-download-tcx').disabled = state.pts.length === 0;
+}
+
+// ---- Roadbook (waypoint list sorted by distance along the track) --------
+/** Cumulative distance (km) at each route point, cached on the route. */
+function cumDistFor(route) {
+  if (route._cum) return route._cum;
+  const { lat, lon } = route;
+  const d = [0];
+  for (let i = 1; i < lat.length; i++) {
+    d.push(d[i - 1] + haversine(lon[i - 1], lat[i - 1], lon[i], lat[i]));
+  }
+  route._cum = d;
+  return d;
+}
+
+function setRoadbook(open) {
+  $('#roadbook').classList.toggle('open', open);
+  $('#btn-roadbook').setAttribute('aria-expanded', String(open));
+}
+
+/** Rebuild the roadbook rows; hides the toggle when there is nothing to list. */
+function renderRoadbook() {
+  const btn = $('#btn-roadbook');
+  const body = $('#roadbook-body');
+  btn.hidden = !state.pts.length;
+  if (!state.pts.length) {
+    body.innerHTML = '';
+    setRoadbook(false);
+    return;
+  }
+
+  const cum = cumDistFor(state.route);
+  const sorted = [...state.pts].sort((a, b) => a.index - b.index);
+  body.innerHTML = '';
+  for (const p of sorted) {
+    const cfg = POI[p.queryName];
+    const row = el('button', 'rb-row');
+    row.type = 'button';
+    row.innerHTML =
+      `<span class="rb-icon">${Icons.svgFor(p.queryName, 18)}</span>` +
+      `<span class="rb-main"><span class="rb-name">${escapeHtml(p.name)}</span>` +
+      (cfg ? `<span class="rb-type">${escapeHtml(t('poi.' + p.queryName))}</span>` : '') +
+      `</span>` +
+      `<span class="rb-meta"><b>${cum[p.index].toFixed(1)} km</b>` +
+      (p.ele ? `<span>${Math.round(p.ele)} m</span>` : '') +
+      `</span>`;
+    row.addEventListener('click', () => focusWpt(p));
+    body.appendChild(row);
+  }
+
+  // Header repeated on paper: the printed page has no toolbar.
+  $('#rb-track').textContent = state.trackName || '';
+  $('#rb-stats').textContent =
+    `${$('#stat-dist').textContent} · D${$('#stat-dplus').textContent} · ` +
+    `${state.pts.length} wpt`;
+}
+
+/** Center the map on a waypoint and open its popup. */
+function focusWpt(p) {
+  // The panel covers the whole map on small screens: reveal the result.
+  if (window.matchMedia('(max-width: 820px)').matches) setRoadbook(false);
+  state.map.setView([p.lat, p.lon], Math.max(state.map.getZoom(), 15));
+  const marker = state.wptMarkers.get(p);
+  if (marker) marker.openPopup();
 }
 
 // ---- Elevation profile (lightweight SVG) ------------------------------
@@ -644,6 +712,7 @@ function handleFile(file) {
       $('#toolbar').classList.add('active');
       $('#btn-download').disabled = true;
       $('#btn-download-tcx').disabled = true;
+      renderRoadbook();
       updatePoiCounts();
       toast(t('toast.trackLoaded', { n: route.lat.length }), 'ok');
     } catch (err) {
@@ -657,6 +726,7 @@ function reverseRoute(route) {
   route.lat.reverse();
   route.lon.reverse();
   route.ele.reverse();
+  delete route._cum; // cumulative distances are direction-dependent
 }
 
 // ---- Waypoint generation ----------------------------------------------
@@ -859,7 +929,18 @@ function wire() {
   );
   $('#menu-close').addEventListener('click', () => setMenu(false));
   $('#backdrop').addEventListener('click', () => setMenu(false));
-  document.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    setMenu(false);
+    setRoadbook(false);
+  });
+
+  // Roadbook panel.
+  $('#btn-roadbook').addEventListener('click', () =>
+    setRoadbook(!$('#roadbook').classList.contains('open'))
+  );
+  $('#rb-close').addEventListener('click', () => setRoadbook(false));
+  $('#rb-print').addEventListener('click', () => window.print());
 
   $('#btn-generate').addEventListener('click', generate);
   $('#btn-download').addEventListener('click', download);
@@ -883,6 +964,7 @@ function wire() {
       $('#btn-download-tcx').disabled = true;
       drawRoute();
       drawProfile();
+      renderRoadbook();
       refreshFromMemory();
       updatePoiCounts();
     }

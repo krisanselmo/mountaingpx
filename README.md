@@ -20,6 +20,9 @@ Déployée sur https://krisanselmo.github.io/mountaingpx/
   sentiers, overlay points d'eau) avec popups des tags OSM ; renommage et
   suppression des waypoints depuis la carte.
 - Profil altimétrique et statistiques (distance, D+, altitude max).
+- Roadbook : liste des waypoints triés par kilométrage (icône, type, km,
+  altitude), cliquables pour centrer la carte, imprimable (mise en page
+  d'impression dédiée).
 - Export GPX enrichi des waypoints, téléchargé localement.
 - Export TCX (parcours Garmin) : la trace enrichie et les waypoints typés
   (`CoursePoint` : sommet, eau, ravitaillement…) importables dans Garmin Connect.
@@ -62,7 +65,14 @@ n'importe quel hébergeur statique.
 ## Déploiement
 
 `.github/workflows/deploy-webapp.yml` : à chaque push sur `master`,
-`npm ci && npm run build` puis publication de `dist/` sur GitHub Pages.
+`npm ci && npm run build` puis publication de `dist/` sur GitHub Pages
+(et copie miroir à la racine de la branche `gh-pages`).
+
+`.github/workflows/pr-preview.yml` : chaque pull request est déployée en
+préversion sous `pr-preview/pr-<n>/` de la branche `gh-pages`, et le lien de
+test est posté automatiquement en commentaire de la PR. Nécessite que la
+source GitHub Pages du dépôt soit « Deploy from a branch : gh-pages /(root) »
+(Settings → Pages).
 
 ## Notes
 
