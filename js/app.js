@@ -538,6 +538,11 @@ function renderRoadbook() {
       (p.ele ? `<span>${Math.round(p.ele)} m</span>` : '') +
       `</span>`;
     row.addEventListener('click', () => focusWpt(p));
+    // Mirror the hover onto the profile dot (also on keyboard focus).
+    row.addEventListener('mouseenter', () => setProfileDotHighlight(p, true));
+    row.addEventListener('mouseleave', () => setProfileDotHighlight(p, false));
+    row.addEventListener('focus', () => setProfileDotHighlight(p, true));
+    row.addEventListener('blur', () => setProfileDotHighlight(p, false));
     body.appendChild(row);
   }
 
@@ -546,6 +551,18 @@ function renderRoadbook() {
   $('#rb-stats').textContent =
     `${$('#stat-dist').textContent} · D${$('#stat-dplus').textContent} · ` +
     `${state.pts.length} wpt`;
+}
+
+/** Highlight (or reset) a waypoint's dot on the elevation profile. */
+function setProfileDotHighlight(p, on) {
+  const dot = document.querySelector(
+    `#profile-wpts circle[data-wpt="${p.osmType}${p.id}"]`
+  );
+  if (!dot) return;
+  dot.setAttribute('r', on ? 6.5 : 4);
+  dot.setAttribute('stroke-width', on ? 2.5 : 1.5);
+  // Bring the highlighted dot above its neighbours (SVG paints in order).
+  if (on) dot.parentNode.appendChild(dot);
 }
 
 /** Center the map on a waypoint and open its popup. */
@@ -627,7 +644,8 @@ function renderProfileWaypoints() {
     const group = (POI[w.queryName] || {}).group;
     const color = Icons.GROUP_COLORS[group] || '#64748b';
     const alt = w.ele ? ` — ${Math.round(w.ele)} m` : '';
-    html += `<circle cx="${p.cx(w.index)}" cy="${p.cy(w.index)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5">` +
+    // data-wpt links the dot to its roadbook row (hover highlight).
+    html += `<circle data-wpt="${w.osmType}${w.id}" cx="${p.cx(w.index)}" cy="${p.cy(w.index)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5">` +
       `<title>${escapeHtml(w.name)}${alt}</title></circle>`;
   }
   html += '</g>';
