@@ -405,6 +405,8 @@ function drawWaypoints() {
     });
     marker.bindPopup(popupHtml(p));
     marker.on('popupopen', (ev) => bindPopupActions(ev.popup.getElement(), p));
+    marker.on('mouseover', () => setWptHighlight(p, true));
+    marker.on('mouseout', () => setWptHighlight(p, false));
     marker.addTo(state.markerLayer);
     state.wptMarkers.set(p, marker);
   }
@@ -525,10 +527,12 @@ function renderRoadbook() {
   const cum = cumDistFor(state.route);
   const sorted = [...state.pts].sort((a, b) => a.index - b.index);
   body.innerHTML = '';
+  body.appendChild(endpointRow('start', 0, cum));
   for (const p of sorted) {
     const cfg = POI[p.queryName];
     const row = el('button', 'rb-row');
     row.type = 'button';
+    row.dataset.wpt = p.osmType + p.id;
     row.innerHTML =
       `<span class="rb-icon">${Icons.svgFor(p.queryName, 18)}</span>` +
       `<span class="rb-main"><span class="rb-name">${escapeHtml(p.name)}</span>` +
@@ -538,19 +542,40 @@ function renderRoadbook() {
       (p.ele ? `<span>${Math.round(p.ele)} m</span>` : '') +
       `</span>`;
     row.addEventListener('click', () => focusWpt(p));
-    // Mirror the hover onto the profile dot (also on keyboard focus).
-    row.addEventListener('mouseenter', () => setProfileDotHighlight(p, true));
-    row.addEventListener('mouseleave', () => setProfileDotHighlight(p, false));
-    row.addEventListener('focus', () => setProfileDotHighlight(p, true));
-    row.addEventListener('blur', () => setProfileDotHighlight(p, false));
+    // Mirror the hover onto the profile dot and the map pin (also on
+    // keyboard focus).
+    row.addEventListener('mouseenter', () => setWptHighlight(p, true));
+    row.addEventListener('mouseleave', () => setWptHighlight(p, false));
+    row.addEventListener('focus', () => setWptHighlight(p, true));
+    row.addEventListener('blur', () => setWptHighlight(p, false));
     body.appendChild(row);
   }
+  body.appendChild(endpointRow('end', state.route.lat.length - 1, cum));
 
   // Header repeated on paper: the printed page has no toolbar.
   $('#rb-track').textContent = state.trackName || '';
   $('#rb-stats').textContent =
     `${$('#stat-dist').textContent} · D${$('#stat-dplus').textContent} · ` +
     `${state.pts.length} wpt`;
+}
+
+/** Start/end row of the roadbook (flags matching the map markers). */
+function endpointRow(kind, idx, cum) {
+  const { lat, lon, ele } = state.route;
+  const row = el('button', 'rb-row');
+  row.type = 'button';
+  const e = ele[idx];
+  row.innerHTML =
+    `<span class="rb-icon">${Icons.flagSvg(kind, 18)}</span>` +
+    `<span class="rb-main"><span class="rb-name">${escapeHtml(t(kind === 'start' ? 'map.start' : 'map.end'))}</span></span>` +
+    `<span class="rb-meta"><b>${cum[idx].toFixed(1)} km</b>` +
+    (e ? `<span>${Math.round(e)} m</span>` : '') +
+    `</span>`;
+  row.addEventListener('click', () => {
+    if (window.matchMedia('(max-width: 820px)').matches) setRoadbook(false);
+    state.map.setView([lat[idx], lon[idx]], Math.max(state.map.getZoom(), 15));
+  });
+  return row;
 }
 
 /** Highlight (or reset) a waypoint's dot on the elevation profile. */
@@ -563,6 +588,37 @@ function setProfileDotHighlight(p, on) {
   dot.setAttribute('stroke-width', on ? 2.5 : 1.5);
   // Bring the highlighted dot above its neighbours (SVG paints in order).
   if (on) dot.parentNode.appendChild(dot);
+}
+
+/**
+ * Highlight a waypoint everywhere it is displayed: profile dot, map pin and
+ * roadbook row. Hovering any of the three lights up the other two; the map
+ * is never panned, only decorated.
+ */
+function setWptHighlight(p, on) {
+  setProfileDotHighlight(p, on);
+  const marker = state.wptMarkers.get(p);
+  if (marker) {
+    const icon = marker.getElement();
+    if (icon) icon.classList.toggle('hl', on);
+    marker.setZIndexOffset(on ? 1000 : 0); // above neighbouring pins
+  }
+  const row = document.querySelector(
+    `#roadbook-body .rb-row[data-wpt="${p.osmType}${p.id}"]`
+  );
+  if (row) {
+    row.classList.toggle('hl', on);
+    // Reveal the row when the hover comes from the map/profile ('nearest'
+    // keeps the list still when the row is already visible).
+    if (on && $('#roadbook').classList.contains('open')) {
+      row.scrollIntoView({ block: 'nearest' });
+    }
+  }
+}
+
+/** Waypoint lookup by the "osmType+id" key carried by the profile dots. */
+function wptByKey(key) {
+  return state.pts.find((q) => q.osmType + q.id === key);
 }
 
 /** Center the map on a waypoint and open its popup. */
@@ -1001,6 +1057,20 @@ function wire() {
 
   $('#profile').addEventListener('mousemove', profileHover);
   $('#profile').addEventListener('mouseleave', profileLeave);
+  // Hovering a waypoint dot on the profile lights up its map pin and
+  // roadbook row. Delegated: the dots are re-rendered on every sync.
+  $('#profile').addEventListener('mouseover', (e) => {
+    const dot = e.target.closest && e.target.closest('#profile-wpts circle');
+    if (!dot) return;
+    const p = wptByKey(dot.dataset.wpt);
+    if (p) setWptHighlight(p, true);
+  });
+  $('#profile').addEventListener('mouseout', (e) => {
+    const dot = e.target.closest && e.target.closest('#profile-wpts circle');
+    if (!dot) return;
+    const p = wptByKey(dot.dataset.wpt);
+    if (p) setWptHighlight(p, false);
+  });
   $('#profile-wpts-toggle').addEventListener('change', (e) => {
     state.showProfileWpts = e.target.checked;
     const g = $('#profile-wpts');

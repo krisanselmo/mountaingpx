@@ -91,6 +91,13 @@ export function markerIcon(type) {
   }));
 }
 
+/** Inline flag <svg> for the roadbook start/end rows (same map colors). */
+export function flagSvg(kind, size) {
+  const s = size || 18;
+  const color = kind === 'start' ? '#2e9e5b' : '#d33c3c';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:${color}" aria-hidden="true">${GLYPHS.flag}</svg>`;
+}
+
 /** Leaflet div-icon pin for the track start/end. */
 export function flagIcon(kind) {
   return L.divIcon(Object.assign({}, PIN_OPTS, {
