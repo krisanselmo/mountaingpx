@@ -44,6 +44,7 @@ Build [Vite](https://vite.dev), Leaflet en dépendance npm.
 ```bash
 npm install
 npm run dev        # serveur de développement (http://localhost:5173)
+npm test           # tests unitaires (node --test), exécutés aussi par la CI
 npm run build      # build de production dans dist/
 npm run preview    # sert le build de production en local
 ```
