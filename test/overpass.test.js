@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { bbox, segmentRoute, buildAllFilters, buildQuery, snapElements } from '../js/overpass.js';
+import {
+  bbox, segmentRoute, buildAllFilters, buildQuery, snapElements, isValidCustomFilter,
+} from '../js/overpass.js';
 
 test('bbox: south,west,north,east with margin', () => {
   assert.equal(bbox([45, 46], [6, 7], 0.5), '44.5,5.5,46.5,7.5');
@@ -35,6 +37,34 @@ test('buildAllFilters: catalog filters plus a guarded custom snippet', () => {
   // Anything that is not a single node/way/relation filter is dropped.
   assert.equal(buildAllFilters('foo; out body;').length, filters.length);
   assert.equal(buildAllFilters('node[amenity]; node[shop]').length, filters.length);
+});
+
+test('isValidCustomFilter: accepts single-element snippets', () => {
+  assert.ok(isValidCustomFilter('node["amenity"="bench"]'));
+  assert.ok(isValidCustomFilter('way["leisure"="park"]'));
+  assert.ok(isValidCustomFilter('relation["route"="hiking"]'));
+  assert.ok(isValidCustomFilter('nwr["tourism"="camp_site"]'));
+  // Multiple filters, existence filter, regex filter, spaces.
+  assert.ok(isValidCustomFilter('node["amenity"="bench"]["backrest"="yes"]'));
+  assert.ok(isValidCustomFilter('node["ford"]'));
+  assert.ok(isValidCustomFilter('node["name"~"^Refuge"]'));
+  assert.ok(isValidCustomFilter('  node["amenity"="bench"]  '));
+  // Values with brackets or semicolons stay legal inside quotes.
+  assert.ok(isValidCustomFilter('node["name"~"a[bc];d"]'));
+});
+
+test('isValidCustomFilter: rejects broken or multi-statement snippets', () => {
+  assert.ok(!isValidCustomFilter(''));
+  assert.ok(!isValidCustomFilter('foo; out body;'));
+  assert.ok(!isValidCustomFilter('node[amenity]; node[shop]'));
+  assert.ok(!isValidCustomFilter('node')); // no filter at all
+  assert.ok(!isValidCustomFilter('node[]')); // empty filter
+  assert.ok(!isValidCustomFilter('node["amenity"="bench"')); // unclosed bracket
+  assert.ok(!isValidCustomFilter('node["amenity]')); // unclosed quote
+  assert.ok(!isValidCustomFilter('node["a"="b"];')); // trailing separator
+  assert.ok(!isValidCustomFilter('node["a"="b"](around:100)')); // extra clause
+  assert.ok(!isValidCustomFilter('node["a"="b"] junk'));
+  assert.ok(!isValidCustomFilter('{{bbox}}'));
 });
 
 test('buildQuery: assembles the Overpass QL statement', () => {

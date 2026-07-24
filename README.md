@@ -57,7 +57,9 @@ https://krisanselmo.github.io/mountaingpx/en.html
   varint + deflate + base64url), sans aucun serveur. Les traces trop longues
   sont simplifiées (Douglas-Peucker) juste assez pour tenir dans l'URL
   (~4000 caractères) ; les waypoints, eux, ne sont jamais simplifiés.
-- Export GPX enrichi des waypoints, téléchargé localement.
+- Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
+  (`<time>`) du fichier source sont conservés (interpolés sur les points
+  insérés par l'accrochage).
 - Export TCX (parcours Garmin) : la trace enrichie et les waypoints typés
   (`CoursePoint` : sommet, eau, ravitaillement…) importables dans Garmin Connect.
 - Préférences mémorisées dans `localStorage`.
@@ -74,9 +76,14 @@ Build [Vite](https://vite.dev), Leaflet en dépendance npm.
 npm install
 npm run dev        # serveur de développement (http://localhost:5173)
 npm test           # tests unitaires (node --test), exécutés aussi par la CI
+npm run test:e2e   # tests end-to-end Playwright (Overpass simulé), aussi en CI
 npm run build      # build de production dans dist/
 npm run preview    # sert le build de production en local
 ```
+
+Pour les tests end-to-end, `npx playwright install chromium` télécharge le
+navigateur au premier lancement (ou pointez `PLAYWRIGHT_CHROMIUM_PATH` vers
+un Chromium déjà installé).
 
 `dist/` est un site statique à chemins relatifs (`base: './'`), déployable sur
 n'importe quel hébergeur statique.
@@ -87,16 +94,22 @@ n'importe quel hébergeur statique.
 ├── index.html          # interface (SPA), point d'entrée Vite
 ├── public/             # assets copiés tels quels (favicon, icônes PWA)
 ├── css/style.css       # styles
+├── e2e/                # tests end-to-end Playwright (Overpass simulé)
+├── test/               # tests unitaires (node --test)
 └── js/                 # modules ES
     ├── geometry.js     # Haversine, plus proche point, projection
     ├── poi.js          # catalogue POI, filtres Overpass, détection de type
     ├── icons.js        # icônes SVG inline (Lucide, licence ISC + glyphes maison), pins Leaflet
-    ├── gpx.js          # parsing et génération GPX
+    ├── html.js         # échappement HTML partagé
+    ├── gpx.js          # parsing et génération GPX (horodatages préservés)
     ├── formats.js      # parseurs d'import FIT, TCX et KML
     ├── milestones.js   # repères distance / D+ le long de la trace
     ├── tcx.js          # génération TCX (parcours Garmin)
     ├── share.js        # encodage compact de la trace pour le partage par URL
     ├── overpass.js     # requêtes Overpass segmentées et hedgées, accrochage
+    ├── profile.js      # profil altimétrique SVG
+    ├── roadbook.js     # lignes du roadbook (liste des waypoints au km)
+    ├── water.js        # overlay « points d'eau » à la demande
     └── app.js          # carte Leaflet, UI, orchestration
 ```
 

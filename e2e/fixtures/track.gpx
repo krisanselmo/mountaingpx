@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="E2E Fixture" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Trace E2E</name>
+    <trkseg>
+      <trkpt lat="45.900" lon="6.870"><ele>1000</ele><time>2024-06-01T08:00:00Z</time></trkpt>
+      <trkpt lat="45.901" lon="6.870"><ele>1020</ele><time>2024-06-01T08:01:00Z</time></trkpt>
+      <trkpt lat="45.902" lon="6.870"><ele>1040</ele><time>2024-06-01T08:02:00Z</time></trkpt>
+      <trkpt lat="45.903" lon="6.870"><ele>1060</ele><time>2024-06-01T08:03:00Z</time></trkpt>
+      <trkpt lat="45.904" lon="6.870"><ele>1080</ele><time>2024-06-01T08:04:00Z</time></trkpt>
+      <trkpt lat="45.905" lon="6.870"><ele>1100</ele><time>2024-06-01T08:05:00Z</time></trkpt>
+      <trkpt lat="45.906" lon="6.870"><ele>1120</ele><time>2024-06-01T08:06:00Z</time></trkpt>
+      <trkpt lat="45.907" lon="6.870"><ele>1140</ele><time>2024-06-01T08:07:00Z</time></trkpt>
+      <trkpt lat="45.908" lon="6.870"><ele>1160</ele><time>2024-06-01T08:08:00Z</time></trkpt>
+      <trkpt lat="45.909" lon="6.870"><ele>1180</ele><time>2024-06-01T08:09:00Z</time></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

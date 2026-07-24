@@ -82,6 +82,7 @@
     "fileError": "Error al leer el archivo",
     "trackLoaded": "Track cargado: {n} puntos",
     "trackLoadedWpts": "Track cargado: {n} puntos · {w} waypoints importados",
+    "multiTrack": "El archivo contiene {n} trazas: se han unido una tras otra",
     "needTrack": "Carga primero un track",
     "selectPoi": "Selecciona al menos un tipo de POI",
     "renamed": "Renombrado a «{name}»",
@@ -109,7 +110,8 @@
     "overpassTimeout": "tiempo agotado ({host})",
     "overpassNoServer": "Ningún servidor Overpass responde.",
     "overpassHttp": "Overpass HTTP {status}",
-    "requestFailed": "la petición falló"
+    "requestFailed": "la petición falló",
+    "customQueryInvalid": "Consulta Overpass personalizada no válida: se espera un único elemento, p. ej. node[\"tourism\"=\"viewpoint\"]"
   },
   "group": {
     "summits": "Cimas y panorámicas",

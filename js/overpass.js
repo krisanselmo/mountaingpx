@@ -92,14 +92,63 @@ export function buildAllFilters(custom) {
       if (cfg[kind]) filters.push(cfg[kind]);
     }
   }
-  // Custom Overpass QL snippet (single element), same guard as the Python.
-  if (custom) {
-    const c = custom.trim();
-    if (/^(node|way|relation)\["(.)+"([=~!])"?(.)+"?\](.)*$/.test(c)) {
-      filters.push(c);
-    }
+  // Custom Overpass QL snippet (single element), validated so a typo cannot
+  // make the whole generation fail server-side with a generic error.
+  if (custom && isValidCustomFilter(custom)) {
+    filters.push(custom.trim());
   }
   return filters;
+}
+
+/**
+ * Validate a custom Overpass QL snippet on its own, so a broken one can be
+ * reported with a targeted error *before* any query is sent (an invalid
+ * statement would otherwise 400 the whole generation).
+ *
+ * Accepted shape: a single element statement — node/way/relation/nwr
+ * followed by one or more non-empty `[...]` tag filters with balanced
+ * quotes. Statement separators, extra statements and unbalanced brackets
+ * are rejected; the bbox is appended by buildQuery, not written here.
+ */
+export function isValidCustomFilter(custom) {
+  const c = String(custom == null ? '' : custom).trim();
+  const head = /^(node|way|relation|nwr)\s*/.exec(c);
+  if (!head) return false;
+  let i = head[0].length;
+  let groups = 0;
+  while (i < c.length) {
+    if (c[i] !== '[') return false;
+    i++;
+    let quote = null;
+    let content = '';
+    let closed = false;
+    while (i < c.length) {
+      const ch = c[i];
+      if (quote) {
+        if (ch === '\\') { content += ch; i += 2; continue; }
+        if (ch === quote) quote = null;
+        content += ch;
+        i++;
+      } else if (ch === '"' || ch === "'") {
+        quote = ch;
+        content += ch;
+        i++;
+      } else if (ch === ']') {
+        closed = true;
+        i++;
+        break;
+      } else if ('[;(){}'.includes(ch)) {
+        return false; // nested/extra statement markers
+      } else {
+        content += ch;
+        i++;
+      }
+    }
+    if (!closed || quote || !content.trim()) return false;
+    groups++;
+    while (i < c.length && /\s/.test(c[i])) i++;
+  }
+  return groups > 0;
 }
 
 /** Assemble the full Overpass QL query string. */

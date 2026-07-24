@@ -10,10 +10,14 @@ import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
 import * as Share from './share.js';
 import * as Formats from './formats.js';
-import { haversine, findNearest } from './geometry.js';
+import { findNearest } from './geometry.js';
 import { computeMilestones } from './milestones.js';
+import { escapeHtml, escapeAttr } from './html.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
+import * as Profile from './profile.js';
+import * as Roadbook from './roadbook.js';
+import * as Water from './water.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME, GENERIC_TYPE, poiTypeFrom } from './poi.js';
 import {
   t, translateDom, detectLang, getLang, setLang, saveLang,
@@ -339,100 +343,29 @@ function persistLayers() {
 }
 
 // ---- "Points d'eau" overlay --------------------------------------------
-// No public tile overlay exists for water points, so this one is built from
-// Overpass on the fly: it loads the water POIs of the visible area when the
-// overlay is enabled, with a zoom floor to keep the queries small.
-const WATER_FILTERS = [
-  'node["amenity"="drinking_water"]',
-  'node["amenity"="water_point"]',
-  'node["man_made"="water_tap"]',
-  'node["amenity"="fountain"]',
-  'node["natural"="spring"]',
-];
-// Area cap instead of a zoom floor: the same zoom level covers wildly
-// different areas depending on the screen size.
-const WATER_MAX_AREA_KM2 = 1000;
-
-function boundsAreaKm2(b) {
-  const midLat = (b.getNorth() + b.getSouth()) / 2;
-  return (b.getNorth() - b.getSouth()) * 111.32 *
-    (b.getEast() - b.getWest()) * 111.32 * Math.cos((midLat * Math.PI) / 180);
-}
-
+// The overlay logic (area cap, caching, dedup) lives in water.js; only the
+// Leaflet marker construction and the Overpass runner are provided here.
 function initWaterOverlay(map) {
   const layer = L.layerGroup();
-  const seen = new Set();
-  const markers = [];
-  let dotsVisible = true;
-  let fetchedBounds = null;
-  let loading = false;
-  let timer = null;
-
-  // Hide the loaded dots past the area cap (with a little hysteresis):
-  // hundreds of DOM markers make panning laggy at wide zooms.
-  function updateVisibility() {
-    const tooBig = boundsAreaKm2(map.getBounds()) > WATER_MAX_AREA_KM2 * 1.5;
-    if (tooBig && dotsVisible) {
-      layer.clearLayers();
-      dotsVisible = false;
-    } else if (!tooBig && !dotsVisible) {
-      for (const m of markers) m.addTo(layer);
-      dotsVisible = true;
-    }
-  }
-
-  async function refresh() {
-    if (!map.hasLayer(layer) || loading) return;
-    if (boundsAreaKm2(map.getBounds()) > WATER_MAX_AREA_KM2) return;
-    const view = map.getBounds();
-    if (fetchedBounds && fetchedBounds.contains(view)) return;
-
-    const padded = view.pad(0.4);
-    const box = `${padded.getSouth()},${padded.getWest()},${padded.getNorth()},${padded.getEast()}`;
-    loading = true;
-    try {
-      const json = await Overpass.run(Overpass.buildQuery(box, WATER_FILTERS));
-      fetchedBounds = padded;
-      for (const el of json.elements) {
-        const key = el.type + el.id;
-        if (el.type !== 'node' || seen.has(key)) continue;
-        seen.add(key);
-        const tags = el.tags || {};
-        const marker = L.marker([el.lat, el.lon], {
-          title: tags.name || t('water.default'),
-          icon: Icons.waterDotIcon(),
-        });
-        marker.bindPopup(
-          `<div class="wpt-popup"><h3>${escapeHtml(tags.name || t('water.default'))}</h3>` +
-          Overpass.describeOsm(el.type, el.id, tags) + '</div>'
-        );
-        markers.push(marker);
-        if (dotsVisible) marker.addTo(layer);
-      }
-    } catch (err) {
-      console.warn("Overlay points d'eau :", err.message || err);
-    } finally {
-      loading = false;
-    }
-  }
-
-  const schedule = () => {
-    clearTimeout(timer);
-    timer = setTimeout(refresh, 600);
-  };
-  map.on('moveend', () => {
-    updateVisibility();
-    schedule();
+  return Water.createWaterOverlay({
+    map,
+    layer,
+    fetchWater: async (box) =>
+      (await Overpass.run(Overpass.buildQuery(box, Water.WATER_FILTERS))).elements,
+    makeMarker: (el) => {
+      const tags = el.tags || {};
+      const marker = L.marker([el.lat, el.lon], {
+        title: tags.name || t('water.default'),
+        icon: Icons.waterDotIcon(),
+      });
+      marker.bindPopup(
+        `<div class="wpt-popup"><h3>${escapeHtml(tags.name || t('water.default'))}</h3>` +
+        Overpass.describeOsm(el.type, el.id, tags) + '</div>'
+      );
+      return marker;
+    },
+    onTooWide: () => toast(t('water.zoomIn'), 'warn'),
   });
-  map.on('overlayadd', (e) => {
-    if (e.layer !== layer) return;
-    if (boundsAreaKm2(map.getBounds()) > WATER_MAX_AREA_KM2) {
-      toast(t('water.zoomIn'), 'warn');
-    } else {
-      refresh();
-    }
-  });
-  return layer;
 }
 
 function drawRoute(fit = true) {
@@ -492,13 +425,6 @@ function drawWaypoints() {
     marker.addTo(state.markerLayer);
     state.wptMarkers.set(p, marker);
   }
-}
-
-function escapeHtml(s) {
-  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-function escapeAttr(s) {
-  return escapeHtml(s).replace(/"/g, '&quot;');
 }
 
 // ---- Waypoint edition (rename / remove from the popup) -----------------
@@ -705,18 +631,8 @@ function syncWaypointUI() {
 }
 
 // ---- Roadbook (waypoint list sorted by distance along the track) --------
-/** Cumulative distance (km) at each route point, cached on the route. */
-function cumDistFor(route) {
-  if (route._cum) return route._cum;
-  const { lat, lon } = route;
-  const d = [0];
-  for (let i = 1; i < lat.length; i++) {
-    d.push(d[i - 1] + haversine(lon[i - 1], lat[i - 1], lon[i], lat[i]));
-  }
-  route._cum = d;
-  return d;
-}
-
+// Row rendering lives in roadbook.js; this wires it to the map, i18n and
+// icons, and fills the printed header.
 function setRoadbook(open) {
   $('#roadbook').classList.toggle('open', open);
   $('#btn-roadbook').setAttribute('aria-expanded', String(open));
@@ -733,34 +649,23 @@ function renderRoadbook() {
     return;
   }
 
-  const cum = cumDistFor(state.route);
-  const sorted = [...state.pts].sort((a, b) => a.index - b.index);
-  body.innerHTML = '';
-  body.appendChild(endpointRow('start', 0, cum));
-  for (const p of sorted) {
-    const cfg = POI[p.queryName];
-    const row = el('button', 'rb-row');
-    row.type = 'button';
-    row.dataset.wpt = p.osmType + p.id;
-    row.innerHTML =
-      `<span class="rb-icon">${Icons.svgFor(p.queryName, 18)}</span>` +
-      `<span class="rb-main"><span class="rb-name">${escapeHtml(p.name)}</span>` +
-      (cfg || p.queryName === GENERIC_TYPE
-        ? `<span class="rb-type">${escapeHtml(t('poi.' + p.queryName))}</span>` : '') +
-      `</span>` +
-      `<span class="rb-meta"><b>${cum[p.index].toFixed(1)} km</b>` +
-      (p.ele ? `<span>${Math.round(p.ele)} m</span>` : '') +
-      `</span>`;
-    row.addEventListener('click', () => focusWpt(p));
-    // Mirror the hover onto the profile dot and the map pin (also on
-    // keyboard focus).
-    row.addEventListener('mouseenter', () => setWptHighlight(p, true));
-    row.addEventListener('mouseleave', () => setWptHighlight(p, false));
-    row.addEventListener('focus', () => setWptHighlight(p, true));
-    row.addEventListener('blur', () => setWptHighlight(p, false));
-    body.appendChild(row);
-  }
-  body.appendChild(endpointRow('end', state.route.lat.length - 1, cum));
+  Roadbook.render(body, state.route, state.pts, {
+    iconSvg: (p) => Icons.svgFor(p.queryName, 18),
+    flagSvg: (kind) => Icons.flagSvg(kind, 18),
+    typeLabel: (p) =>
+      (POI[p.queryName] || p.queryName === GENERIC_TYPE ? t('poi.' + p.queryName) : ''),
+    startLabel: t('map.start'),
+    endLabel: t('map.end'),
+    onFocus: focusWpt,
+    onHover: setWptHighlight,
+    onEndpoint: (idx) => {
+      if (window.matchMedia('(max-width: 820px)').matches) setRoadbook(false);
+      state.map.setView(
+        [state.route.lat[idx], state.route.lon[idx]],
+        Math.max(state.map.getZoom(), 15)
+      );
+    },
+  });
 
   // Header repeated on paper: the printed page has no toolbar.
   $('#rb-track').textContent = state.trackName || '';
@@ -769,44 +674,13 @@ function renderRoadbook() {
     `${state.pts.length} wpt`;
 }
 
-/** Start/end row of the roadbook (flags matching the map markers). */
-function endpointRow(kind, idx, cum) {
-  const { lat, lon, ele } = state.route;
-  const row = el('button', 'rb-row');
-  row.type = 'button';
-  const e = ele[idx];
-  row.innerHTML =
-    `<span class="rb-icon">${Icons.flagSvg(kind, 18)}</span>` +
-    `<span class="rb-main"><span class="rb-name">${escapeHtml(t(kind === 'start' ? 'map.start' : 'map.end'))}</span></span>` +
-    `<span class="rb-meta"><b>${cum[idx].toFixed(1)} km</b>` +
-    (e ? `<span>${Math.round(e)} m</span>` : '') +
-    `</span>`;
-  row.addEventListener('click', () => {
-    if (window.matchMedia('(max-width: 820px)').matches) setRoadbook(false);
-    state.map.setView([lat[idx], lon[idx]], Math.max(state.map.getZoom(), 15));
-  });
-  return row;
-}
-
-/** Highlight (or reset) a waypoint's dot on the elevation profile. */
-function setProfileDotHighlight(p, on) {
-  const dot = document.querySelector(
-    `#profile-wpts circle[data-wpt="${p.osmType}${p.id}"]`
-  );
-  if (!dot) return;
-  dot.setAttribute('r', on ? 6.5 : 4);
-  dot.setAttribute('stroke-width', on ? 2.5 : 1.5);
-  // Bring the highlighted dot above its neighbours (SVG paints in order).
-  if (on) dot.parentNode.appendChild(dot);
-}
-
 /**
  * Highlight a waypoint everywhere it is displayed: profile dot, map pin and
  * roadbook row. Hovering any of the three lights up the other two; the map
  * is never panned, only decorated.
  */
 function setWptHighlight(p, on) {
-  setProfileDotHighlight(p, on);
+  Profile.setDotHighlight($('#profile'), p.osmType + p.id, on);
   const marker = state.wptMarkers.get(p);
   if (marker) {
     const icon = marker.getElement();
@@ -841,83 +715,31 @@ function focusWpt(p) {
 }
 
 // ---- Elevation profile (lightweight SVG) ------------------------------
+// The SVG rendering lives in profile.js; this connects it to the toolbar
+// stats and the map hover marker.
 function drawProfile() {
   const svg = $('#profile');
-  const { lat, lon, ele } = state.route;
-  if (!ele.some((e) => e > 0)) {
-    svg.innerHTML = `<text x="12" y="24" fill="#889">${escapeHtml(t('profile.noElevation'))}</text>`;
-    $('#profile-wrap').classList.add('empty');
-    state.profile = null; // stale geometry must not place waypoint dots
-    return;
-  }
-  $('#profile-wrap').classList.remove('empty');
+  const p = Profile.render(svg, state.route, { noElevationText: t('profile.noElevation') });
+  // A null profile means no elevation data; stale geometry must not place
+  // waypoint dots.
+  state.profile = p;
+  $('#profile-wrap').classList.toggle('empty', !p);
+  if (!p) return;
 
-  // Cumulative distance.
-  const dist = [0];
-  for (let i = 1; i < lat.length; i++) {
-    dist.push(dist[i - 1] + haversine(lon[i - 1], lat[i - 1], lon[i], lat[i]));
-  }
-  const total = dist[dist.length - 1] || 1;
-  const W = svg.clientWidth || 600;
-  const H = 120;
-  const pad = { l: 40, r: 10, t: 10, b: 20 };
-  const minE = Math.min(...ele.filter((e) => e > 0));
-  const maxE = Math.max(...ele);
-  const x = (d) => pad.l + (d / total) * (W - pad.l - pad.r);
-  const y = (e) => H - pad.b - ((e - minE) / (maxE - minE || 1)) * (H - pad.t - pad.b);
-
-  let d = `M ${x(0)} ${y(ele[0] || minE)}`;
-  for (let i = 1; i < lat.length; i++) d += ` L ${x(dist[i])} ${y(ele[i] || minE)}`;
-  const area = d + ` L ${x(total)} ${H - pad.b} L ${x(0)} ${H - pad.b} Z`;
-
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.innerHTML =
-    `<path d="${area}" fill="rgba(228,87,46,0.15)"/>` +
-    `<path d="${d}" fill="none" stroke="#e4572e" stroke-width="2"/>` +
-    `<text x="4" y="${y(maxE)}" class="ax">${Math.round(maxE)}m</text>` +
-    `<text x="4" y="${y(minE) - 2}" class="ax">${Math.round(minE)}m</text>` +
-    `<text x="${x(total) - 30}" y="${H - 4}" class="ax">${total.toFixed(1)} km</text>` +
-    `<g id="profile-cursor" style="display:none">` +
-    `<line y1="${pad.t}" y2="${H - pad.b}" stroke="rgba(255,255,255,.45)" stroke-dasharray="3 3"/>` +
-    `<circle r="3.5" fill="#fff" stroke="#e4572e" stroke-width="2"/>` +
-    `</g>`;
-
-  // Kept for the hover sync between the profile and the map.
-  state.profile = {
-    dist, total, W, pad,
-    cx: (i) => x(dist[i]),
-    cy: (i) => y(ele[i] || minE),
-  };
-
-  const dplus = ele.reduce((a, e, i) => (i && e > ele[i - 1] ? a + (e - ele[i - 1]) : a), 0);
-  $('#stat-dist').textContent = total.toFixed(1) + ' km';
-  $('#stat-dplus').textContent = '+' + Math.round(dplus) + ' m';
-  $('#stat-alt').textContent = Math.round(maxE) + ' m';
+  $('#stat-dist').textContent = p.total.toFixed(1) + ' km';
+  $('#stat-dplus').textContent = '+' + Math.round(p.dplus) + ' m';
+  $('#stat-alt').textContent = Math.round(p.maxE) + ' m';
 
   renderProfileWaypoints();
 }
 
 /** Draw the snapped waypoints as colored dots on the elevation curve. */
 function renderProfileWaypoints() {
-  const old = $('#profile-wpts');
-  if (old) old.remove();
-  const cursor = $('#profile-cursor');
-  const p = state.profile;
   $('#profile-wpts-toggle-wrap').hidden = !state.pts.length;
-  if (!p || !cursor || !state.pts.length) return;
-
-  let html = `<g id="profile-wpts"${state.showProfileWpts ? '' : ' style="display:none"'}>`;
-  for (const w of state.pts) {
-    const group = (POI[w.queryName] || {}).group;
-    const color = Icons.GROUP_COLORS[group] || '#64748b';
-    const alt = w.ele ? ` — ${Math.round(w.ele)} m` : '';
-    // data-wpt links the dot to its roadbook row (hover highlight).
-    html += `<circle data-wpt="${w.osmType}${w.id}" cx="${p.cx(w.index)}" cy="${p.cy(w.index)}" r="4" fill="${color}" stroke="#fff" stroke-width="1.5">` +
-      `<title>${escapeHtml(w.name)}${alt}</title></circle>`;
-  }
-  html += '</g>';
-  // Insert below the hover cursor so the cursor stays readable on top.
-  cursor.insertAdjacentHTML('beforebegin', html);
+  Profile.renderWaypoints($('#profile'), state.profile, state.pts, {
+    show: state.showProfileWpts,
+    colorFor: (queryName) => Icons.GROUP_COLORS[(POI[queryName] || {}).group],
+  });
 }
 
 // ---- Profile <-> map hover sync ---------------------------------------
@@ -926,20 +748,11 @@ function profileHover(evt) {
   if (!p || !state.route) return;
   const rect = $('#profile').getBoundingClientRect();
   const px = (evt.clientX - rect.left) * (p.W / rect.width);
-  const dTarget = ((px - p.pad.l) / (p.W - p.pad.l - p.pad.r)) * p.total;
-  if (dTarget < 0 || dTarget > p.total) {
+  const i = Profile.indexAt(p, px);
+  if (i == null) {
     profileLeave();
     return;
   }
-
-  // Nearest track index by cumulative distance (dist is sorted).
-  let lo = 0;
-  let hi = p.dist.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (p.dist[mid] < dTarget) lo = mid + 1; else hi = mid;
-  }
-  const i = lo;
 
   const g = $('#profile-cursor');
   if (g) {
@@ -1010,6 +823,11 @@ function handleFile(file) {
       // A locally opened file replaces any track shared through the URL.
       state.shareCode = null;
       loadRoute(route, route.name || file.name);
+      // Several <trk> in one file are concatenated: warn, the resulting
+      // profile and roadbook can be surprising.
+      if (route.trackCount > 1) {
+        toast(t('toast.multiTrack', { n: route.trackCount }), 'warn');
+      }
     } catch (err) {
       toast(err.code ? t(err.code, err.params) : (err.message || t('toast.fileError')), 'error');
     }
@@ -1109,6 +927,8 @@ function reverseRoute(route) {
   route.lat.reverse();
   route.lon.reverse();
   route.ele.reverse();
+  // Reversed timestamps would decrease along the track: drop them.
+  route.time = null;
   delete route._cum; // cumulative distances are direction-dependent
 }
 
@@ -1122,6 +942,12 @@ async function generate() {
   const sel = getSelection();
   if (!sel.withName.size && !sel.noName.size && !sel.custom) {
     toast(t('toast.selectPoi'), 'error');
+    return;
+  }
+  // Refuse a broken custom snippet upfront with a targeted message: sent to
+  // Overpass it would make the whole generation fail with a generic error.
+  if (sel.custom && !Overpass.isValidCustomFilter(sel.custom)) {
+    toast(t('error.customQueryInvalid'), 'error');
     return;
   }
   const limDist = parseInt($('#snap-dist').value, 10) / 1000; // m -> km
