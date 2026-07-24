@@ -97,6 +97,11 @@ source GitHub Pages du dépôt soit « Deploy from a branch : gh-pages /(root) �
 - Les marqueurs sont des `L.divIcon` SVG générés par `js/icons.js` — aucun
   asset image.
 - `scripts/build-lang-pages.mjs` génère au build une page d'entrée par
-  langue (`en.html`, `de.html`…) avec les meta traduites ;
-  `public/sitemap.xml` liste ces URL, et les préversions de PR sont
-  marquées `noindex` (`NOINDEX_BUILD=1` dans `pr-preview.yml`).
+  langue (`en.html`, `de.html`…) avec les meta traduites, ainsi que
+  `sitemap.xml` ; les préversions de PR sont marquées `noindex`
+  (`NOINDEX_BUILD=1` dans `pr-preview.yml`).
+- L'URL publique n'est écrite nulle part en dur : elle est résolue par
+  `scripts/site-url.mjs` — variable d'environnement `SITE_URL`, sinon
+  dérivée de `GITHUB_REPOSITORY` sur GitHub Actions (un fork déploie donc
+  sur `https://<owner>.github.io/<repo>/` sans rien configurer), sinon le
+  champ `homepage` de `package.json` (builds locaux).

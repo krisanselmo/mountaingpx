@@ -1,6 +1,15 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+import { resolveSiteUrl, injectSiteUrl } from './scripts/site-url.mjs';
+
+// Fills the __SITE_URL__ placeholders of index.html (canonical, Open Graph,
+// alternates…) with the URL resolved by scripts/site-url.mjs.
+const siteUrl = {
+  name: 'site-url',
+  transformIndexHtml: (html) => injectSiteUrl(html, resolveSiteUrl()),
+};
+
 // Adds a robots noindex tag when NOINDEX_BUILD is set (PR preview builds).
 const noindexPreview = {
   name: 'noindex-preview',
@@ -13,6 +22,7 @@ export default defineConfig({
   // Relative asset paths so dist/ works from any static subdirectory.
   base: './',
   plugins: [
+    siteUrl,
     ...(process.env.NOINDEX_BUILD ? [noindexPreview] : []),
     VitePWA({
       registerType: 'autoUpdate',

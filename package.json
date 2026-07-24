@@ -1,6 +1,7 @@
 {
   "name": "mountaingpx-webapp",
   "private": true,
+  "homepage": "https://krisanselmo.github.io/mountaingpx/",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
