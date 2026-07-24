@@ -8,10 +8,10 @@ import 'leaflet/dist/leaflet.css';
 
 import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
-import { haversine } from './geometry.js';
+import { haversine, findNearest } from './geometry.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
-import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME } from './poi.js';
+import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME, GENERIC_TYPE, poiTypeFrom } from './poi.js';
 import {
   t, translateDom, detectLang, getLang, setLang, saveLang,
   SUPPORTED, LANG_NAMES,
@@ -26,6 +26,7 @@ const DEFAULT_VIEW = { lat: 45.9, lon: 6.87, zoom: 12 };
 const state = {
   route: null, // { name, lat[], lon[], ele[], waypoints[] }
   pts: [],
+  fileWpts: [], // waypoints carried by the opened GPX file itself
   map: null,
   layers: {},
   trackLayer: null,
@@ -483,13 +484,59 @@ function applyOverrides(pts) {
   return out;
 }
 
+// ---- Waypoints already present in the opened file -----------------------
+/**
+ * Turn the <wpt> elements of the opened GPX into first-class waypoint
+ * objects (same shape as overpass.js) so they show up on the map, the
+ * profile, the roadbook and the exports — whether the file was generated
+ * by Mountain GPX or not. Types outside the POI catalog fall back to the
+ * generic type (gray pin, "info" glyph).
+ */
+function fileWaypointsToPts(route) {
+  const pts = [];
+  const counters = {};
+  (route.waypoints || []).forEach((w, i) => {
+    if (!isFinite(w.lat) || !isFinite(w.lon)) return;
+    const queryName = poiTypeFrom(w.type || w.sym);
+    let name = (w.name || '').trim();
+    if (!name) {
+      counters[queryName] = (counters[queryName] || 0) + 1;
+      name = queryName + counters[queryName];
+    }
+    pts.push({
+      name,
+      osmType: 'file', // key namespace for overrides & hover sync
+      id: i,
+      lat: w.lat,
+      lon: w.lon,
+      ele: parseFloat(w.ele) || 0,
+      // Anchor on the nearest route point (roadbook order, profile dot),
+      // even for waypoints sitting off the track.
+      index: findNearest(route.lon, route.lat, w.lon, w.lat, Infinity).index,
+      newGpxIndex: null, // never re-projected: the file position is kept
+      queryName,
+      rawType: w.type, // original <type>, re-exported verbatim
+      hasName: !!w.name,
+      description: w.desc ? `<p class="wpt-desc">${escapeHtml(w.desc)}</p>` : '',
+      descText: w.desc || '',
+    });
+  });
+  return pts;
+}
+
+/** Current waypoint set: file waypoints + generated ones, edits re-applied. */
+function allPts(genPts) {
+  return applyOverrides([...state.fileWpts, ...(genPts || [])]);
+}
+
 /** Redraw everything that depends on state.pts. */
 function syncWaypointUI() {
   drawWaypoints();
   renderProfileWaypoints();
   renderRoadbook();
-  state.lastGpx = GPX.build(state.route, state.pts, true);
-  state.lastTcx = TCX.build(state.route, state.pts, true);
+  // File waypoints being part of state.pts, keepOld would duplicate them.
+  state.lastGpx = GPX.build(state.route, state.pts, false);
+  state.lastTcx = TCX.build(state.route, state.pts, false);
   $('#stat-wpt').textContent = state.pts.length;
   $('#btn-download').disabled = state.pts.length === 0;
   $('#btn-download-tcx').disabled = state.pts.length === 0;
@@ -536,7 +583,8 @@ function renderRoadbook() {
     row.innerHTML =
       `<span class="rb-icon">${Icons.svgFor(p.queryName, 18)}</span>` +
       `<span class="rb-main"><span class="rb-name">${escapeHtml(p.name)}</span>` +
-      (cfg ? `<span class="rb-type">${escapeHtml(t('poi.' + p.queryName))}</span>` : '') +
+      (cfg || p.queryName === GENERIC_TYPE
+        ? `<span class="rb-type">${escapeHtml(t('poi.' + p.queryName))}</span>` : '') +
       `</span>` +
       `<span class="rb-meta"><b>${cum[p.index].toFixed(1)} km</b>` +
       (p.ele ? `<span>${Math.round(p.ele)} m</span>` : '') +
@@ -637,6 +685,7 @@ function drawProfile() {
   if (!ele.some((e) => e > 0)) {
     svg.innerHTML = `<text x="12" y="24" fill="#889">${escapeHtml(t('profile.noElevation'))}</text>`;
     $('#profile-wrap').classList.add('empty');
+    state.profile = null; // stale geometry must not place waypoint dots
     return;
   }
   $('#profile-wrap').classList.remove('empty');
@@ -772,23 +821,22 @@ function handleFile(file) {
       const route = GPX.parse(reader.result);
       if (loadSettings().reverse || $('#reverse').checked) reverseRoute(route);
       state.route = route;
-      state.pts = [];
-      state.lastGpx = null;
-      state.lastTcx = null;
       state.genElements = null;
       state.genCustom = '';
       state.overrides = new Map();
-      state.markerLayer.clearLayers();
+      // Waypoints carried by the file are displayed right away.
+      state.fileWpts = fileWaypointsToPts(route);
+      state.pts = [...state.fileWpts];
       drawRoute();
       drawProfile();
       state.trackName = route.name || file.name;
       $('#track-name').textContent = state.trackName;
       $('#toolbar').classList.add('active');
-      $('#btn-download').disabled = true;
-      $('#btn-download-tcx').disabled = true;
-      renderRoadbook();
+      syncWaypointUI();
       updatePoiCounts();
-      toast(t('toast.trackLoaded', { n: route.lat.length }), 'ok');
+      toast(state.fileWpts.length
+        ? t('toast.trackLoadedWpts', { n: route.lat.length, w: state.fileWpts.length })
+        : t('toast.trackLoaded', { n: route.lat.length }), 'ok');
     } catch (err) {
       toast(err.code ? t(err.code, err.params) : (err.message || t('toast.gpxError')), 'error');
     }
@@ -826,7 +874,7 @@ async function generate() {
     });
     state.genElements = res.elements;
     state.genCustom = sel.custom;
-    state.pts = applyOverrides(res.pts);
+    state.pts = allPts(res.pts);
     syncWaypointUI();
     updatePoiCounts();
     setMenu(false); // reveal the map with the fresh waypoints (mobile)
@@ -854,7 +902,7 @@ function refreshFromMemory() {
   if (!state.route || !state.genElements) return false;
   const sel = getSelection();
   const limDist = parseInt($('#snap-dist').value, 10) / 1000;
-  state.pts = applyOverrides(Overpass.snapElements(state.genElements, state.route, sel, limDist));
+  state.pts = allPts(Overpass.snapElements(state.genElements, state.route, sel, limDist));
   syncWaypointUI();
   return true;
 }
@@ -1030,16 +1078,15 @@ function wire() {
     persistSelection();
     if (state.route) {
       reverseRoute(state.route);
-      state.pts = [];
-      state.markerLayer.clearLayers();
-      state.lastGpx = null;
-      state.lastTcx = null;
-      $('#btn-download').disabled = true;
-      $('#btn-download-tcx').disabled = true;
+      // The route arrays were reversed in place: remap the file waypoints'
+      // anchor indices (their coordinates are absolute, only the anchor moves).
+      for (const p of state.fileWpts) p.index = state.route.lat.length - 1 - p.index;
       drawRoute();
       drawProfile();
-      renderRoadbook();
-      refreshFromMemory();
+      if (!refreshFromMemory()) {
+        state.pts = allPts();
+        syncWaypointUI();
+      }
       updatePoiCounts();
     }
   });

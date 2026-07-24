@@ -10,6 +10,11 @@ Déployée sur https://krisanselmo.github.io/mountaingpx/
 ## Fonctionnalités
 
 - Import GPX par glisser-déposer ou sélecteur de fichier (`trk` et `rte`).
+- Les waypoints (`wpt`) déjà présents dans le fichier — généré par Mountain
+  GPX ou non — sont affichés sur la carte, le profil et le roadbook ; leur
+  `type`/`sym` est rattaché au catalogue de POI, avec repli sur un type
+  générique quand il n'est pas supporté, et le `type` d'origine est conservé
+  à l'export.
 - Récupération des POI via l'API Overpass : sommets, cols, refuges, fontaines,
   lacs, cascades, chapelles, points de vue, etc.
 - Accrochage des POI sur la trace : distance de Haversine, point le plus

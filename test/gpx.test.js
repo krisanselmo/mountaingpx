@@ -47,6 +47,28 @@ test('every generated POI is emitted as a <wpt> with its name', () => {
   for (const p of pts) assert.ok(gpx.includes(`<name>${p.name}</name>`));
 });
 
+test('waypoints loaded from a file keep their original <type> verbatim', () => {
+  const filePts = [
+    // Foreign type, unsupported by the catalog: displayed as generic but
+    // exported untouched.
+    { lat: 45.02, lon: 6.02, ele: 0, name: 'Repère', queryName: 'generic', rawType: 'Flag, Blue', descText: '' },
+    // No <type> in the source file: the generic course type is emitted.
+    { lat: 45.04, lon: 6.04, ele: 0, name: 'Sans type', queryName: 'generic', rawType: '', descText: '' },
+  ];
+  const gpx = GPX.build(route, filePts, false);
+  assert.match(gpx, /<name>Repère<\/name><type>Flag, Blue<\/type>/);
+  assert.match(gpx, /<name>Sans type<\/name><type>generic<\/type>/);
+});
+
+test('densify ignores non-projected (file) waypoints sharing an anchor index', () => {
+  const filePt = { lat: 45.05, lon: 6.05, index: 1, newGpxIndex: null };
+  const genPt = { lat: 45.08, lon: 6.08, index: 1, newGpxIndex: 0 };
+  const { lat } = GPX.densify(route, [filePt, genPt]);
+  // The generated waypoint's projection is inserted; the file waypoint
+  // neither shadows it nor adds a point of its own.
+  assert.deepEqual(lat, [45.00, 45.08, 45.10]);
+});
+
 test('describeText builds a readable note from OSM tags', () => {
   assert.equal(describeText({ ele: '1890', information: 'guidepost', tourism: 'information' }), '1890 m');
   assert.equal(

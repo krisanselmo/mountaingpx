@@ -71,6 +71,35 @@ const OSM_VALUES = ['peak', 'saddle', 'volcano', 'attraction', 'toposcope', 'vie
 const OSM_KEYS = ['ford', 'barrier', 'tunnel'];
 const OSM_BADLY_TAGGED = { water: 'lake' };
 
+/*
+ * Waypoints read from an opened GPX file carry a free-form <type> (or <sym>):
+ * our own catalog names, the Garmin course-point vocabulary written by
+ * gpx.js on export, Garmin/BaseCamp symbol names, or anything else. Map what
+ * we can to a catalog type; everything unknown becomes GENERIC_TYPE so the
+ * file still displays.
+ */
+export const GENERIC_TYPE = 'generic';
+
+const TYPE_ALIASES = {
+  // Garmin course-point vocabulary (our own GPX exports, see gpx.js).
+  summit: 'peak', overlook: 'viewpoint', water: 'drinking_water',
+  campsite: 'camp_site', toilet: 'toilets', danger: 'barrier',
+  // Types produced by getWptType() without a catalog entry.
+  cairn: 'peak',
+  // Common Garmin/BaseCamp symbol names ("Drinking Water" already
+  // normalizes to drinking_water).
+  campground: 'camp_site', lodging: 'hotel', restroom: 'toilets',
+  cave: 'cave_entrance', food: 'alpine_hut',
+};
+
+/** Map a waypoint <type>/<sym> from an opened GPX to a catalog POI type. */
+export function poiTypeFrom(raw) {
+  const key = String(raw == null ? '' : raw).trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (!key) return GENERIC_TYPE;
+  if (POI[key]) return key;
+  return TYPE_ALIASES[key] || GENERIC_TYPE;
+}
+
 /** Determine the waypoint type from an OSM tag dictionary. */
 export function getWptType(tags) {
   const values = Object.values(tags);

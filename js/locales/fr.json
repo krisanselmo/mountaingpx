@@ -56,6 +56,7 @@
     "notGpx": "Merci de fournir un fichier .gpx",
     "gpxError": "Erreur de lecture du GPX",
     "trackLoaded": "Trace chargée : {n} points",
+    "trackLoadedWpts": "Trace chargée : {n} points · {w} waypoints importés",
     "needTrack": "Chargez d'abord une trace GPX",
     "selectPoi": "Sélectionnez au moins un type de POI",
     "renamed": "Renommé en « {name} »",
@@ -109,6 +110,7 @@
     "locality": "Lieu-dit",
     "toilets": "Toilettes",
     "barrier": "Barrière",
-    "tunnel": "Tunnel"
+    "tunnel": "Tunnel",
+    "generic": "Point d'intérêt"
   }
 }
