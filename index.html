@@ -3,8 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mountain GPX</title>
-  <meta name="description" content="">
+  <title>Mountain GPX — Waypoints automatiques sur votre trace GPX</title>
+  <meta name="description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.">
+  <link rel="canonical" href="__SITE_URL__">
+  <link rel="alternate" hreflang="fr" href="__SITE_URL__">
+  <link rel="alternate" hreflang="en" href="__SITE_URL__en.html">
+  <link rel="alternate" hreflang="de" href="__SITE_URL__de.html">
+  <link rel="alternate" hreflang="es" href="__SITE_URL__es.html">
+  <link rel="alternate" hreflang="it" href="__SITE_URL__it.html">
+  <link rel="alternate" hreflang="x-default" href="__SITE_URL__">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Mountain GPX">
+  <meta property="og:url" content="__SITE_URL__">
+  <meta property="og:title" content="Mountain GPX — Waypoints automatiques sur votre trace GPX">
+  <meta property="og:description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.">
+  <meta property="og:image" content="__SITE_URL__og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mountain GPX — Waypoints automatiques sur votre trace GPX">
+  <meta name="twitter:description" content="Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.">
+  <meta name="twitter:image" content="__SITE_URL__og-image.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Mountain GPX",
+    "url": "__SITE_URL__",
+    "description": "Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript",
+    "inLanguage": ["fr", "en", "de", "es", "it"],
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "featureList": [
+      "Waypoints automatiques depuis OpenStreetMap (sommets, cols, refuges, sources, fontaines, lacs, cascades, points de vue)",
+      "Accrochage des points d'intérêt sur la trace GPX",
+      "Export GPX enrichi et TCX (parcours Garmin avec CoursePoints)",
+      "Roadbook imprimable et profil altimétrique",
+      "Application 100 % hors-ligne (PWA), aucun envoi de fichier"
+    ]
+  }
+  </script>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <meta name="theme-color" content="#0f1720">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -67,6 +109,15 @@
         <label class="check">
           <input type="checkbox" id="reverse"> <span data-i18n="advanced.reverse">Inverser le sens de la trace</span>
         </label>
+      </details>
+
+      <details class="poi-group about">
+        <summary data-i18n="about.title">À propos de Mountain GPX</summary>
+        <div class="about-body">
+          <p data-i18n="about.p1">Mountain GPX ajoute automatiquement des waypoints à une trace GPX de randonnée, de trail ou de VTT : sommets, cols, refuges, cabanes, sources, fontaines et points d'eau, lacs, cascades, points de vue… Les points d'intérêt proviennent d'OpenStreetMap et sont accrochés au plus près de votre parcours.</p>
+          <p data-i18n="about.p2">Importez votre fichier GPX (exporté de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.</p>
+          <p data-i18n="about.p3">L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique.</p>
+        </div>
       </details>
     </section>
 

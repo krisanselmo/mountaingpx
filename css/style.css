@@ -158,6 +158,10 @@ body {
 .field small { color: var(--muted); font-size: 11px; }
 .field small a { color: var(--accent-2); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; }
+
+/* ---------------- "About" panel ---------------- */
+.about { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.about-body p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 8px 0; }
 .check input { accent-color: var(--accent); }
 
 /* ---------------- Buttons ---------------- */
