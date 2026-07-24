@@ -77,9 +77,9 @@
 
     <section class="panel">
       <div id="dropzone" class="dropzone">
-        <input type="file" id="file-input" accept=".gpx" hidden>
+        <input type="file" id="file-input" accept=".gpx,.fit,.tcx,.kml" hidden>
         <p class="dz-icon">📂</p>
-        <p><strong data-i18n="dropzone.drop">Glissez votre fichier GPX</strong><br><span data-i18n="dropzone.or">ou</span></p>
+        <p><strong data-i18n="dropzone.drop">Glissez votre trace GPX, FIT, TCX ou KML</strong><br><span data-i18n="dropzone.or">ou</span></p>
         <button id="btn-open" class="btn btn-ghost" type="button" data-i18n="dropzone.openBtn" data-i18n-title="dropzone.openTitle">Choisir un fichier</button>
       </div>
     </section>
@@ -109,6 +109,17 @@
         <label class="check">
           <input type="checkbox" id="reverse"> <span data-i18n="advanced.reverse">Inverser le sens de la trace</span>
         </label>
+        <div class="field">
+          <span data-i18n="advanced.milestones">Repères sur la trace</span>
+          <div class="milestone-row">
+            <select id="milestone-mode" data-i18n-aria-label="milestones.modeAria">
+              <option value="none" data-i18n="milestones.none">Aucun</option>
+              <option value="dist" data-i18n="milestones.dist">Distance (km)</option>
+              <option value="ele" data-i18n="milestones.ele">Dénivelé D+ (m)</option>
+            </select>
+            <input type="number" id="milestone-step" min="1" step="1" value="5" data-i18n-aria-label="milestones.stepAria" disabled>
+          </div>
+        </div>
       </details>
 
       <details class="poi-group about">

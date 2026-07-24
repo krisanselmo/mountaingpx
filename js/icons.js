@@ -105,6 +105,16 @@ export function flagIcon(kind) {
   }));
 }
 
+/** Small badge for the distance / D+ milestones along the track. */
+export function milestoneIcon(label) {
+  return L.divIcon({
+    className: 'milestone-pin',
+    html: `<div class="milestone-badge">${label}</div>`,
+    iconSize: [36, 16],
+    iconAnchor: [18, 8],
+  });
+}
+
 /** Small round dot for the "Points d'eau" overlay (shared instance). */
 let waterDot = null;
 export function waterDotIcon() {

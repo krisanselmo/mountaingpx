@@ -155,6 +155,16 @@ body {
   color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px;
 }
 .field input[type=range] { width: 100%; accent-color: var(--accent); }
+.milestone-row { display: flex; gap: 8px; }
+.milestone-row select {
+  flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; cursor: pointer;
+}
+.milestone-row input[type=number] {
+  width: 84px; background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px;
+}
+.milestone-row input[type=number]:disabled { opacity: .5; }
 .field small { color: var(--muted); font-size: 11px; }
 .field small a { color: var(--accent-2); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; }
@@ -230,6 +240,21 @@ body {
   width: 15px; height: 15px;
   transform: rotate(45deg);
   color: #fff;
+}
+
+/* Distance / D+ milestone badges along the track. */
+.milestone-pin { background: none; border: none; pointer-events: none; }
+.milestone-badge {
+  box-sizing: border-box;
+  min-width: 22px; height: 16px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+  width: max-content; margin: 0 auto;
+  background: rgba(15, 23, 32, .88); color: var(--accent-2);
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 8px;
+  font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+  white-space: nowrap;
 }
 
 /* Small round dot for the "Points d'eau" overlay. */
@@ -321,7 +346,9 @@ body {
   background: rgba(15, 21, 28, .75); padding: 2px 8px; border-radius: 6px;
 }
 .profile-toggle input { width: 13px; height: 13px; accent-color: var(--accent); cursor: pointer; }
-#profile { width: 100%; height: 120px; cursor: crosshair; }
+/* touch-action none: a finger dragged over the profile drives the map
+   cursor (see profileHover) instead of scrolling/zooming the page. */
+#profile { width: 100%; height: 120px; cursor: crosshair; touch-action: none; }
 #profile .ax { fill: var(--muted); font-size: 10px; }
 /* The hover cursor is decorative: it tracks the mouse right onto the curve
    and would otherwise steal hover events from the waypoint dots below it. */
@@ -348,6 +375,14 @@ body {
 .toast.ok { border-color: var(--ok); }
 .toast.error { border-color: var(--accent); }
 .toast.warn { border-color: var(--warn); }
+/* A toast carrying an action button (e.g. undo) must be clickable. */
+.toast.actionable { pointer-events: auto; }
+.toast-action {
+  margin-left: 12px; padding: 3px 10px;
+  background: none; border: 1px solid var(--accent-2); border-radius: 6px;
+  color: var(--accent-2); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.toast-action:hover { background: rgba(242, 160, 61, .12); }
 
 /* ---------------- Popups ---------------- */
 .wpt-popup h3 { margin: 0 0 6px; font-size: 15px; }
@@ -366,6 +401,14 @@ body {
 }
 .wpt-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
 .wpt-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
+/* "Add a waypoint" popup (map right-click / long-press). */
+.wpt-add .wpt-name-input { width: 100%; margin-bottom: 6px; }
+.wpt-type-select {
+  width: 100%; font-size: 13px; color: #222;
+  border: 1px solid #ccc; border-radius: 6px; padding: 4px 8px;
+  background: #fff; cursor: pointer;
+}
+.wpt-type-select:focus { outline: none; border-color: var(--accent); }
 .wpt-popup .tags { border-collapse: collapse; font-size: 12px; margin: 4px 0; }
 .wpt-popup .tags th { text-align: left; color: #555; padding-right: 8px; vertical-align: top; font-weight: 600; }
 .wpt-popup .tags td { padding: 1px 0; }

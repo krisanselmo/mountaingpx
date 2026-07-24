@@ -9,7 +9,9 @@ import 'leaflet/dist/leaflet.css';
 import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
 import * as Share from './share.js';
+import * as Formats from './formats.js';
 import { haversine, findNearest } from './geometry.js';
+import { computeMilestones } from './milestones.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME, GENERIC_TYPE, poiTypeFrom } from './poi.js';
@@ -27,8 +29,11 @@ const DEFAULT_VIEW = { lat: 45.9, lon: 6.87, zoom: 12 };
 const state = {
   route: null, // { name, lat[], lon[], ele[], waypoints[] }
   pts: [],
-  fileWpts: [], // waypoints carried by the opened GPX file itself
+  fileWpts: [], // waypoints carried by the opened file itself
+  userWpts: [], // waypoints added by hand on the map
+  userSeq: 0,   // id sequence for user waypoints (override keys)
   map: null,
+  milestoneLayer: null, // distance / D+ markers along the track
   layers: {},
   trackLayer: null,
   markerLayer: null,
@@ -128,6 +133,25 @@ function buildPoiPanel() {
   $('#snap-dist').value = saved.snap || 50;
   $('#snap-dist-val').textContent = (saved.snap || 50) + ' m';
   $('#reverse').checked = !!saved.reverse;
+  $('#milestone-mode').value = ['dist', 'ele'].includes(saved.mstMode) ? saved.mstMode : 'none';
+  syncMilestoneStepInput();
+}
+
+/** Reflect the selected milestone mode on the step input (value, bounds). */
+function syncMilestoneStepInput() {
+  const mode = $('#milestone-mode').value;
+  const saved = loadSettings();
+  const input = $('#milestone-step');
+  input.disabled = mode === 'none';
+  if (mode === 'ele') {
+    input.min = 50;
+    input.step = 50;
+    input.value = saved.mstEle > 0 ? saved.mstEle : 100;
+  } else {
+    input.min = 1;
+    input.step = 1;
+    input.value = saved.mstDist > 0 ? saved.mstDist : 5;
+  }
 }
 
 function getSelection() {
@@ -143,12 +167,20 @@ function getSelection() {
 
 function persistSelection() {
   const sel = getSelection();
+  // The step input only shows the active milestone mode's value: keep the
+  // other mode's saved step so switching back restores it.
+  const prev = loadSettings();
+  const mstMode = $('#milestone-mode').value;
+  const step = parseFloat($('#milestone-step').value);
   saveSettings({
     withName: [...sel.withName],
     noName: [...sel.noName],
     custom: sel.custom,
     snap: parseInt($('#snap-dist').value, 10),
     reverse: $('#reverse').checked,
+    mstMode,
+    mstDist: mstMode === 'dist' && step > 0 ? step : (prev.mstDist > 0 ? prev.mstDist : 5),
+    mstEle: mstMode === 'ele' && step > 0 ? step : (prev.mstEle > 0 ? prev.mstEle : 100),
   });
 }
 
@@ -245,6 +277,11 @@ function initMap() {
   map.on('baselayerchange overlayadd overlayremove', persistLayers);
 
   state.markerLayer = L.layerGroup().addTo(map);
+
+  // Right-click (long-press on touch devices) adds a manual waypoint.
+  map.on('contextmenu', (e) => {
+    if (state.route) openAddWptPopup(e.latlng);
+  });
 
   // Keep the map position in the URL (OSM-style #map=zoom/lat/lon) so the
   // view can be shared, and persist it to localStorage so it is restored
@@ -415,6 +452,29 @@ function drawRoute(fit = true) {
   ]).addTo(state.map);
 
   if (fit) state.map.fitBounds(line.getBounds(), { padding: [30, 30] });
+  drawMilestones();
+}
+
+// ---- Distance / D+ milestones along the track ---------------------------
+/** (Re)draw the milestone badges from the current advanced-options settings. */
+function drawMilestones() {
+  if (state.milestoneLayer) {
+    state.map.removeLayer(state.milestoneLayer);
+    state.milestoneLayer = null;
+  }
+  if (!state.route) return;
+  const mode = $('#milestone-mode').value;
+  const step = parseFloat($('#milestone-step').value);
+  if (mode === 'none' || !(step > 0)) return;
+  const marks = computeMilestones(state.route, mode, step);
+  state.milestoneLayer = L.layerGroup(
+    marks.map((m) => L.marker([m.lat, m.lon], {
+      icon: Icons.milestoneIcon(mode === 'dist' ? String(m.value) : '+' + m.value),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: -500, // decorative: below the waypoint pins
+    }))
+  ).addTo(state.map);
 }
 
 function drawWaypoints() {
@@ -485,11 +545,25 @@ function renameWpt(p, newName) {
 }
 
 function removeWpt(p) {
+  const idx = state.pts.indexOf(p);
   overrideFor(p).removed = true;
   state.pts = state.pts.filter((q) => q !== p);
   state.map.closePopup();
   syncWaypointUI();
-  toast(t('toast.removed', { name: p.name }), 'ok');
+  toast(t('toast.removed', { name: p.name }), 'ok', {
+    label: t('toast.undo'),
+    fn: () => restoreWpt(p, idx),
+  });
+}
+
+/** Undo a removal: clear the override and put the waypoint back in place. */
+function restoreWpt(p, idx) {
+  delete overrideFor(p).removed;
+  if (!state.pts.includes(p)) {
+    state.pts.splice(idx < 0 ? state.pts.length : Math.min(idx, state.pts.length), 0, p);
+  }
+  syncWaypointUI();
+  toast(t('toast.restored', { name: p.name }), 'ok');
 }
 
 /** Drop removed waypoints and re-apply renames after a (re-)snap. */
@@ -545,9 +619,75 @@ function fileWaypointsToPts(route) {
   return pts;
 }
 
-/** Current waypoint set: file waypoints + generated ones, edits re-applied. */
+/** Current waypoints: file + manual + generated ones, edits re-applied. */
 function allPts(genPts) {
-  return applyOverrides([...state.fileWpts, ...(genPts || [])]);
+  return applyOverrides([...state.fileWpts, ...state.userWpts, ...(genPts || [])]);
+}
+
+// ---- Manual waypoints (added from the map) -------------------------------
+/** Popup form: name, type from the POI catalog, add button. */
+function addWptPopupHtml() {
+  let opts = `<option value="${GENERIC_TYPE}">${escapeHtml(t('poi.' + GENERIC_TYPE))}</option>`;
+  for (const gkey of GROUPS) {
+    opts += `<optgroup label="${escapeAttr(t('group.' + gkey))}">`;
+    for (const [type, cfg] of Object.entries(POI)) {
+      if (cfg.group === gkey) {
+        opts += `<option value="${type}">${escapeHtml(t('poi.' + type))}</option>`;
+      }
+    }
+    opts += '</optgroup>';
+  }
+  return `<div class="wpt-popup wpt-add">` +
+    `<h3>${escapeHtml(t('addwpt.title'))}</h3>` +
+    `<input class="wpt-name-input" maxlength="100" placeholder="${escapeAttr(t('addwpt.namePlaceholder'))}" aria-label="${escapeAttr(t('popup.nameAria'))}">` +
+    `<select class="wpt-type-select" aria-label="${escapeAttr(t('addwpt.typeAria'))}">${opts}</select>` +
+    `<div class="wpt-actions"><button type="button" class="wpt-btn wpt-add-btn">${escapeHtml(t('addwpt.add'))}</button></div>` +
+    `</div>`;
+}
+
+function openAddWptPopup(latlng) {
+  const div = el('div', null, addWptPopupHtml());
+  const popup = L.popup().setLatLng(latlng).setContent(div).openOn(state.map);
+  const input = div.querySelector('.wpt-name-input');
+  const add = () => {
+    addUserWpt(latlng, input.value, div.querySelector('.wpt-type-select').value);
+    state.map.closePopup(popup);
+  };
+  div.querySelector('.wpt-add-btn').addEventListener('click', add);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') add();
+  });
+}
+
+/**
+ * Create the manual waypoint at the clicked position. Like file waypoints
+ * it is anchored on the nearest route point (roadbook order, profile dot)
+ * but keeps the clicked coordinates — the track is never re-woven.
+ */
+function addUserWpt(latlng, rawName, type) {
+  const route = state.route;
+  const near = findNearest(route.lon, route.lat, latlng.lng, latlng.lat, Infinity);
+  const id = state.userSeq++;
+  const name = rawName.trim() || `${t('poi.' + type)} ${id + 1}`;
+  state.userWpts.push({
+    name,
+    osmType: 'user', // key namespace for overrides & hover sync
+    id,
+    lat: latlng.lat,
+    lon: latlng.lng,
+    ele: route.ele[near.index] || 0,
+    index: near.index,
+    newGpxIndex: null,
+    queryName: type,
+    hasName: true,
+    description: '',
+    descText: '',
+  });
+  if (!refreshFromMemory()) {
+    state.pts = allPts();
+    syncWaypointUI();
+  }
+  toast(t('toast.wptAdded', { name }), 'ok');
 }
 
 /** Redraw everything that depends on state.pts. */
@@ -839,6 +979,7 @@ function loadRoute(route, displayName, fit = true) {
   state.genElements = null;
   state.genCustom = '';
   state.overrides = new Map();
+  state.userWpts = [];
   // Waypoints carried by the file are displayed right away.
   state.fileWpts = fileWaypointsToPts(route);
   state.pts = [...state.fileWpts];
@@ -856,22 +997,26 @@ function loadRoute(route, displayName, fit = true) {
 }
 
 function handleFile(file) {
-  if (!file.name.toLowerCase().endsWith('.gpx')) {
-    toast(t('toast.notGpx'), 'error');
+  const m = /\.([a-z0-9]+)$/i.exec(file.name);
+  const ext = m ? m[1].toLowerCase() : '';
+  if (!Formats.EXTENSIONS.includes(ext)) {
+    toast(t('error.badFormat'), 'error');
     return;
   }
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const route = GPX.parse(reader.result);
+      const route = Formats.parse(ext, reader.result);
       // A locally opened file replaces any track shared through the URL.
       state.shareCode = null;
       loadRoute(route, route.name || file.name);
     } catch (err) {
-      toast(err.code ? t(err.code, err.params) : (err.message || t('toast.gpxError')), 'error');
+      toast(err.code ? t(err.code, err.params) : (err.message || t('toast.fileError')), 'error');
     }
   };
-  reader.readAsText(file);
+  // FIT is binary; every other supported format is XML text.
+  if (Formats.BINARY_EXTENSIONS.includes(ext)) reader.readAsArrayBuffer(file);
+  else reader.readAsText(file);
 }
 
 // ---- Track sharing through the URL -------------------------------------
@@ -1092,12 +1237,23 @@ function downloadTcx() {
 
 // ---- UI feedback ------------------------------------------------------
 let toastTimer;
-function toast(msg, kind) {
-  const t = $('#toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (kind || '');
+/** `action` ({ label, fn }) adds a button to the toast (e.g. undo). */
+function toast(msg, kind, action) {
+  const node = $('#toast');
+  node.textContent = msg;
+  if (action) {
+    const btn = el('button', 'toast-action', escapeHtml(action.label));
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      node.classList.remove('show');
+      action.fn();
+    });
+    node.appendChild(btn);
+  }
+  node.className = 'toast show ' + (kind || '') + (action ? ' actionable' : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  // An actionable toast stays a bit longer: the user has a decision to make.
+  toastTimer = setTimeout(() => node.classList.remove('show'), action ? 6000 : 3500);
 }
 function setBusy(b) {
   $('#btn-generate').disabled = b;
@@ -1195,9 +1351,11 @@ function wire() {
     persistSelection();
     if (state.route) {
       reverseRoute(state.route);
-      // The route arrays were reversed in place: remap the file waypoints'
-      // anchor indices (their coordinates are absolute, only the anchor moves).
-      for (const p of state.fileWpts) p.index = state.route.lat.length - 1 - p.index;
+      // The route arrays were reversed in place: remap the file and manual
+      // waypoints' anchor indices (their coordinates are absolute).
+      for (const p of [...state.fileWpts, ...state.userWpts]) {
+        p.index = state.route.lat.length - 1 - p.index;
+      }
       // The encoded track carries a direction: drop the now-stale link.
       if (state.shareCode) {
         state.shareCode = null;
@@ -1220,12 +1378,31 @@ function wire() {
     refreshFromMemory();
     updatePoiCounts();
   });
+  $('#milestone-mode').addEventListener('change', () => {
+    // Restore the newly selected mode's saved step before persisting.
+    syncMilestoneStepInput();
+    persistSelection();
+    drawMilestones();
+  });
+  $('#milestone-step').addEventListener('change', () => {
+    persistSelection();
+    drawMilestones();
+  });
   $('#sel-all-with').addEventListener('click', () => selectAll(true));
   $('#sel-none-with').addEventListener('click', () => selectAll(false));
   $('#btn-defaults').addEventListener('click', resetDefaults);
 
   $('#profile').addEventListener('mousemove', profileHover);
   $('#profile').addEventListener('mouseleave', profileLeave);
+  // Touch: dragging a finger over the profile tracks the position on the
+  // map exactly like the mouse hover (touch-action: none in the CSS).
+  const profileTouch = (e) => {
+    if (e.touches.length) profileHover(e.touches[0]);
+  };
+  $('#profile').addEventListener('touchstart', profileTouch, { passive: true });
+  $('#profile').addEventListener('touchmove', profileTouch, { passive: true });
+  $('#profile').addEventListener('touchend', profileLeave);
+  $('#profile').addEventListener('touchcancel', profileLeave);
   // Hovering a waypoint dot on the profile lights up its map pin and
   // roadbook row. Delegated: the dots are re-rendered on every sync.
   $('#profile').addEventListener('mouseover', (e) => {
