@@ -719,6 +719,10 @@ function focusWpt(p) {
 // stats and the map hover marker.
 function drawProfile() {
   const svg = $('#profile');
+  // Reveal the wrap *before* rendering: .empty hides it (display:none) and a
+  // hidden svg reports clientWidth 0, so the profile would be drawn on the
+  // 600-unit fallback and stretched to the real width afterwards.
+  $('#profile-wrap').classList.remove('empty');
   const p = Profile.render(svg, state.route, { noElevationText: t('profile.noElevation') });
   // A null profile means no elevation data; stale geometry must not place
   // waypoint dots.

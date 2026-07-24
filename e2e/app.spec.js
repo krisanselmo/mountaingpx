@@ -48,6 +48,14 @@ test('load a GPX, generate waypoints, export the enriched GPX', async ({ page })
   await expect(page.locator('#stat-dplus')).toHaveText('+180 m');
   await expect(page.locator('#btn-download')).toBeDisabled();
 
+  // The profile viewBox must match the on-screen width: the wrap starts
+  // hidden (.empty) and a profile drawn while hidden would fall back to a
+  // 600-unit width, then be stretched by preserveAspectRatio="none".
+  const profile = page.locator('#profile');
+  const viewBoxWidth = parseFloat((await profile.getAttribute('viewBox')).split(' ')[2]);
+  const realWidth = (await profile.boundingBox()).width;
+  expect(Math.abs(viewBoxWidth - realWidth)).toBeLessThan(2);
+
   await page.click('#btn-generate');
 
   // Both fixture POIs snap onto the track.
