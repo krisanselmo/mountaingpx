@@ -60,7 +60,7 @@
   "water": { "default": "Punto d'acqua", "zoomIn": "Ingrandisci per caricare i punti d'acqua" },
   "share": {
     "btn": "Condividi",
-    "title": "Copia un link che contiene la traccia — nulla viene inviato a un server.",
+    "title": "Copia un link che contiene la traccia e i suoi waypoint — nulla viene inviato a un server.",
     "defaultName": "Traccia condivisa",
     "copyPrompt": "Copia il link di condivisione:"
   },

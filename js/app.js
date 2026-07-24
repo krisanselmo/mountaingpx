@@ -561,6 +561,7 @@ function syncWaypointUI() {
   $('#stat-wpt').textContent = state.pts.length;
   $('#btn-download').disabled = state.pts.length === 0;
   $('#btn-download-tcx').disabled = state.pts.length === 0;
+  refreshShareCode(); // async, keeps an active share link in sync
 }
 
 // ---- Roadbook (waypoint list sorted by distance along the track) --------
@@ -874,6 +875,30 @@ function handleFile(file) {
 }
 
 // ---- Track sharing through the URL -------------------------------------
+/** Current waypoints in the wire shape shared through the link. */
+function shareWpts() {
+  return state.pts.map((p) => ({
+    lat: p.lat,
+    lon: p.lon,
+    ele: p.ele || 0,
+    name: p.name,
+    type: p.queryName,
+  }));
+}
+
+/**
+ * Re-encode the link after any waypoint change so the URL always carries
+ * what is on screen. Only runs when a share link is already active.
+ */
+async function refreshShareCode() {
+  if (!state.shareCode || !state.route) return;
+  try {
+    const res = await Share.encodeFit(state.route, shareWpts());
+    state.shareCode = res.code;
+    updateHash();
+  } catch (_) {} // sharing stays best-effort: the UI already reflects the edit
+}
+
 async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -901,7 +926,7 @@ async function shareTrack() {
   const btn = $('#btn-share');
   btn.disabled = true;
   try {
-    const res = await Share.encodeFit(state.route);
+    const res = await Share.encodeFit(state.route, shareWpts());
     state.shareCode = res.code;
     updateHash();
     const url = location.origin + location.pathname + '#track=' + res.code;

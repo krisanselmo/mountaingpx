@@ -77,6 +77,46 @@ test('long names are capped, unicode is preserved', async () => {
   assert.ok(back.name.length <= 100);
 });
 
+test('waypoints round-trip with name, type, position and elevation', async () => {
+  const route = makeRoute(300);
+  const wpts = [
+    { lat: route.lat[50], lon: route.lon[50], ele: 2564, name: 'Col de la Vache', type: 'saddle' },
+    { lat: route.lat[120] + 0.0003, lon: route.lon[120], ele: 1890, name: 'Source du Loup', type: 'spring' },
+    { lat: route.lat[200], lon: route.lon[200], ele: 0, name: 'Refuge — étape ⛺', type: 'alpine_hut' },
+  ];
+  const back = await Share.decode(await Share.encode(route, wpts));
+
+  assert.equal(back.waypoints.length, 3);
+  for (let i = 0; i < wpts.length; i++) {
+    assert.equal(back.waypoints[i].name, wpts[i].name);
+    assert.equal(back.waypoints[i].type, wpts[i].type);
+    assert.ok(Math.abs(back.waypoints[i].lat - wpts[i].lat) < 1e-5);
+    assert.ok(Math.abs(back.waypoints[i].lon - wpts[i].lon) < 1e-5);
+    assert.ok(Math.abs(back.waypoints[i].ele - wpts[i].ele) <= 0.5);
+  }
+});
+
+test('a track without waypoints still decodes to an empty list', async () => {
+  const back = await Share.decode(await Share.encode(makeRoute(50)));
+  assert.deepEqual(back.waypoints, []);
+});
+
+test('encodeFit keeps every waypoint even when the track is simplified', async () => {
+  const route = makeRoute(20000);
+  const wpts = Array.from({ length: 40 }, (_, i) => ({
+    lat: route.lat[i * 450],
+    lon: route.lon[i * 450],
+    ele: 1000 + i,
+    name: `Waypoint n°${i}`,
+    type: 'peak',
+  }));
+  const res = await Share.encodeFit(route, wpts);
+  assert.equal(res.simplified, true);
+  const back = await Share.decode(res.code);
+  assert.equal(back.waypoints.length, 40);
+  assert.equal(back.waypoints[39].name, 'Waypoint n°39');
+});
+
 test('malformed codes are rejected with error.shareInvalid', async () => {
   for (const bad of ['', 'not base64 ù%', 'AAAA', (await Share.encode(makeRoute(10))).slice(0, 20)]) {
     await assert.rejects(Share.decode(bad), (e) => e.code === 'error.shareInvalid');

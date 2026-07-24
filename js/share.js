@@ -8,15 +8,21 @@
  *   [point count varint] [hasEle u8]
  *   then per point, zigzag varints of the deltas:
  *     lat and lon at 1e-5° (~1 m), elevation at 1 m (only when hasEle)
+ *   then (version ≥ 2) [waypoint count varint] and per waypoint:
+ *     [name varint+utf-8] [type varint+utf-8]
+ *     [lat delta] [lon delta] [ele delta] — continuing the track's
+ *     running values, so on-track waypoints cost only a few bytes
  * The byte stream is deflate-raw compressed, then base64url encoded.
  * Delta + varint keeps consecutive points to 2-4 bytes, and deflate squeezes
  * the remaining redundancy; long tracks are Douglas-Peucker simplified until
  * the encoded string fits the URL budget.
  */
 
-const VERSION = 1;
+const VERSION = 2;
 const SCALE = 1e5; // 1e-5° ≈ 1.1 m — matches GPX 5-decimal precision
 const NAME_MAX = 100;
+const TYPE_MAX = 30;
+const WPT_MAX = 500;
 
 /** Encoded-length budget (characters) so links survive chats and e-mails. */
 export const CHAR_BUDGET = 4000;
@@ -82,13 +88,17 @@ const deflate = (b) => pipe(b, new CompressionStream('deflate-raw'));
 const inflate = (b) => pipe(b, new DecompressionStream('deflate-raw'));
 
 // ---- core encode / decode -----------------------------------------------
-function encodeBytes(route) {
+function pushString(bytes, s, max) {
+  const utf8 = new TextEncoder().encode(String(s || '').slice(0, max));
+  pushVarint(bytes, utf8.length);
+  for (const b of utf8) bytes.push(b);
+}
+
+function encodeBytes(route, wpts) {
   const { lat, lon, ele } = route;
   const bytes = [VERSION];
 
-  const name = new TextEncoder().encode((route.name || '').slice(0, NAME_MAX));
-  pushVarint(bytes, name.length);
-  for (const b of name) bytes.push(b);
+  pushString(bytes, route.name, NAME_MAX);
 
   pushVarint(bytes, lat.length);
   const hasEle = ele.some((e) => e > 0) ? 1 : 0;
@@ -110,16 +120,43 @@ function encodeBytes(route) {
       pel = e;
     }
   }
+
+  // Waypoints, deltas continuing from the last track point.
+  pushVarint(bytes, wpts.length);
+  for (const w of wpts) {
+    pushString(bytes, w.name, NAME_MAX);
+    pushString(bytes, w.type, TYPE_MAX);
+    const la = Math.round(w.lat * SCALE);
+    const lo = Math.round(w.lon * SCALE);
+    const e = Math.round(w.ele || 0);
+    pushVarint(bytes, zigzag(la - pla));
+    pushVarint(bytes, zigzag(lo - plo));
+    pushVarint(bytes, zigzag(e - pel));
+    pla = la;
+    plo = lo;
+    pel = e;
+  }
   return Uint8Array.from(bytes);
 }
 
-/** Encode a route into a base64url share code. */
-export async function encode(route) {
-  return toBase64Url(await deflate(encodeBytes(route)));
+/** Encode a route (and its waypoints) into a base64url share code. */
+export async function encode(route, wpts = []) {
+  return toBase64Url(await deflate(encodeBytes(route, wpts.slice(0, WPT_MAX))));
+}
+
+function readString(bytes, pos, max) {
+  const len = readVarint(bytes, pos);
+  if (len > max * 4 || pos.i + len > bytes.length) {
+    throw errWithCode('error.shareInvalid');
+  }
+  const s = new TextDecoder().decode(bytes.subarray(pos.i, pos.i + len));
+  pos.i += len;
+  return s;
 }
 
 /**
- * Decode a share code back into { name, lat[], lon[], ele[], waypoints[] }.
+ * Decode a share code back into { name, lat[], lon[], ele[], waypoints[] },
+ * waypoints being { lat, lon, ele, name, type } like GPX.parse() returns.
  * Throws an Error with code 'error.shareInvalid' on any malformed input.
  */
 export async function decode(code) {
@@ -131,14 +168,10 @@ export async function decode(code) {
   }
 
   const pos = { i: 0 };
-  if (bytes[pos.i++] !== VERSION) throw errWithCode('error.shareInvalid');
+  const version = bytes.length ? bytes[pos.i++] : 0;
+  if (version < 1 || version > VERSION) throw errWithCode('error.shareInvalid');
 
-  const nameLen = readVarint(bytes, pos);
-  if (nameLen > NAME_MAX * 4 || pos.i + nameLen > bytes.length) {
-    throw errWithCode('error.shareInvalid');
-  }
-  const name = new TextDecoder().decode(bytes.subarray(pos.i, pos.i + nameLen));
-  pos.i += nameLen;
+  const name = readString(bytes, pos, NAME_MAX);
 
   const n = readVarint(bytes, pos);
   if (n < 2 || n > 1e6 || pos.i >= bytes.length) throw errWithCode('error.shareInvalid');
@@ -161,9 +194,32 @@ export async function decode(code) {
     if (hasEle) pel += unzigzag(readVarint(bytes, pos));
     ele.push(hasEle ? pel : 0);
   }
+
+  const waypoints = [];
+  if (version >= 2) {
+    const w = readVarint(bytes, pos);
+    if (w > WPT_MAX) throw errWithCode('error.shareInvalid');
+    for (let i = 0; i < w; i++) {
+      const wName = readString(bytes, pos, NAME_MAX);
+      const wType = readString(bytes, pos, TYPE_MAX);
+      pla += unzigzag(readVarint(bytes, pos));
+      plo += unzigzag(readVarint(bytes, pos));
+      pel += unzigzag(readVarint(bytes, pos));
+      if (Math.abs(pla) > 90 * SCALE || Math.abs(plo) > 180 * SCALE) {
+        throw errWithCode('error.shareInvalid');
+      }
+      waypoints.push({
+        lat: pla / SCALE,
+        lon: plo / SCALE,
+        ele: pel,
+        name: wName,
+        type: wType,
+      });
+    }
+  }
   if (pos.i !== bytes.length) throw errWithCode('error.shareInvalid');
 
-  return { name, lat, lon, ele, waypoints: [] };
+  return { name, lat, lon, ele, waypoints };
 }
 
 // ---- track simplification (Douglas-Peucker) -------------------------------
@@ -225,16 +281,17 @@ function simplify(route, tol) {
 }
 
 /**
- * Encode a route, simplifying it just enough to fit `budget` characters.
+ * Encode a route and its waypoints, simplifying the track (never the
+ * waypoints) just enough to fit `budget` characters.
  * Returns { code, points, total, simplified }.
  */
-export async function encodeFit(route, budget = CHAR_BUDGET) {
+export async function encodeFit(route, wpts = [], budget = CHAR_BUDGET) {
   const total = route.lat.length;
   let current = route;
-  let code = await encode(current);
+  let code = await encode(current, wpts);
   for (let tol = MIN_TOL; code.length > budget && tol <= MAX_TOL; tol *= 2) {
     current = simplify(route, tol);
-    code = await encode(current);
+    code = await encode(current, wpts);
   }
   return {
     code,

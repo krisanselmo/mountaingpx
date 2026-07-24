@@ -60,7 +60,7 @@
   "water": { "default": "Punto de agua", "zoomIn": "Haz zoom para cargar los puntos de agua" },
   "share": {
     "btn": "Compartir",
-    "title": "Copiar un enlace que contiene el track — no se envía nada a un servidor.",
+    "title": "Copiar un enlace que contiene el track y sus waypoints — no se envía nada a un servidor.",
     "defaultName": "Track compartido",
     "copyPrompt": "Copia el enlace para compartir:"
   },

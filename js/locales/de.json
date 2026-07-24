@@ -60,7 +60,7 @@
   "water": { "default": "Wasserstelle", "zoomIn": "Zoomen Sie hinein, um Wasserstellen zu laden" },
   "share": {
     "btn": "Teilen",
-    "title": "Einen Link kopieren, der den Track enthält — nichts wird an einen Server gesendet.",
+    "title": "Einen Link kopieren, der den Track und seine Wegpunkte enthält — nichts wird an einen Server gesendet.",
     "defaultName": "Geteilter Track",
     "copyPrompt": "Kopieren Sie den Freigabelink:"
   },
