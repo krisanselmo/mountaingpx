@@ -253,6 +253,7 @@ body {
   z-index: 500;
 }
 .toolbar.active { display: flex; }
+.toolbar-btns { display: flex; align-items: center; gap: 8px; }
 .track-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stats { display: flex; gap: 20px; }
 .stat { display: flex; flex-direction: column; align-items: center; }
@@ -440,7 +441,8 @@ body {
 
   /* Share & roadbook toggles: icon-only, top right of the toolbar (same row
      as the track name) instead of a full extra row below the stats. */
-  #btn-share, #btn-roadbook { order: 2; padding: 7px; }
+  .toolbar-btns { order: 2; }
+  #btn-share, #btn-roadbook { padding: 7px; }
   #btn-share span, #btn-roadbook span { display: none; }
 }
 
