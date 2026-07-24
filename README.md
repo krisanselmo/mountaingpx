@@ -1,11 +1,25 @@
 # Mountain GPX
 
+![Mountain GPX — waypoints automatiques sur vos traces GPX](public/og-image.png)
+
 Application web qui ajoute automatiquement des waypoints (sommets, cols,
 refuges, points d'eau…) à une trace GPX, à partir des données OpenStreetMap.
 100 % client-side : le fichier GPX est traité dans le navigateur, seules des
 requêtes vers l'API Overpass sont émises.
 
 Déployée sur https://krisanselmo.github.io/mountaingpx/
+
+## English
+
+Mountain GPX automatically adds waypoints (peaks, mountain passes, huts,
+water points, lakes, waterfalls, viewpoints…) to a hiking, trail-running or
+mountain-bike GPX track, using OpenStreetMap data (Overpass API). It snaps
+each point of interest onto the route, draws an elevation profile and a
+printable roadbook, and exports the enriched track as GPX or as a Garmin
+TCX course with typed CoursePoints. Free, no sign-up, 100% client-side —
+your file never leaves the browser — and installable as an offline-capable
+PWA. Available in English, French, German, Spanish and Italian:
+https://krisanselmo.github.io/mountaingpx/en.html
 
 ## Fonctionnalités
 
@@ -82,3 +96,7 @@ source GitHub Pages du dépôt soit « Deploy from a branch : gh-pages /(root) �
   est relancée sur une autre instance après 8 s sans réponse.
 - Les marqueurs sont des `L.divIcon` SVG générés par `js/icons.js` — aucun
   asset image.
+- `scripts/build-lang-pages.mjs` génère au build une page d'entrée par
+  langue (`en.html`, `de.html`…) avec les meta traduites ;
+  `public/sitemap.xml` liste ces URL, et les préversions de PR sont
+  marquées `noindex` (`NOINDEX_BUILD=1` dans `pr-preview.yml`).

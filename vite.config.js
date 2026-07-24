@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Adds a robots noindex tag when NOINDEX_BUILD is set (PR preview builds).
+const noindexPreview = {
+  name: 'noindex-preview',
+  transformIndexHtml(html) {
+    return html.replace('<head>', '<head>\n  <meta name="robots" content="noindex">');
+  },
+};
+
 export default defineConfig({
   // Relative asset paths so dist/ works from any static subdirectory.
   base: './',
   plugins: [
+    ...(process.env.NOINDEX_BUILD ? [noindexPreview] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
