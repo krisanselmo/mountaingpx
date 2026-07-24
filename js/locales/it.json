@@ -62,6 +62,7 @@
     "notGpx": "Fornisci un file .gpx",
     "gpxError": "Errore di lettura del GPX",
     "trackLoaded": "Traccia caricata: {n} punti",
+    "trackLoadedWpts": "Traccia caricata: {n} punti · {w} waypoint importati",
     "needTrack": "Carica prima una traccia GPX",
     "selectPoi": "Seleziona almeno un tipo di POI",
     "renamed": "Rinominato in «{name}»",
@@ -115,6 +116,7 @@
     "locality": "Località",
     "toilets": "Bagni",
     "barrier": "Barriera",
-    "tunnel": "Tunnel"
+    "tunnel": "Tunnel",
+    "generic": "Punto di interesse"
   }
 }
