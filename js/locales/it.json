@@ -58,6 +58,12 @@
     "water": "Punti d'acqua"
   },
   "water": { "default": "Punto d'acqua", "zoomIn": "Ingrandisci per caricare i punti d'acqua" },
+  "share": {
+    "btn": "Condividi",
+    "title": "Copia un link che contiene la traccia — nulla viene inviato a un server.",
+    "defaultName": "Traccia condivisa",
+    "copyPrompt": "Copia il link di condivisione:"
+  },
   "toast": {
     "notGpx": "Fornisci un file .gpx",
     "gpxError": "Errore di lettura del GPX",
@@ -69,9 +75,13 @@
     "removed": "«{name}» rimosso dalla traccia",
     "snapped": "{n} waypoint agganciati alla traccia",
     "partialFail": "{n} waypoint — non è stato possibile interrogare {failed}/{total} tratto/i del percorso, riprova",
-    "overpassError": "Overpass: {msg}"
+    "overpassError": "Overpass: {msg}",
+    "shareCopied": "Link di condivisione copiato negli appunti",
+    "shareCopiedSimplified": "Link copiato — traccia semplificata a {n} punti (su {total}) per stare nell'URL"
   },
   "error": {
+    "shareInvalid": "Link di condivisione non valido o troncato",
+    "shareFailed": "Impossibile creare il link di condivisione",
     "gpxInvalidXml": "File GPX non valido: impossibile leggere l'XML.",
     "gpxNoPoints": "Nessuna traccia (trkpt) né itinerario (rtept) trovato nel GPX.",
     "overpassTimeout": "tempo scaduto ({host})",

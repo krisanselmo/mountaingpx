@@ -58,6 +58,12 @@
     "water": "Water points"
   },
   "water": { "default": "Water point", "zoomIn": "Zoom in to load water points" },
+  "share": {
+    "btn": "Share",
+    "title": "Copy a link that carries the track — nothing is sent to a server.",
+    "defaultName": "Shared track",
+    "copyPrompt": "Copy the share link:"
+  },
   "toast": {
     "notGpx": "Please provide a .gpx file",
     "gpxError": "Error reading the GPX",
@@ -69,9 +75,13 @@
     "removed": "“{name}” removed from track",
     "snapped": "{n} waypoint(s) snapped to the track",
     "partialFail": "{n} waypoint(s) — {failed}/{total} section(s) of the route could not be queried, try again",
-    "overpassError": "Overpass: {msg}"
+    "overpassError": "Overpass: {msg}",
+    "shareCopied": "Share link copied to the clipboard",
+    "shareCopiedSimplified": "Link copied — track simplified to {n} points (of {total}) to fit in the URL"
   },
   "error": {
+    "shareInvalid": "Invalid or truncated share link",
+    "shareFailed": "Could not create the share link",
     "gpxInvalidXml": "Invalid GPX file: the XML could not be read.",
     "gpxNoPoints": "No track (trkpt) or route (rtept) found in the GPX.",
     "overpassTimeout": "timed out ({host})",
