@@ -56,6 +56,7 @@
     "notGpx": "Proporciona un archivo .gpx",
     "gpxError": "Error al leer el GPX",
     "trackLoaded": "Track cargado: {n} puntos",
+    "trackLoadedWpts": "Track cargado: {n} puntos · {w} waypoints importados",
     "needTrack": "Carga primero un track GPX",
     "selectPoi": "Selecciona al menos un tipo de POI",
     "renamed": "Renombrado a «{name}»",
@@ -109,6 +110,7 @@
     "locality": "Paraje",
     "toilets": "Aseos",
     "barrier": "Barrera",
-    "tunnel": "Túnel"
+    "tunnel": "Túnel",
+    "generic": "Punto de interés"
   }
 }

@@ -41,17 +41,26 @@ export function parse(xmlString) {
     ele.push(eleNode ? parseFloat(eleNode.textContent) || 0 : 0);
   }
 
-  // Existing waypoints already present in the file (kept on export).
-  const waypoints = Array.from(doc.getElementsByTagName('wpt')).map((w) => ({
-    lat: parseFloat(w.getAttribute('lat')),
-    lon: parseFloat(w.getAttribute('lon')),
-    ele: (w.getElementsByTagName('ele')[0] || {}).textContent || '',
-    name: (w.getElementsByTagName('name')[0] || {}).textContent || '',
-    type: (w.getElementsByTagName('type')[0] || {}).textContent || '',
-  }));
+  // Existing waypoints already present in the file (displayed and kept on
+  // export). <sym> is read too: many apps classify waypoints with it
+  // instead of <type>.
+  const waypoints = Array.from(doc.getElementsByTagName('wpt')).map((w) => {
+    const child = (tag) => (w.getElementsByTagName(tag)[0] || {}).textContent || '';
+    return {
+      lat: parseFloat(w.getAttribute('lat')),
+      lon: parseFloat(w.getAttribute('lon')),
+      ele: child('ele'),
+      name: child('name'),
+      type: child('type'),
+      sym: child('sym'),
+      desc: child('desc') || child('cmt'),
+    };
+  });
 
   // Empty when the GPX carries no name; the UI falls back to the file name.
-  const nameNode = doc.getElementsByTagName('name')[0];
+  // The first <name> of the document can belong to a <wpt>, so only the
+  // track/route/metadata name qualifies.
+  const nameNode = doc.querySelector('trk > name, rte > name, metadata > name');
   const name = nameNode ? nameNode.textContent.trim() : '';
 
   return { name, lat, lon, ele, waypoints };
@@ -87,7 +96,11 @@ function dedupe(lat, lon, ele) {
 export function densify(route, pts) {
   const { lat, lon, ele } = route;
   const byIndex = new Map();
-  for (const p of pts) byIndex.set(p.index, p);
+  for (const p of pts) {
+    // Waypoints loaded from the file are never re-projected; keep them from
+    // shadowing a generated waypoint anchored on the same route point.
+    if (p.newGpxIndex != null) byIndex.set(p.index, p);
+  }
 
   const _lat = [];
   const _lon = [];
@@ -144,7 +157,9 @@ export function build(route, pts, keepOld) {
     }
   }
   for (const p of pts) {
-    xml += wptXml(p.lat, p.lon, p.ele, p.name, courseType(p.queryName), p.descText);
+    // Waypoints loaded from the file keep their original <type> verbatim;
+    // generated ones get the Garmin course-point vocabulary.
+    xml += wptXml(p.lat, p.lon, p.ele, p.name, p.rawType || courseType(p.queryName), p.descText);
   }
   xml += '</gpx>\n';
   return xml;
