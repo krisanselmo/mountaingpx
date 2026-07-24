@@ -1,7 +1,13 @@
 {
   "meta": {
-    "title": "Mountain GPX — waypoint automatici",
-    "description": "Aggiungi automaticamente waypoint (cime, passi, rifugi, fontane…) alla tua traccia GPX. Interamente nel browser, senza server."
+    "title": "Mountain GPX — Waypoint automatici sulla tua traccia GPX",
+    "description": "Aggiungi automaticamente waypoint (cime, passi, rifugi, punti d'acqua…) alla tua traccia GPX di escursionismo o trail, dai dati OpenStreetMap. Export GPX e TCX Garmin. Gratuito, 100 % nel browser."
+  },
+  "about": {
+    "title": "Informazioni su Mountain GPX",
+    "p1": "Mountain GPX aggiunge automaticamente waypoint a una traccia GPX di escursionismo, trail o MTB: cime, passi, rifugi, bivacchi, sorgenti, fontane e punti d'acqua, laghi, cascate, punti panoramici… I punti di interesse provengono da OpenStreetMap e vengono agganciati al tuo percorso.",
+    "p2": "Importa il tuo file GPX (esportato da Strava, Komoot, Garmin Connect…), scegli i tipi di punti di interesse e scarica la traccia arricchita in GPX o TCX (percorso Garmin con CoursePoint tipizzati) per il tuo orologio o GPS.",
+    "p3": "Lo strumento è gratuito, senza registrazione, e funziona interamente nel browser: il tuo file non lascia mai il tuo dispositivo. Installabile come app (PWA), continua a funzionare offline in montagna, con roadbook stampabile e profilo altimetrico."
   },
   "lang": { "aria": "Lingua" },
   "menu": { "open": "Apri il menu", "close": "Chiudi il menu" },

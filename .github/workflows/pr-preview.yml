@@ -36,6 +36,10 @@ jobs:
         run: npm test
       - if: github.event.action != 'closed'
         run: npm run build
+        env:
+          # Previews duplicate the production pages: mark them noindex
+          # (see noindexPreview in vite.config.js).
+          NOINDEX_BUILD: '1'
       - uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: dist

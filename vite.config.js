@@ -1,10 +1,22 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// PR previews are duplicates of the production site: keep them out of the
+// search indexes. The pr-preview workflow sets NOINDEX_BUILD=1 (a robots.txt
+// would have to live at the root of krisanselmo.github.io, which this
+// repository does not own).
+const noindexPreview = {
+  name: 'noindex-preview',
+  transformIndexHtml(html) {
+    return html.replace('<head>', '<head>\n  <meta name="robots" content="noindex">');
+  },
+};
+
 export default defineConfig({
   // Relative asset paths so dist/ works from any static subdirectory.
   base: './',
   plugins: [
+    ...(process.env.NOINDEX_BUILD ? [noindexPreview] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],

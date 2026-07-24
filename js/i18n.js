@@ -42,12 +42,25 @@ export function saveLang(lang) {
 }
 
 /**
+ * Language carried by the URL of the static per-language entry pages
+ * (/en.html, /de.html… — see scripts/build-lang-pages.mjs).
+ */
+function urlLang() {
+  if (typeof location === 'undefined') return null;
+  const m = /(?:^|\/)([a-z]{2})\.html$/.exec(location.pathname);
+  return m && SUPPORTED.includes(m[1]) ? m[1] : null;
+}
+
+/**
  * Pick the initial language: the one saved from a previous visit wins,
- * otherwise the first browser-preferred language we support, else English.
+ * then the language of the entry page URL, otherwise the first
+ * browser-preferred language we support, else English.
  */
 export function detectLang() {
   const stored = loadStored();
   if (stored) return stored;
+  const fromUrl = urlLang();
+  if (fromUrl) return fromUrl;
   const prefs = (navigator.languages && navigator.languages.length)
     ? navigator.languages
     : [navigator.language || ''];
