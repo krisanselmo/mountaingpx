@@ -58,6 +58,12 @@
     "water": "Wasserstellen"
   },
   "water": { "default": "Wasserstelle", "zoomIn": "Zoomen Sie hinein, um Wasserstellen zu laden" },
+  "share": {
+    "btn": "Teilen",
+    "title": "Einen Link kopieren, der den Track und seine Wegpunkte enthält — nichts wird an einen Server gesendet.",
+    "defaultName": "Geteilter Track",
+    "copyPrompt": "Kopieren Sie den Freigabelink:"
+  },
   "toast": {
     "notGpx": "Bitte eine .gpx-Datei angeben",
     "gpxError": "Fehler beim Lesen der GPX",
@@ -69,9 +75,13 @@
     "removed": "„{name}“ vom Track entfernt",
     "snapped": "{n} Wegpunkt(e) am Track eingerastet",
     "partialFail": "{n} Wegpunkt(e) — {failed}/{total} Abschnitt(e) der Strecke konnten nicht abgefragt werden, bitte erneut versuchen",
-    "overpassError": "Overpass: {msg}"
+    "overpassError": "Overpass: {msg}",
+    "shareCopied": "Freigabelink in die Zwischenablage kopiert",
+    "shareCopiedSimplified": "Link kopiert — Track auf {n} Punkte (von {total}) vereinfacht, damit er in die URL passt"
   },
   "error": {
+    "shareInvalid": "Ungültiger oder abgeschnittener Freigabelink",
+    "shareFailed": "Der Freigabelink konnte nicht erstellt werden",
     "gpxInvalidXml": "Ungültige GPX-Datei: Das XML konnte nicht gelesen werden.",
     "gpxNoPoints": "Keine Spur (trkpt) oder Route (rtept) in der GPX gefunden.",
     "overpassTimeout": "Zeitüberschreitung ({host})",

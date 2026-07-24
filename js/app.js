@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 
 import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
+import * as Share from './share.js';
 import { haversine, findNearest } from './geometry.js';
 import * as Icons from './icons.js';
 import * as Overpass from './overpass.js';
@@ -34,6 +35,7 @@ const state = {
   endpoints: null,
   lastGpx: null,
   lastTcx: null,
+  shareCode: null, // encoded track kept in the URL hash (#track=…)
   showProfileWpts: true,
   genElements: null, // raw OSM elements of the last generation (all types)
   genCustom: '',     // custom query used by the last generation
@@ -185,7 +187,7 @@ function saveLayers(base, overlays) {
 function initMap() {
   // Restore the last view: the URL hash wins (shareable links), otherwise
   // fall back to the position saved from the previous session.
-  const saved = parseMapHash(location.hash) || loadView() || DEFAULT_VIEW;
+  const saved = parseHash(location.hash).view || loadView() || DEFAULT_VIEW;
   const map = L.map('map', { zoomControl: true })
     .setView([saved.lat, saved.lon], saved.zoom);
 
@@ -248,16 +250,35 @@ function initMap() {
   // view can be shared, and persist it to localStorage so it is restored
   // whenever the app is reopened (even without the hash, e.g. as a PWA).
   map.on('moveend', () => {
-    const c = map.getCenter();
-    history.replaceState(null, '', `#map=${map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`);
+    updateHash();
     saveView(map);
   });
 }
 
-function parseMapHash(hash) {
-  const m = /^#map=(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/.exec(hash || '');
-  if (!m) return null;
-  return { zoom: parseFloat(m[1]), lat: parseFloat(m[2]), lon: parseFloat(m[3]) };
+/**
+ * Parse the URL hash into { view?, track? }. Both parts can coexist
+ * (#map=zoom/lat/lon&track=<code>) so a shared track survives panning
+ * and page reloads.
+ */
+function parseHash(hash) {
+  const out = {};
+  for (const part of String(hash || '').replace(/^#/, '').split('&')) {
+    const m = /^map=(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/.exec(part);
+    if (m) out.view = { zoom: parseFloat(m[1]), lat: parseFloat(m[2]), lon: parseFloat(m[3]) };
+    const t = /^track=([A-Za-z0-9_-]+)$/.exec(part);
+    if (t) out.track = t[1];
+  }
+  return out;
+}
+
+/** Rewrite the hash from the current map view, keeping the shared track. */
+function updateHash() {
+  const c = state.map.getCenter();
+  const track = state.shareCode ? `&track=${state.shareCode}` : '';
+  history.replaceState(
+    null, '',
+    `#map=${state.map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}${track}`
+  );
 }
 
 /** (Re)build the Leaflet layers control with the current-language labels. */
@@ -540,6 +561,7 @@ function syncWaypointUI() {
   $('#stat-wpt').textContent = state.pts.length;
   $('#btn-download').disabled = state.pts.length === 0;
   $('#btn-download-tcx').disabled = state.pts.length === 0;
+  refreshShareCode(); // async, keeps an active share link in sync
 }
 
 // ---- Roadbook (waypoint list sorted by distance along the track) --------
@@ -810,6 +832,29 @@ function profileLeave() {
 }
 
 // ---- File handling ----------------------------------------------------
+/** Install a parsed route as the current track and reset everything else. */
+function loadRoute(route, displayName, fit = true) {
+  if (loadSettings().reverse || $('#reverse').checked) reverseRoute(route);
+  state.route = route;
+  state.genElements = null;
+  state.genCustom = '';
+  state.overrides = new Map();
+  // Waypoints carried by the file are displayed right away.
+  state.fileWpts = fileWaypointsToPts(route);
+  state.pts = [...state.fileWpts];
+  drawRoute(fit);
+  drawProfile();
+  state.trackName = displayName;
+  $('#track-name').textContent = state.trackName;
+  $('#toolbar').classList.add('active');
+  $('#btn-share').hidden = false;
+  syncWaypointUI();
+  updatePoiCounts();
+  toast(state.fileWpts.length
+    ? t('toast.trackLoadedWpts', { n: route.lat.length, w: state.fileWpts.length })
+    : t('toast.trackLoaded', { n: route.lat.length }), 'ok');
+}
+
 function handleFile(file) {
   if (!file.name.toLowerCase().endsWith('.gpx')) {
     toast(t('toast.notGpx'), 'error');
@@ -819,29 +864,100 @@ function handleFile(file) {
   reader.onload = () => {
     try {
       const route = GPX.parse(reader.result);
-      if (loadSettings().reverse || $('#reverse').checked) reverseRoute(route);
-      state.route = route;
-      state.genElements = null;
-      state.genCustom = '';
-      state.overrides = new Map();
-      // Waypoints carried by the file are displayed right away.
-      state.fileWpts = fileWaypointsToPts(route);
-      state.pts = [...state.fileWpts];
-      drawRoute();
-      drawProfile();
-      state.trackName = route.name || file.name;
-      $('#track-name').textContent = state.trackName;
-      $('#toolbar').classList.add('active');
-      syncWaypointUI();
-      updatePoiCounts();
-      toast(state.fileWpts.length
-        ? t('toast.trackLoadedWpts', { n: route.lat.length, w: state.fileWpts.length })
-        : t('toast.trackLoaded', { n: route.lat.length }), 'ok');
+      // A locally opened file replaces any track shared through the URL.
+      state.shareCode = null;
+      loadRoute(route, route.name || file.name);
     } catch (err) {
       toast(err.code ? t(err.code, err.params) : (err.message || t('toast.gpxError')), 'error');
     }
   };
   reader.readAsText(file);
+}
+
+// ---- Track sharing through the URL -------------------------------------
+/** Current waypoints in the wire shape shared through the link. */
+function shareWpts() {
+  return state.pts.map((p) => ({
+    lat: p.lat,
+    lon: p.lon,
+    ele: p.ele || 0,
+    name: p.name,
+    type: p.queryName,
+  }));
+}
+
+/**
+ * Re-encode the link after any waypoint change so the URL always carries
+ * what is on screen. Only runs when a share link is already active.
+ */
+async function refreshShareCode() {
+  if (!state.shareCode || !state.route) return;
+  try {
+    const res = await Share.encodeFit(state.route, shareWpts());
+    state.shareCode = res.code;
+    updateHash();
+  } catch (_) {} // sharing stays best-effort: the UI already reflects the edit
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_) {}
+  // Fallback for insecure contexts / older browsers.
+  try {
+    const ta = el('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+/** Encode the current track into the hash and copy the share link. */
+async function shareTrack() {
+  if (!state.route) return;
+  const btn = $('#btn-share');
+  btn.disabled = true;
+  try {
+    const res = await Share.encodeFit(state.route, shareWpts());
+    state.shareCode = res.code;
+    updateHash();
+    const url = location.origin + location.pathname + '#track=' + res.code;
+    if (await copyText(url)) {
+      toast(
+        res.simplified
+          ? t('toast.shareCopiedSimplified', { n: res.points, total: res.total })
+          : t('toast.shareCopied'),
+        'ok'
+      );
+    } else {
+      window.prompt(t('share.copyPrompt'), url);
+    }
+  } catch (err) {
+    console.error(err);
+    toast(t('error.shareFailed'), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/** Load a track shared through #track=… (fit unless a #map= view is set). */
+async function loadSharedTrack(code, fit) {
+  try {
+    const route = await Share.decode(code);
+    state.shareCode = code;
+    loadRoute(route, route.name || t('share.defaultName'), fit);
+  } catch (err) {
+    console.warn('Shared track:', err.message || err);
+    toast(t(err.code || 'error.shareInvalid'), 'error');
+  }
 }
 
 function reverseRoute(route) {
@@ -1065,6 +1181,7 @@ function wire() {
   $('#rb-print').addEventListener('click', () => window.print());
 
   $('#btn-generate').addEventListener('click', generate);
+  $('#btn-share').addEventListener('click', shareTrack);
   $('#btn-download').addEventListener('click', download);
   $('#btn-download-tcx').addEventListener('click', downloadTcx);
   $('#overpass-custom').addEventListener('change', () => {
@@ -1081,6 +1198,11 @@ function wire() {
       // The route arrays were reversed in place: remap the file waypoints'
       // anchor indices (their coordinates are absolute, only the anchor moves).
       for (const p of state.fileWpts) p.index = state.route.lat.length - 1 - p.index;
+      // The encoded track carries a direction: drop the now-stale link.
+      if (state.shareCode) {
+        state.shareCode = null;
+        updateHash();
+      }
       drawRoute();
       drawProfile();
       if (!refreshFromMemory()) {
@@ -1176,4 +1298,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initMap();
   buildPoiPanel();
   wire();
+
+  // Track shared through the URL: decode it and load it like a local file.
+  // When the hash also pins a #map= view, respect it instead of fitting.
+  const h = parseHash(location.hash);
+  if (h.track) loadSharedTrack(h.track, !h.view);
 });
