@@ -6,14 +6,14 @@
   "about": {
     "title": "About Mountain GPX",
     "p1": "Mountain GPX automatically adds waypoints to a hiking, trail running or mountain-bike GPX track: peaks, mountain passes, huts and shelters, springs, fountains and water points, lakes, waterfalls, viewpoints… Points of interest come from OpenStreetMap and are snapped onto your route.",
-    "p2": "Import your GPX file (exported from Strava, Komoot, Garmin Connect…), pick the point-of-interest types, then download the enriched track as GPX or TCX (a Garmin course with typed CoursePoints) for your watch or GPS.",
+    "p2": "Import your GPX, FIT, TCX or KML track (exported from Strava, Komoot, Garmin Connect…), pick the point-of-interest types, then download the enriched track as GPX or TCX (a Garmin course with typed CoursePoints) for your watch or GPS.",
     "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile."
   },
   "lang": { "aria": "Language" },
   "menu": { "open": "Open menu", "close": "Close menu" },
   "brand": { "tagline": "Automatic waypoints" },
   "dropzone": {
-    "drop": "Drop your GPX file",
+    "drop": "Drop your GPX, FIT, TCX or KML track",
     "or": "or",
     "openBtn": "Choose a file",
     "openTitle": "Nothing is sent to a server — everything stays on your device."
@@ -32,7 +32,21 @@
     "customPlaceholder": "e.g. way[\"leisure\"=\"park\"]",
     "customHelp": "A single element, in <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
     "snapLabel": "Max snapping distance:",
-    "reverse": "Reverse track direction"
+    "reverse": "Reverse track direction",
+    "milestones": "Track markers"
+  },
+  "milestones": {
+    "none": "None",
+    "dist": "Distance (km)",
+    "ele": "Elevation gain (m)",
+    "modeAria": "Marker type",
+    "stepAria": "Interval between markers"
+  },
+  "addwpt": {
+    "title": "Add a waypoint",
+    "namePlaceholder": "Waypoint name",
+    "typeAria": "Waypoint type",
+    "add": "Add"
   },
   "btn": { "generate": "Generate waypoints", "download": "⬇ Download GPX", "downloadTcx": "⬇ Download TCX" },
   "toolbar": { "noTrack": "No track" },
@@ -65,14 +79,16 @@
     "copyPrompt": "Copy the share link:"
   },
   "toast": {
-    "notGpx": "Please provide a .gpx file",
-    "gpxError": "Error reading the GPX",
+    "fileError": "Error reading the file",
     "trackLoaded": "Track loaded: {n} points",
     "trackLoadedWpts": "Track loaded: {n} points · {w} waypoints imported",
-    "needTrack": "Load a GPX track first",
+    "needTrack": "Load a track first",
     "selectPoi": "Select at least one POI type",
     "renamed": "Renamed to “{name}”",
     "removed": "“{name}” removed from track",
+    "undo": "Undo",
+    "restored": "“{name}” restored",
+    "wptAdded": "Waypoint “{name}” added",
     "snapped": "{n} waypoint(s) snapped to the track",
     "partialFail": "{n} waypoint(s) — {failed}/{total} section(s) of the route could not be queried, try again",
     "overpassError": "Overpass: {msg}",
@@ -82,8 +98,14 @@
   "error": {
     "shareInvalid": "Invalid or truncated share link",
     "shareFailed": "Could not create the share link",
+    "badFormat": "Unsupported format — expected a .gpx, .fit, .tcx or .kml file",
+    "fileInvalidXml": "Invalid file: the XML could not be read.",
     "gpxInvalidXml": "Invalid GPX file: the XML could not be read.",
     "gpxNoPoints": "No track (trkpt) or route (rtept) found in the GPX.",
+    "tcxNoPoints": "No trackpoints found in the TCX file.",
+    "kmlNoPoints": "No track found in the KML file.",
+    "fitInvalid": "Invalid or unreadable FIT file.",
+    "fitNoPoints": "No positions found in the FIT file.",
     "overpassTimeout": "timed out ({host})",
     "overpassNoServer": "No Overpass server is responding.",
     "overpassHttp": "Overpass HTTP {status}",

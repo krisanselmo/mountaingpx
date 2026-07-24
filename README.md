@@ -23,7 +23,10 @@ https://krisanselmo.github.io/mountaingpx/en.html
 
 ## Fonctionnalités
 
-- Import GPX par glisser-déposer ou sélecteur de fichier (`trk` et `rte`).
+- Import GPX (`trk` et `rte`), FIT (activités et parcours Garmin, décodeur
+  binaire maison), TCX (`Trackpoint` + `CoursePoint` typés) et KML
+  (`LineString`, `gx:Track`, placemarks) par glisser-déposer ou sélecteur
+  de fichier.
 - Les waypoints (`wpt`) déjà présents dans le fichier — généré par Mountain
   GPX ou non — sont affichés sur la carte, le profil et le roadbook ; leur
   `type`/`sym` est rattaché au catalogue de POI, avec repli sur un type
@@ -37,8 +40,15 @@ https://krisanselmo.github.io/mountaingpx/en.html
   personnalisée, distance d'accrochage réglable, inversion du sens de la trace.
 - Carte Leaflet (OpenTopoMap / OpenStreetMap / satellite Esri, overlay
   sentiers, overlay points d'eau) avec popups des tags OSM ; renommage et
-  suppression des waypoints depuis la carte.
-- Profil altimétrique et statistiques (distance, D+, altitude max).
+  suppression des waypoints depuis la carte (suppression annulable depuis
+  le toast).
+- Waypoints manuels : clic droit (appui long sur mobile) sur la carte pour
+  ajouter un waypoint nommé et typé (ravitaillement, rendez-vous…), inclus
+  dans le roadbook, le partage et les exports.
+- Repères réguliers le long de la trace, configurables dans les options
+  avancées : tous les N km ou tous les N m de D+ cumulé.
+- Profil altimétrique et statistiques (distance, D+, altitude max) ; le
+  survol du profil (souris ou doigt) suit la position sur la carte.
 - Roadbook : liste des waypoints triés par kilométrage (icône, type, km,
   altitude), cliquables pour centrer la carte, imprimable (mise en page
   d'impression dédiée).
@@ -82,6 +92,8 @@ n'importe quel hébergeur statique.
     ├── poi.js          # catalogue POI, filtres Overpass, détection de type
     ├── icons.js        # icônes SVG inline (Lucide, licence ISC + glyphes maison), pins Leaflet
     ├── gpx.js          # parsing et génération GPX
+    ├── formats.js      # parseurs d'import FIT, TCX et KML
+    ├── milestones.js   # repères distance / D+ le long de la trace
     ├── tcx.js          # génération TCX (parcours Garmin)
     ├── share.js        # encodage compact de la trace pour le partage par URL
     ├── overpass.js     # requêtes Overpass segmentées et hedgées, accrochage

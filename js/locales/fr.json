@@ -6,14 +6,14 @@
   "about": {
     "title": "À propos de Mountain GPX",
     "p1": "Mountain GPX ajoute automatiquement des waypoints à une trace GPX de randonnée, de trail ou de VTT : sommets, cols, refuges, cabanes, sources, fontaines et points d'eau, lacs, cascades, points de vue… Les points d'intérêt proviennent d'OpenStreetMap et sont accrochés au plus près de votre parcours.",
-    "p2": "Importez votre fichier GPX (exporté de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.",
+    "p2": "Importez votre trace GPX, FIT, TCX ou KML (exportée de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.",
     "p3": "L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique."
   },
   "lang": { "aria": "Langue" },
   "menu": { "open": "Ouvrir le menu", "close": "Fermer le menu" },
   "brand": { "tagline": "Waypoints automatiques" },
   "dropzone": {
-    "drop": "Glissez votre fichier GPX",
+    "drop": "Glissez votre trace GPX, FIT, TCX ou KML",
     "or": "ou",
     "openBtn": "Choisir un fichier",
     "openTitle": "Rien n'est envoyé sur un serveur — tout reste sur votre appareil."
@@ -32,7 +32,21 @@
     "customPlaceholder": "ex : way[\"leisure\"=\"park\"]",
     "customHelp": "Un seul élément, en <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
     "snapLabel": "Distance max d'accrochage :",
-    "reverse": "Inverser le sens de la trace"
+    "reverse": "Inverser le sens de la trace",
+    "milestones": "Repères sur la trace"
+  },
+  "milestones": {
+    "none": "Aucun",
+    "dist": "Distance (km)",
+    "ele": "Dénivelé D+ (m)",
+    "modeAria": "Type de repères",
+    "stepAria": "Intervalle entre les repères"
+  },
+  "addwpt": {
+    "title": "Ajouter un waypoint",
+    "namePlaceholder": "Nom du waypoint",
+    "typeAria": "Type du waypoint",
+    "add": "Ajouter"
   },
   "btn": { "generate": "Générer les waypoints", "download": "⬇ Télécharger le GPX", "downloadTcx": "⬇ Télécharger le TCX" },
   "toolbar": { "noTrack": "Aucune trace" },
@@ -65,14 +79,16 @@
     "copyPrompt": "Copiez le lien de partage :"
   },
   "toast": {
-    "notGpx": "Merci de fournir un fichier .gpx",
-    "gpxError": "Erreur de lecture du GPX",
+    "fileError": "Erreur de lecture du fichier",
     "trackLoaded": "Trace chargée : {n} points",
     "trackLoadedWpts": "Trace chargée : {n} points · {w} waypoints importés",
-    "needTrack": "Chargez d'abord une trace GPX",
+    "needTrack": "Chargez d'abord une trace",
     "selectPoi": "Sélectionnez au moins un type de POI",
     "renamed": "Renommé en « {name} »",
     "removed": "« {name} » retiré de la trace",
+    "undo": "Annuler",
+    "restored": "« {name} » restauré",
+    "wptAdded": "Waypoint « {name} » ajouté",
     "snapped": "{n} waypoint(s) accroché(s) à la trace",
     "partialFail": "{n} waypoint(s) — {failed}/{total} portion(s) du parcours n'ont pas pu être interrogées, réessayez",
     "overpassError": "Overpass : {msg}",
@@ -82,8 +98,14 @@
   "error": {
     "shareInvalid": "Lien de partage invalide ou tronqué",
     "shareFailed": "Impossible de créer le lien de partage",
+    "badFormat": "Format non pris en charge — fichier .gpx, .fit, .tcx ou .kml attendu",
+    "fileInvalidXml": "Fichier invalide : le XML ne peut pas être lu.",
     "gpxInvalidXml": "Fichier GPX invalide : le XML ne peut pas être lu.",
     "gpxNoPoints": "Aucune trace (trkpt) ni itinéraire (rtept) trouvé dans le GPX.",
+    "tcxNoPoints": "Aucun point de trace trouvé dans le fichier TCX.",
+    "kmlNoPoints": "Aucune trace trouvée dans le fichier KML.",
+    "fitInvalid": "Fichier FIT invalide ou illisible.",
+    "fitNoPoints": "Aucune position trouvée dans le fichier FIT.",
     "overpassTimeout": "délai dépassé ({host})",
     "overpassNoServer": "Aucun serveur Overpass ne répond.",
     "overpassHttp": "Overpass HTTP {status}",

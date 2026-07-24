@@ -6,14 +6,14 @@
   "about": {
     "title": "Acerca de Mountain GPX",
     "p1": "Mountain GPX añade automáticamente waypoints a un track GPX de senderismo, trail o BTT: cimas, collados, refugios, cabañas, manantiales, fuentes y puntos de agua, lagos, cascadas, miradores… Los puntos de interés provienen de OpenStreetMap y se anclan a tu recorrido.",
-    "p2": "Importa tu archivo GPX (exportado de Strava, Komoot, Garmin Connect…), elige los tipos de puntos de interés y descarga el track enriquecido en GPX o TCX (recorrido Garmin con CoursePoints tipados) para tu reloj o GPS.",
+    "p2": "Importa tu track GPX, FIT, TCX o KML (exportado de Strava, Komoot, Garmin Connect…), elige los tipos de puntos de interés y descarga el track enriquecido en GPX o TCX (recorrido Garmin con CoursePoints tipados) para tu reloj o GPS.",
     "p3": "La herramienta es gratuita, sin registro, y funciona íntegramente en el navegador: tu archivo nunca sale de tu dispositivo. Instalable como aplicación (PWA), sigue funcionando sin conexión en la montaña, con un roadbook imprimible y un perfil de altitud."
   },
   "lang": { "aria": "Idioma" },
   "menu": { "open": "Abrir el menú", "close": "Cerrar el menú" },
   "brand": { "tagline": "Waypoints automáticos" },
   "dropzone": {
-    "drop": "Arrastra tu archivo GPX",
+    "drop": "Arrastra tu track GPX, FIT, TCX o KML",
     "or": "o",
     "openBtn": "Elegir un archivo",
     "openTitle": "No se envía nada a ningún servidor — todo permanece en tu dispositivo."
@@ -32,7 +32,21 @@
     "customPlaceholder": "p. ej. way[\"leisure\"=\"park\"]",
     "customHelp": "Un solo elemento, en <a href=\"https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide\" target=\"_blank\" rel=\"noopener\">Overpass QL</a>.",
     "snapLabel": "Distancia máx. de enganche:",
-    "reverse": "Invertir el sentido del track"
+    "reverse": "Invertir el sentido del track",
+    "milestones": "Marcas sobre el track"
+  },
+  "milestones": {
+    "none": "Ninguna",
+    "dist": "Distancia (km)",
+    "ele": "Desnivel D+ (m)",
+    "modeAria": "Tipo de marcas",
+    "stepAria": "Intervalo entre marcas"
+  },
+  "addwpt": {
+    "title": "Añadir un waypoint",
+    "namePlaceholder": "Nombre del waypoint",
+    "typeAria": "Tipo del waypoint",
+    "add": "Añadir"
   },
   "btn": { "generate": "Generar waypoints", "download": "⬇ Descargar el GPX", "downloadTcx": "⬇ Descargar el TCX" },
   "toolbar": { "noTrack": "Sin track" },
@@ -65,14 +79,16 @@
     "copyPrompt": "Copia el enlace para compartir:"
   },
   "toast": {
-    "notGpx": "Proporciona un archivo .gpx",
-    "gpxError": "Error al leer el GPX",
+    "fileError": "Error al leer el archivo",
     "trackLoaded": "Track cargado: {n} puntos",
     "trackLoadedWpts": "Track cargado: {n} puntos · {w} waypoints importados",
-    "needTrack": "Carga primero un track GPX",
+    "needTrack": "Carga primero un track",
     "selectPoi": "Selecciona al menos un tipo de POI",
     "renamed": "Renombrado a «{name}»",
     "removed": "«{name}» quitado del track",
+    "undo": "Deshacer",
+    "restored": "«{name}» restaurado",
+    "wptAdded": "Waypoint «{name}» añadido",
     "snapped": "{n} waypoint(s) enganchado(s) al track",
     "partialFail": "{n} waypoint(s) — no se pudieron consultar {failed}/{total} tramo(s) del recorrido, inténtalo de nuevo",
     "overpassError": "Overpass: {msg}",
@@ -82,8 +98,14 @@
   "error": {
     "shareInvalid": "Enlace para compartir no válido o truncado",
     "shareFailed": "No se pudo crear el enlace para compartir",
+    "badFormat": "Formato no compatible — se espera un archivo .gpx, .fit, .tcx o .kml",
+    "fileInvalidXml": "Archivo no válido: no se puede leer el XML.",
     "gpxInvalidXml": "Archivo GPX no válido: no se puede leer el XML.",
     "gpxNoPoints": "No se encontró ninguna traza (trkpt) ni ruta (rtept) en el GPX.",
+    "tcxNoPoints": "No se encontraron puntos de track en el archivo TCX.",
+    "kmlNoPoints": "No se encontró ningún track en el archivo KML.",
+    "fitInvalid": "Archivo FIT no válido o ilegible.",
+    "fitNoPoints": "No se encontraron posiciones en el archivo FIT.",
     "overpassTimeout": "tiempo agotado ({host})",
     "overpassNoServer": "Ningún servidor Overpass responde.",
     "overpassHttp": "Overpass HTTP {status}",
