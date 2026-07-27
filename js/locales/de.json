@@ -85,6 +85,8 @@
     "qrHelp": "QR-Code anzeigen, um ihn mit einem anderen Gerät zu scannen.",
     "qrSimplified": "Track auf {n} Punkte (von {total}) vereinfacht, damit er in den QR-Code passt.",
     "back": "Zurück",
+    "fileBtn": "GPX-Datei senden",
+    "fileHelp": "Teilt die vollständige Datei — ohne Vereinfachung — über das Teilen-Menü des Geräts.",
     "garminBtn": "In Garmin Connect öffnen",
     "garminHelp": "Lädt die TCX-Strecke herunter und öffnet dann die Importseite von Garmin Connect."
   },

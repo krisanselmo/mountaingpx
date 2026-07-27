@@ -419,6 +419,7 @@ body {
   color: var(--text); padding: 12px 14px; cursor: pointer;
   transition: border-color .15s, background .15s;
 }
+.share-option[hidden] { display: none; }
 .share-option:hover:not(:disabled) { border-color: var(--accent-2); background: rgba(242, 160, 61, .07); }
 .share-option:disabled { opacity: .5; cursor: wait; }
 .share-option > svg { flex: none; color: var(--accent-2); }

@@ -85,6 +85,8 @@
     "qrHelp": "Muestra un código QR para escanearlo con otro dispositivo.",
     "qrSimplified": "Track simplificado a {n} puntos (de {total}) para caber en el código QR.",
     "back": "Volver",
+    "fileBtn": "Enviar el archivo GPX",
+    "fileHelp": "Comparte el archivo completo — sin simplificación — mediante el menú de compartir del dispositivo.",
     "garminBtn": "Abrir en Garmin Connect",
     "garminHelp": "Descarga el recorrido TCX y abre la página de importación de Garmin Connect."
   },

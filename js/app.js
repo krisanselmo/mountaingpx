@@ -989,6 +989,25 @@ const shareQr = shareAction('#share-qr', async () => {
 });
 
 /**
+ * "Envoyer le fichier GPX": hand the full-fidelity GPX (track + waypoints,
+ * nothing simplified) to the OS share sheet through the Web Share API.
+ * The option only shows on browsers that can share files (see wire()).
+ */
+const shareFile = shareAction('#share-file', async () => {
+  const base = (state.route.name || 'mountaingpx').replace(/[^\w.-]+/g, '_');
+  const file = new File([state.lastGpx], base + '_wpt.gpx', {
+    type: 'application/gpx+xml',
+  });
+  try {
+    await navigator.share({ files: [file], title: state.trackName || base });
+  } catch (err) {
+    if (err && err.name === 'AbortError') return; // user closed the OS sheet
+    throw err;
+  }
+  setShareModal(false);
+});
+
+/**
  * "Ouvrir dans Garmin Connect": Garmin has no URL to open a remote course,
  * so the closest hand-off is downloading the TCX course (typed CoursePoints)
  * and opening Garmin Connect's import page for the user to drop it in.
@@ -1263,6 +1282,13 @@ function wire() {
   $('#share-link').addEventListener('click', shareCopyLink);
   $('#share-qr').addEventListener('click', shareQr);
   $('#share-garmin').addEventListener('click', shareGarmin);
+  // Web Share with files (mostly mobile): reveal the option when supported.
+  try {
+    const probe = new File([''], 'probe.gpx', { type: 'application/gpx+xml' });
+    $('#share-file').hidden =
+      !(navigator.canShare && navigator.canShare({ files: [probe] }));
+  } catch (_) {} // File constructor missing: keep the option hidden
+  $('#share-file').addEventListener('click', shareFile);
   $('#share-qr-back').addEventListener('click', () => {
     setShareQrView(false);
     $('#share-qr').focus();

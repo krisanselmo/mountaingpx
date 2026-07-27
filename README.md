@@ -58,8 +58,10 @@ https://krisanselmo.github.io/mountaingpx/en.html
   sans aucun serveur. Les traces trop longues sont simplifiées
   (Douglas-Peucker) juste assez pour tenir dans l'URL (~4000 caractères,
   ~2800 en QR code — la capacité maximale d'un QR code) ; les waypoints,
-  eux, ne sont jamais simplifiés. La modale propose aussi l'envoi vers Garmin Connect
-  (téléchargement du TCX + ouverture de la page d'import).
+  eux, ne sont jamais simplifiés. La modale propose aussi l'envoi du fichier
+  GPX complet — sans simplification — par le menu de partage de l'appareil
+  (Web Share, mobile surtout), et l'envoi vers Garmin Connect (téléchargement
+  du TCX + ouverture de la page d'import).
 - Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
   (`<time>`) du fichier source sont conservés (interpolés sur les points
   insérés par l'accrochage).

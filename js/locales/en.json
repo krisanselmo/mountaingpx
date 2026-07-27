@@ -85,6 +85,8 @@
     "qrHelp": "Show a QR code to scan with another device.",
     "qrSimplified": "Track simplified to {n} points (of {total}) to fit in the QR code.",
     "back": "Back",
+    "fileBtn": "Send the GPX file",
+    "fileHelp": "Shares the full file — no simplification — through the device share menu.",
     "garminBtn": "Open in Garmin Connect",
     "garminHelp": "Downloads the TCX course, then opens the Garmin Connect import page."
   },

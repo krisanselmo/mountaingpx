@@ -160,6 +160,31 @@ test('the share modal offers link, QR code and Garmin hand-off', async ({ page, 
   await expect(page.locator('#share-modal')).toBeHidden();
 });
 
+test('the file option shares the full GPX through the Web Share API', async ({ page }) => {
+  // Desktop Chromium has no Web Share: stub it before the app boots. The
+  // option is hidden without the stub (covered by the modal test's layout).
+  await page.addInitScript(() => {
+    window.__shared = null;
+    navigator.canShare = (d) => !!(d && d.files && d.files.length);
+    navigator.share = async (d) => {
+      const f = d.files[0];
+      window.__shared = { name: f.name, type: f.type, size: f.size, title: d.title };
+    };
+  });
+  await page.reload();
+  await loadTrack(page);
+
+  await page.click('#btn-share');
+  await expect(page.locator('#share-file')).toBeVisible();
+  await page.click('#share-file');
+  await expect(page.locator('#share-modal')).toBeHidden();
+
+  const shared = await page.evaluate(() => window.__shared);
+  expect(shared.name).toMatch(/\.gpx$/);
+  expect(shared.type).toBe('application/gpx+xml');
+  expect(shared.size).toBeGreaterThan(500); // the whole track, not a stub
+});
+
 test('the QR code nears QR capacity and still decodes back to the track', async ({ page }) => {
   // Seeded random-walk track: real geometry that Douglas-Peucker cannot
   // collapse cheaply, so the encoded URL exceeds the old 1500-char ceiling
