@@ -56,6 +56,16 @@ export default defineConfig({
       workbox: {
         // Precache the built app shell.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The production service worker is served from the root of gh-pages,
+        // so its scope also covers the PR previews published under
+        // pr-preview/pr-<n>/ (see .github/workflows/pr-preview.yml). Without
+        // this denylist, its navigation fallback would answer those
+        // navigations with the *production* app shell and the preview would
+        // never be seen by anyone who already installed the app. The pattern
+        // is deliberately unanchored: the deployed base varies (GitHub Pages
+        // subdirectory, custom domain…) and Workbox matches it against the
+        // full pathname + search.
+        navigateFallbackDenylist: [/\/pr-preview\//],
         // The map/POI data comes from third-party APIs; cache it at runtime
         // so a previously loaded area stays usable offline.
         runtimeCaching: [
