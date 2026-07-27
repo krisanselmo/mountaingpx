@@ -6,6 +6,9 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import jsQR from 'jsqr';
+
+import { decode as decodeShare } from '../js/share.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_GPX = path.join(here, 'fixtures', 'track.gpx');
@@ -155,6 +158,50 @@ test('the share modal offers link, QR code and Garmin hand-off', async ({ page, 
   expect(download.suggestedFilename()).toMatch(/\.tcx$/);
   expect(popup).toBeTruthy();
   await expect(page.locator('#share-modal')).toBeHidden();
+});
+
+test('the QR code nears QR capacity and still decodes back to the track', async ({ page }) => {
+  // Seeded random-walk track: real geometry that Douglas-Peucker cannot
+  // collapse cheaply, so the encoded URL exceeds the old 1500-char ceiling
+  // and exercises a dense (near version 40) QR code.
+  let seed = 42;
+  const rnd = () => (seed = (seed * 1664525 + 1013904223) % 2 ** 32) / 2 ** 32;
+  let lat = 45.9;
+  let lon = 6.87;
+  let gpx = '<?xml version="1.0" encoding="UTF-8"?>'
+    + '<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">'
+    + '<trk><name>Longue trace</name><trkseg>';
+  for (let i = 0; i < 3000; i++) {
+    lat += (rnd() - 0.5) * 0.002;
+    lon += (rnd() - 0.5) * 0.002;
+    gpx += `<trkpt lat="${lat.toFixed(5)}" lon="${lon.toFixed(5)}">`
+      + `<ele>${1000 + Math.round(rnd() * 500)}</ele></trkpt>`;
+  }
+  gpx += '</trkseg></trk></gpx>';
+  await page.setInputFiles('#file-input', {
+    name: 'long.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(gpx),
+  });
+  await expect(page.locator('#toast')).toContainText('Track loaded');
+
+  await page.click('#btn-share');
+  await page.click('#share-qr');
+  await expect(page.locator('#share-qr-view')).toBeVisible();
+
+  // Decode the painted canvas like a phone camera would.
+  const img = await page.locator('#share-qr-canvas').evaluate((c) => {
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+    return { data: Array.from(d.data), width: d.width, height: d.height };
+  });
+  const qr = jsQR(new Uint8ClampedArray(img.data), img.width, img.height);
+  expect(qr).not.toBeNull();
+  expect(qr.data).toContain('#track=');
+  expect(qr.data.length).toBeGreaterThan(1500); // more than the old ceiling
+  expect(qr.data.length).toBeLessThanOrEqual(2800);
+
+  // The URL inside the QR code round-trips through the share codec.
+  const route = await decodeShare(qr.data.split('#track=')[1]);
+  expect(route.name).toBe('Longue trace');
+  expect(route.lat.length).toBeGreaterThan(100);
 });
 
 test('a multi-track GPX warns that the tracks were concatenated', async ({ page }) => {

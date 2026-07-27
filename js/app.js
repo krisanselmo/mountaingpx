@@ -889,10 +889,11 @@ async function copyText(text) {
 }
 
 // ---- Share modal ---------------------------------------------------------
-// URL-length ceiling for the QR code: beyond that the code gets too dense to
-// scan reliably from a screen, so the track is simplified further than the
-// copied-link version (which uses the roomier Share.CHAR_BUDGET).
-const QR_URL_BUDGET = 1500;
+// URL-length ceiling for the QR code: a QR code tops out at 2953 bytes
+// (version 40, byte mode, error correction L), so unlike the copied link
+// (Share.CHAR_BUDGET) the ceiling is a hard physical limit — kept slightly
+// under capacity, and the track is simplified further when needed.
+const QR_URL_BUDGET = 2800;
 
 /** Open/close the share modal; reopening always lands on the choice view. */
 function setShareModal(open) {
@@ -965,12 +966,19 @@ const shareQr = shareAction('#share-qr', async () => {
     res = await Share.encodeFit(state.route, shareWpts(), QR_URL_BUDGET - prefix.length);
     url = prefix + res.code;
   }
-  await QRCode.toCanvas($('#share-qr-canvas'), url, {
+  // Integer scale keeps the modules crisp whatever the QR version; the CSS
+  // sizes the canvas down/up to the modal width.
+  const canvas = $('#share-qr-canvas');
+  await QRCode.toCanvas(canvas, url, {
     errorCorrectionLevel: 'L',
     margin: 2,
-    width: 320,
+    scale: 4,
     color: { dark: '#0f1720', light: '#ffffff' },
   });
+  // toCanvas pins the on-screen size with an inline style: clear it so the
+  // stylesheet keeps the code inside the modal.
+  canvas.style.width = '';
+  canvas.style.height = '';
   const note = $('#share-qr-note');
   note.hidden = !res.simplified;
   if (res.simplified) {
