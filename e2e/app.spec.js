@@ -158,6 +158,18 @@ test('the file option shares the full GPX through the Web Share API', async ({ p
   expect(shared.size).toBeGreaterThan(500); // the whole track, not a stub
 });
 
+test('the about section links to the GitHub repository', async ({ page }) => {
+  // On the dev server the link is derived from the canonical URL injected
+  // at build time (package.json homepage).
+  await page.click('details.about > summary');
+  const link = page.locator('#github-link');
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute(
+    'href',
+    'https://github.com/krisanselmo/mountaingpx'
+  );
+});
+
 test('a multi-track GPX warns that the tracks were concatenated', async ({ page }) => {
   const multi = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">

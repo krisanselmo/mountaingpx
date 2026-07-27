@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import * as GPX from './gpx.js';
+import { repoUrlFrom } from './github.js';
 import * as TCX from './tcx.js';
 import * as Share from './share.js';
 import * as Formats from './formats.js';
@@ -1368,6 +1369,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initMap();
   buildPoiPanel();
   wire();
+
+  // "À propos": repository link derived from the GitHub Pages host — the
+  // canonical URL (injected at build time) covers dev servers and previews.
+  const gh = repoUrlFrom([
+    location.href,
+    document.querySelector('link[rel=canonical]')?.href,
+  ]);
+  if (gh) {
+    $('#github-link').href = gh;
+    $('#github-link').closest('p').hidden = false;
+  }
 
   // Track shared through the URL: decode it and load it like a local file.
   // When the hash also pins a #map= view, respect it instead of fitting.

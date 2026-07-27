@@ -172,6 +172,11 @@ body {
 /* ---------------- "About" panel ---------------- */
 .about { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
 .about-body p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 8px 0; }
+.about-github a {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--accent-2); font-size: 12px; text-decoration: none;
+}
+.about-github a:hover { text-decoration: underline; }
 .check input { accent-color: var(--accent); }
 
 /* ---------------- Buttons ---------------- */
