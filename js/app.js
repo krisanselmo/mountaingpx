@@ -962,17 +962,6 @@ const shareFile = shareAction('#share-file', async () => {
   setShareModal(false);
 });
 
-/**
- * "Ouvrir dans Garmin Connect": Garmin has no URL to open a remote course,
- * so the closest hand-off is downloading the TCX course (typed CoursePoints)
- * and opening Garmin Connect's import page for the user to drop it in.
- */
-const shareGarmin = shareAction('#share-garmin', async () => {
-  saveFile(state.lastTcx, 'tcx', 'application/vnd.garmin.tcx+xml');
-  window.open('https://connect.garmin.com/modern/import-data', '_blank', 'noopener');
-  setShareModal(false);
-  toast(t('toast.garminExport'), 'ok');
-});
 
 /** Load a track shared through #track=… (fit unless a #map= view is set). */
 async function loadSharedTrack(code, fit) {
@@ -1228,14 +1217,13 @@ function wire() {
 
   $('#btn-generate').addEventListener('click', generate);
 
-  // Share modal: pick a mode (link / GPX file / Garmin).
+  // Share modal: pick a mode (link / GPX file).
   $('#btn-share').addEventListener('click', () => state.route && setShareModal(true));
   $('#share-close').addEventListener('click', () => setShareModal(false));
   $('#share-modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) setShareModal(false); // backdrop click
   });
   $('#share-link').addEventListener('click', shareCopyLink);
-  $('#share-garmin').addEventListener('click', shareGarmin);
   // Web Share with files (mostly mobile): reveal the option when supported.
   try {
     const probe = new File([''], 'probe.gpx', { type: 'application/gpx+xml' });

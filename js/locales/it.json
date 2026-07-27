@@ -82,9 +82,7 @@
     "linkBtn": "Copia il link",
     "linkHelp": "La traccia e i suoi waypoint viaggiano nel link — nulla viene inviato a un server.",
     "fileBtn": "Invia il file GPX",
-    "fileHelp": "Condivide il file completo — senza semplificazione — tramite il menu di condivisione del dispositivo.",
-    "garminBtn": "Apri in Garmin Connect",
-    "garminHelp": "Scarica il percorso TCX e apre la pagina di importazione di Garmin Connect."
+    "fileHelp": "Condivide il file completo — senza semplificazione — tramite il menu di condivisione del dispositivo."
   },
   "toast": {
     "fileError": "Errore di lettura del file",
@@ -102,8 +100,7 @@
     "partialFail": "{n} waypoint — non è stato possibile interrogare {failed}/{total} tratto/i del percorso, riprova",
     "overpassError": "Overpass: {msg}",
     "shareCopied": "Link di condivisione copiato negli appunti",
-    "shareCopiedSimplified": "Link copiato — traccia semplificata a {n} punti (su {total}) per stare nell'URL",
-    "garminExport": "Percorso TCX scaricato — importalo nella pagina Garmin Connect appena aperta"
+    "shareCopiedSimplified": "Link copiato — traccia semplificata a {n} punti (su {total}) per stare nell'URL"
   },
   "error": {
     "shareInvalid": "Link di condivisione non valido o troncato",

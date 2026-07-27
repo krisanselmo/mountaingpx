@@ -82,9 +82,7 @@
     "linkBtn": "Link kopieren",
     "linkHelp": "Der Track und seine Wegpunkte reisen im Link mit — nichts wird an einen Server gesendet.",
     "fileBtn": "GPX-Datei senden",
-    "fileHelp": "Teilt die vollständige Datei — ohne Vereinfachung — über das Teilen-Menü des Geräts.",
-    "garminBtn": "In Garmin Connect öffnen",
-    "garminHelp": "Lädt die TCX-Strecke herunter und öffnet dann die Importseite von Garmin Connect."
+    "fileHelp": "Teilt die vollständige Datei — ohne Vereinfachung — über das Teilen-Menü des Geräts."
   },
   "toast": {
     "fileError": "Fehler beim Lesen der Datei",
@@ -102,8 +100,7 @@
     "partialFail": "{n} Wegpunkt(e) — {failed}/{total} Abschnitt(e) der Strecke konnten nicht abgefragt werden, bitte erneut versuchen",
     "overpassError": "Overpass: {msg}",
     "shareCopied": "Freigabelink in die Zwischenablage kopiert",
-    "shareCopiedSimplified": "Link kopiert — Track auf {n} Punkte (von {total}) vereinfacht, damit er in die URL passt",
-    "garminExport": "TCX-Strecke heruntergeladen — importieren Sie sie auf der soeben geöffneten Garmin-Connect-Seite"
+    "shareCopiedSimplified": "Link kopiert — Track auf {n} Punkte (von {total}) vereinfacht, damit er in die URL passt"
   },
   "error": {
     "shareInvalid": "Ungültiger oder abgeschnittener Freigabelink",

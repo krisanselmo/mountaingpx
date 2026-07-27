@@ -115,7 +115,7 @@ test('an invalid custom Overpass query is refused with a targeted error', async 
   await expect(page.locator('#stat-wpt')).toHaveText('0');
 });
 
-test('the share modal offers link, GPX file and Garmin hand-off', async ({ page, context }) => {
+test('the share modal copies the encoded link', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await loadTrack(page);
 
@@ -131,19 +131,6 @@ test('the share modal offers link, GPX file and Garmin hand-off', async ({ page,
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   expect(copied).toContain('#');
   expect(copied).toContain('track=');
-
-  // Garmin mode: downloads the TCX course and opens the import page.
-  // The popup lives outside the page-level routing: block it explicitly.
-  await context.route('**://connect.garmin.com/**', (r) => r.abort());
-  await page.click('#btn-share');
-  const [download, popup] = await Promise.all([
-    page.waitForEvent('download'),
-    page.waitForEvent('popup'),
-    page.click('#share-garmin'),
-  ]);
-  expect(download.suggestedFilename()).toMatch(/\.tcx$/);
-  expect(popup).toBeTruthy();
-  await expect(page.locator('#share-modal')).toBeHidden();
 });
 
 test('the file option shares the full GPX through the Web Share API', async ({ page }) => {

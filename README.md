@@ -59,8 +59,7 @@ https://krisanselmo.github.io/mountaingpx/en.html
   pour tenir dans l'URL (~4000 caractères), les waypoints, eux, ne sont
   jamais simplifiés. La modale propose aussi l'envoi du fichier GPX complet
   — sans simplification — par le menu de partage de l'appareil (Web Share,
-  mobile surtout), et l'envoi vers Garmin Connect (téléchargement du TCX +
-  ouverture de la page d'import).
+  mobile surtout).
 - Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
   (`<time>`) du fichier source sont conservés (interpolés sur les points
   insérés par l'accrochage).

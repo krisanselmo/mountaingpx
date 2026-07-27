@@ -82,9 +82,7 @@
     "linkBtn": "Copier le lien",
     "linkHelp": "La trace et ses waypoints voyagent dans le lien — rien n'est envoyé sur un serveur.",
     "fileBtn": "Envoyer le fichier GPX",
-    "fileHelp": "Partage le fichier complet — sans simplification — via le menu de partage de l'appareil.",
-    "garminBtn": "Ouvrir dans Garmin Connect",
-    "garminHelp": "Télécharge le parcours TCX puis ouvre l'import de Garmin Connect."
+    "fileHelp": "Partage le fichier complet — sans simplification — via le menu de partage de l'appareil."
   },
   "toast": {
     "fileError": "Erreur de lecture du fichier",
@@ -102,8 +100,7 @@
     "partialFail": "{n} waypoint(s) — {failed}/{total} portion(s) du parcours n'ont pas pu être interrogées, réessayez",
     "overpassError": "Overpass : {msg}",
     "shareCopied": "Lien de partage copié dans le presse-papiers",
-    "shareCopiedSimplified": "Lien copié — trace simplifiée à {n} points (sur {total}) pour tenir dans l'URL",
-    "garminExport": "Parcours TCX téléchargé — importez-le dans la page Garmin Connect qui vient de s'ouvrir"
+    "shareCopiedSimplified": "Lien copié — trace simplifiée à {n} points (sur {total}) pour tenir dans l'URL"
   },
   "error": {
     "shareInvalid": "Lien de partage invalide ou tronqué",

@@ -82,9 +82,7 @@
     "linkBtn": "Copy the link",
     "linkHelp": "The track and its waypoints travel in the link — nothing is sent to a server.",
     "fileBtn": "Send the GPX file",
-    "fileHelp": "Shares the full file — no simplification — through the device share menu.",
-    "garminBtn": "Open in Garmin Connect",
-    "garminHelp": "Downloads the TCX course, then opens the Garmin Connect import page."
+    "fileHelp": "Shares the full file — no simplification — through the device share menu."
   },
   "toast": {
     "fileError": "Error reading the file",
@@ -102,8 +100,7 @@
     "partialFail": "{n} waypoint(s) — {failed}/{total} section(s) of the route could not be queried, try again",
     "overpassError": "Overpass: {msg}",
     "shareCopied": "Share link copied to the clipboard",
-    "shareCopiedSimplified": "Link copied — track simplified to {n} points (of {total}) to fit in the URL",
-    "garminExport": "TCX course downloaded — import it on the Garmin Connect page that just opened"
+    "shareCopiedSimplified": "Link copied — track simplified to {n} points (of {total}) to fit in the URL"
   },
   "error": {
     "shareInvalid": "Invalid or truncated share link",
