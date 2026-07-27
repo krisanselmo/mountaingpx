@@ -325,3 +325,96 @@ test('a multi-track GPX warns that the tracks were concatenated', async ({ page 
   });
   await expect(page.locator('#toast')).toContainText('contains 2 tracks');
 });
+
+// ---- Hydration & resupply plan -------------------------------------------
+// The 1 km fixture is too short to be thirsty on: these tests run on a
+// 20 km / +1080 m track built on the fly, with the mocked water point of
+// OVERPASS_RESPONSE sitting in its first kilometre.
+function longTrackGpx() {
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+    '  <trk><name>Long</name><trkseg>\n';
+  for (let i = 0; i <= 180; i++) {
+    xml += `    <trkpt lat="${(45.9 + i * 0.001).toFixed(3)}" lon="6.870">` +
+      `<ele>${1000 + i * 6}</ele></trkpt>\n`;
+  }
+  return xml + '  </trkseg></trk>\n</gpx>\n';
+}
+
+async function loadLongTrack(page) {
+  await page.setInputFiles('#file-input', {
+    name: 'long.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(longTrackGpx()),
+  });
+  await expect(page.locator('#stat-dist')).toHaveText('20.0 km');
+  await page.click('#hydration > summary');
+}
+
+test('the hydration plan sizes the water and flags the dry stretches', async ({ page }) => {
+  await loadLongTrack(page);
+
+  // 20 km + 1080 m of climb = 30.8 km-effort, 6 h 10 at 5 km-effort/h,
+  // 500 mL/h -> ~3.1 L, none of which fits in a 1 L pack.
+  await expect(page.locator('#stat-water')).toHaveText('3.1 L');
+  await expect(page.locator('.hyd-sum b').nth(1)).toHaveText('6 h 10');
+  await expect(page.locator('.hyd-alert')).toBeVisible();
+  await expect(page.locator('.hyd-leg')).toHaveCount(1); // no source yet
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(1);
+  // The dry stretch is shaded on the elevation profile.
+  await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(1);
+
+  // The water point found on the track splits the route in two legs and
+  // becomes a refill stop, ticked on the profile.
+  await page.click('#btn-generate');
+  await expect(page.locator('.hyd-leg')).toHaveCount(2);
+  await expect(page.locator('#profile-hydration .hyd-tick-dot')).toHaveCount(1);
+  await page.click('#btn-roadbook');
+  await expect(page.locator('#roadbook-body .rb-note').first()).toContainText('Start with');
+
+  // A bigger pack covers the whole route: no risky leg left.
+  await page.fill('#hyd-capacity', '5000');
+  await page.dispatchEvent('#hyd-capacity', 'change');
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(0);
+  await expect(page.locator('.hyd-alert')).toHaveCount(0);
+  await expect(page.locator('.hyd-ok')).toBeVisible();
+  await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(0);
+});
+
+test('the heat setting drives how much water the plan asks for', async ({ page }) => {
+  await loadLongTrack(page);
+  await expect(page.locator('#stat-water')).toHaveText('3.1 L');
+
+  await page.selectOption('#hyd-heat', 'scorching');
+  await expect(page.locator('#stat-water')).toHaveText('4.9 L'); // x1.6
+
+  // Settings survive a reload (localStorage), plan included.
+  await page.reload();
+  await loadLongTrack(page);
+  await expect(page.locator('#hyd-heat')).toHaveValue('scorching');
+  await expect(page.locator('#stat-water')).toHaveText('4.9 L');
+});
+
+test('drink reminders become waypoints, exported as water course points', async ({ page }) => {
+  await loadLongTrack(page);
+  await expect(page.locator('#stat-wpt')).toHaveText('0');
+
+  await page.check('#hyd-remind');
+  await page.fill('#hyd-remind-km', '5');
+  await page.dispatchEvent('#hyd-remind-km', 'change');
+
+  // 20 km track: reminders at 5, 10 and 15 km (the one on the finish line
+  // is dropped).
+  await expect(page.locator('#stat-wpt')).toHaveText('3');
+  await page.click('#btn-roadbook');
+  await expect(page.locator('#roadbook-body')).toContainText('Drink');
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.click('#btn-download'),
+  ]);
+  const xml = fs.readFileSync(await download.path(), 'utf8');
+  expect((xml.match(/<type>water<\/type>/g) || []).length).toBe(3);
+  expect(xml).toContain('km 10.0');
+
+  // A reminder is not a source: it must not close a leg of the plan.
+  await expect(page.locator('.hyd-leg')).toHaveCount(1);
+});

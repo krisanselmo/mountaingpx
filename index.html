@@ -122,6 +122,52 @@
         </div>
       </details>
 
+      <details id="hydration" class="poi-group hydration">
+        <summary data-i18n="hydration.summary">Hydratation & ravitaillement</summary>
+        <div class="hyd-grid">
+          <label class="field">
+            <span data-i18n="hydration.intake">Boisson (mL/h)</span>
+            <input type="number" id="hyd-intake" min="100" max="2000" step="50" value="500">
+          </label>
+          <label class="field">
+            <span data-i18n="hydration.capacity">Contenance portée (mL)</span>
+            <input type="number" id="hyd-capacity" min="100" max="5000" step="100" value="1000">
+          </label>
+          <label class="field">
+            <span data-i18n="hydration.speed">Allure (km-effort/h)</span>
+            <input type="number" id="hyd-speed" min="1" max="20" step="0.5" value="5">
+          </label>
+          <label class="field">
+            <span data-i18n="hydration.heat">Conditions</span>
+            <select id="hyd-heat">
+              <option value="cool" data-i18n="hydration.heatCool">Frais</option>
+              <option value="temperate" data-i18n="hydration.heatTemperate">Tempéré</option>
+              <option value="hot" data-i18n="hydration.heatHot">Chaud</option>
+              <option value="scorching" data-i18n="hydration.heatScorching">Canicule</option>
+            </select>
+          </label>
+        </div>
+        <label class="field">
+          <span data-i18n="hydration.sources">Points de ravitaillement en eau</span>
+          <select id="hyd-sources">
+            <option value="tap" data-i18n="hydration.sourcesTap">Eau potable seulement</option>
+            <option value="hut" data-i18n="hydration.sourcesHut">Eau potable et refuges gardés</option>
+            <option value="all" data-i18n="hydration.sourcesAll">Aussi les sources naturelles (à filtrer)</option>
+          </select>
+          <small data-i18n="hydration.sourcesHelp">Parmi les waypoints de la trace : générez d'abord les points d'eau.</small>
+        </label>
+        <div class="field">
+          <label class="check">
+            <input type="checkbox" id="hyd-remind"> <span data-i18n="hydration.remind">Rappels « boire » tous les</span>
+          </label>
+          <div class="milestone-row">
+            <input type="number" id="hyd-remind-km" min="1" max="50" step="1" value="5" data-i18n-aria-label="hydration.remindAria" disabled>
+            <span class="hyd-unit" data-i18n="hydration.remindUnit">km</span>
+          </div>
+        </div>
+        <div id="hyd-plan" class="hyd-plan"></div>
+      </details>
+
       <details class="poi-group about">
         <summary data-i18n="about.title">À propos de Mountain GPX</summary>
         <div class="about-body">
@@ -157,6 +203,7 @@
         <span class="stat"><b id="stat-dplus">—</b><small data-i18n="stat.dplus">D+</small></span>
         <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. max</small></span>
         <span class="stat"><b id="stat-wpt">0</b><small data-i18n="stat.waypoints">waypoints</small></span>
+        <span class="stat" id="stat-water-wrap" hidden><b id="stat-water">—</b><small data-i18n="stat.water">eau estimée</small></span>
       </div>
       <div class="toolbar-btns">
         <button id="btn-roadbook" class="rb-btn" type="button" hidden aria-controls="roadbook" aria-expanded="false" data-i18n-aria-label="roadbook.btn">

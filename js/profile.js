@@ -56,10 +56,45 @@ export function render(svg, route, { width, noElevationText } = {}) {
   const dplus = ele.reduce((a, e, i) => (i && e > ele[i - 1] ? a + (e - ele[i - 1]) : a), 0);
 
   return {
-    dist, total, W, pad, minE, maxE, dplus,
+    dist, total, W, H, pad, minE, maxE, dplus,
     cx: (i) => x(dist[i]),
     cy: (i) => y(ele[i] || minE),
+    xKm: (km) => x(Math.min(Math.max(km, 0), total)),
   };
+}
+
+/**
+ * Hydration layer: the stretches where the water needed does not fit in the
+ * flasks are shaded, and every water source gets a tick. Drawn under the
+ * waypoint dots so the pins stay readable on top.
+ * `plan` comes from hydration.js (null clears the layer).
+ */
+export function renderHydration(svg, profile, plan, { warnLabel } = {}) {
+  const old = svg.querySelector('#profile-hydration');
+  if (old) old.remove();
+  const cursor = svg.querySelector('#profile-cursor');
+  if (!profile || !cursor || !plan) return;
+
+  const top = profile.pad.t;
+  const bottom = profile.H - profile.pad.b;
+  let html = '<g id="profile-hydration">';
+  for (const leg of plan.riskyLegs) {
+    const x1 = profile.xKm(leg.from.km);
+    const x2 = profile.xKm(leg.to.km);
+    html += `<rect class="hyd-band" x="${x1}" y="${top}" width="${Math.max(1, x2 - x1)}" height="${bottom - top}">` +
+      (warnLabel ? `<title>${escapeHtml(warnLabel)}</title>` : '') +
+      '</rect>';
+  }
+  for (const stop of plan.stops) {
+    if (stop.kind === 'start' || stop.kind === 'end') continue;
+    const x = profile.xKm(stop.km);
+    html += `<line class="hyd-tick" x1="${x}" x2="${x}" y1="${top}" y2="${bottom}"/>` +
+      `<circle class="hyd-tick-dot" cx="${x}" cy="${top + 3}" r="2.5"/>`;
+  }
+  html += '</g>';
+  // Below the waypoint dots (inserted before them, and before the cursor).
+  const wpts = svg.querySelector('#profile-wpts');
+  (wpts || cursor).insertAdjacentHTML('beforebegin', html);
 }
 
 /**

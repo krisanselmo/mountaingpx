@@ -13,7 +13,9 @@ https://krisanselmo.github.io/mountaingpx/
 Mountain GPX adds waypoints (peaks, passes, huts, water points, lakes,
 waterfalls, viewpoints…) to a hiking, trail-running or mountain-bike GPX
 track from OpenStreetMap data, snaps them onto the route, draws an elevation
-profile and a printable roadbook, and exports to GPX or Garmin TCX. No
+profile and a printable roadbook, plans hydration and resupply along the way
+(how much water to carry, where to fill up, which stretches are too dry),
+and exports to GPX or Garmin TCX. No
 sign-up, 100% client-side, installable as an offline-capable PWA. Available
 in English, French, German, Spanish and Italian:
 https://krisanselmo.github.io/mountaingpx/en.html
@@ -44,6 +46,13 @@ waypoints (annulable depuis le toast).
 waypoint nommé et typé (ravitaillement, rendez-vous…).
 
 **Repères réguliers** — tous les N km ou tous les N m de D+ cumulé.
+
+**Hydratation & ravitaillement** — à partir des points d'eau accrochés à la
+trace : eau totale estimée (débit de boisson, allure en km-effort, chaleur),
+portions entre deux ravitaillements avec la quantité à emporter, alerte sur
+celles qui dépassent la contenance portée, quantité à remplir à chaque point
+d'eau (roadbook), portions sèches ombrées sur le profil, et rappels
+« boire » tous les N km exportés comme waypoints.
 
 **Profil altimétrique** — distance, D+, altitude max ; le survol (souris ou
 doigt) suit la position sur la carte.
@@ -102,6 +111,7 @@ sur n'importe quel hébergeur statique.
     ├── gpx.js          # parsing et génération GPX (horodatages préservés)
     ├── formats.js      # parseurs d'import FIT, TCX, KML et détection de format
     ├── milestones.js   # repères distance / D+ le long de la trace
+    ├── hydration.js    # plan hydratation : portions entre points d'eau, besoins
     ├── tcx.js          # génération TCX (parcours Garmin)
     ├── share.js        # encodage compact de la trace pour le partage par URL
     ├── overpass.js     # requêtes Overpass segmentées et hedgées, accrochage
