@@ -2,6 +2,8 @@
  * gpx.js — parse an uploaded GPX and rebuild one with snapped waypoints.
  * Browser port of parse_route() and build_and_save_gpx() from wpts/main.py.
  */
+import { haversine } from './geometry.js';
+
 /** Build an Error carrying an i18n `code` (translated at the display site). */
 function errWithCode(code, params) {
   const e = new Error(code);
@@ -11,8 +13,12 @@ function errWithCode(code, params) {
 }
 
 /**
- * Parse a GPX string into { name, lat[], lon[], ele[], waypoints[] }.
+ * Parse a GPX string into { name, lat[], lon[], ele[], time[]|null,
+ * trackCount, waypoints[] }.
  * Handles both <trk>/<trkseg>/<trkpt> and <rte>/<rtept>.
+ * `time` holds one epoch-ms value (or null) per point, or is null when the
+ * file carries no timestamp at all; `trackCount` counts the <trk>/<rte>
+ * elements that contributed points (they are concatenated when several).
  */
 export function parse(xmlString) {
   const doc = new DOMParser().parseFromString(xmlString, 'application/xml');
@@ -20,17 +26,27 @@ export function parse(xmlString) {
     throw errWithCode('error.gpxInvalidXml');
   }
 
+  let container = 'trk';
   let pts = Array.from(doc.getElementsByTagName('trkpt'));
   if (pts.length === 0) {
+    container = 'rte';
     pts = Array.from(doc.getElementsByTagName('rtept'));
   }
   if (pts.length === 0) {
     throw errWithCode('error.gpxNoPoints');
   }
 
+  // Several <trk> (or <rte>) in one file end up concatenated; the caller
+  // can warn the user, whose profile/roadbook may otherwise look absurd.
+  const trackCount = Array.from(doc.getElementsByTagName(container))
+    .filter((tr) => tr.getElementsByTagName(container + 'pt').length > 0)
+    .length;
+
   const lat = [];
   const lon = [];
   const ele = [];
+  const time = [];
+  let hasTime = false;
   for (const p of pts) {
     const la = parseFloat(p.getAttribute('lat'));
     const lo = parseFloat(p.getAttribute('lon'));
@@ -39,6 +55,12 @@ export function parse(xmlString) {
     lon.push(lo);
     const eleNode = p.getElementsByTagName('ele')[0];
     ele.push(eleNode ? parseFloat(eleNode.textContent) || 0 : 0);
+    // Timestamps are preserved through the export (an "enrichment" tool
+    // should not strip them); stored as epoch ms for easy interpolation.
+    const timeNode = p.getElementsByTagName('time')[0];
+    const ts = timeNode ? Date.parse(timeNode.textContent.trim()) : NaN;
+    time.push(Number.isNaN(ts) ? null : ts);
+    if (!Number.isNaN(ts)) hasTime = true;
   }
 
   // Existing waypoints already present in the file (displayed and kept on
@@ -63,7 +85,7 @@ export function parse(xmlString) {
   const nameNode = doc.querySelector('trk > name, rte > name, metadata > name');
   const name = nameNode ? nameNode.textContent.trim() : '';
 
-  return { name, lat, lon, ele, waypoints };
+  return { name, lat, lon, ele, time: hasTime ? time : null, trackCount, waypoints };
 }
 
 export function esc(s) {
@@ -75,26 +97,44 @@ export function esc(s) {
 }
 
 /** Remove consecutive duplicate coordinates (port of filtering_duplicate). */
-function dedupe(lat, lon, ele) {
+function dedupe(lat, lon, ele, time) {
   const oLat = [];
   const oLon = [];
   const oEle = [];
+  const oTime = time ? [] : null;
   for (let i = 0; i < lat.length; i++) {
     if (i > 1 && lat[i] === lat[i - 1] && lon[i] === lon[i - 1]) continue;
     oLat.push(lat[i]);
     oLon.push(lon[i]);
     oEle.push(ele[i]);
+    if (oTime) oTime.push(time[i]);
   }
-  return [oLat, oLon, oEle];
+  return [oLat, oLon, oEle, oTime];
+}
+
+/**
+ * Timestamp for a point inserted between route points a and b, interpolated
+ * by its distance fraction along the a→b leg. Falls back to whichever
+ * neighbour has a timestamp when the other one is missing.
+ */
+function interpTime(route, a, b, pLat, pLon) {
+  const { lat, lon, time } = route;
+  const ta = time[a];
+  const tb = time[b];
+  if (ta == null || tb == null) return ta != null ? ta : tb;
+  const leg = haversine(lon[a], lat[a], lon[b], lat[b]);
+  const frac = leg > 0 ? haversine(lon[a], lat[a], pLon, pLat) / leg : 0;
+  return Math.round(ta + (tb - ta) * Math.min(1, Math.max(0, frac)));
 }
 
 /**
  * Rebuild the route coordinates with each snapped waypoint projected onto the
  * track (inserted before/after its anchor route point), then de-duplicated.
- * Shared by the GPX and TCX exporters. Returns { lat[], lon[], ele[] }.
+ * Shared by the GPX and TCX exporters. Returns { lat[], lon[], ele[], time[]|null }
+ * — `time` mirrors route.time, with interpolated values on inserted points.
  */
 export function densify(route, pts) {
-  const { lat, lon, ele } = route;
+  const { lat, lon, ele, time } = route;
   const byIndex = new Map();
   for (const p of pts) {
     // Waypoints loaded from the file are never re-projected; keep them from
@@ -105,6 +145,7 @@ export function densify(route, pts) {
   const _lat = [];
   const _lon = [];
   const _ele = [];
+  const _time = time ? [] : null;
   for (let i = 0; i < lat.length; i++) {
     const P = byIndex.get(i);
     // Insert the projected waypoint point *before* the route point.
@@ -112,20 +153,23 @@ export function densify(route, pts) {
       _lat.push(P.lat);
       _lon.push(P.lon);
       _ele.push(ele[i]);
+      if (_time) _time.push(i > 0 ? interpTime(route, i - 1, i, P.lat, P.lon) : time[i]);
     }
     _lat.push(lat[i]);
     _lon.push(lon[i]);
     _ele.push(ele[i]);
+    if (_time) _time.push(time[i]);
     // Insert the projected waypoint point *after* the route point.
     if (P && P.newGpxIndex != null && P.newGpxIndex > i) {
       _lat.push(P.lat);
       _lon.push(P.lon);
       _ele.push(ele[i]);
+      if (_time) _time.push(i + 1 < lat.length ? interpTime(route, i, i + 1, P.lat, P.lon) : time[i]);
     }
   }
 
-  const [dLat, dLon, dEle] = dedupe(_lat, _lon, _ele);
-  return { lat: dLat, lon: dLon, ele: dEle };
+  const [dLat, dLon, dEle, dTime] = dedupe(_lat, _lon, _ele, _time);
+  return { lat: dLat, lon: dLon, ele: dEle, time: dTime };
 }
 
 /**
@@ -135,7 +179,7 @@ export function densify(route, pts) {
  */
 export function build(route, pts, keepOld) {
   const { name } = route;
-  const { lat: dLat, lon: dLon, ele: dEle } = densify(route, pts);
+  const { lat: dLat, lon: dLon, ele: dEle, time: dTime } = densify(route, pts);
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<gpx version="1.1" creator="Mountain GPX" xmlns="http://www.topografix.com/GPX/1/1">\n';
@@ -145,7 +189,9 @@ export function build(route, pts, keepOld) {
   xml += '    <trkseg>\n';
   for (let i = 0; i < dLat.length; i++) {
     xml += '      <trkpt lat="' + dLat[i] + '" lon="' + dLon[i] + '">';
-    xml += '<ele>' + (dEle[i] || 0) + '</ele></trkpt>\n';
+    xml += '<ele>' + (dEle[i] || 0) + '</ele>';
+    if (dTime && dTime[i] != null) xml += '<time>' + isoTime(dTime[i]) + '</time>';
+    xml += '</trkpt>\n';
   }
   xml += '    </trkseg>\n';
   xml += '  </trk>\n';
@@ -178,6 +224,11 @@ const COURSE_TYPE = {
 
 function courseType(type) {
   return COURSE_TYPE[type] || 'generic';
+}
+
+/** Epoch ms -> GPX <time> value (UTC, no milliseconds). */
+function isoTime(ms) {
+  return new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
 function wptXml(lat, lon, ele, name, type, desc) {
