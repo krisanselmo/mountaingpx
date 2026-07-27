@@ -7,7 +7,8 @@
     "title": "Acerca de Mountain GPX",
     "p1": "Mountain GPX añade automáticamente waypoints a un track GPX de senderismo, trail o BTT: cimas, collados, refugios, cabañas, manantiales, fuentes y puntos de agua, lagos, cascadas, miradores… Los puntos de interés provienen de OpenStreetMap y se anclan a tu recorrido.",
     "p2": "Importa tu track GPX, FIT, TCX o KML (exportado de Strava, Komoot, Garmin Connect…), elige los tipos de puntos de interés y descarga el track enriquecido en GPX o TCX (recorrido Garmin con CoursePoints tipados) para tu reloj o GPS.",
-    "p3": "La herramienta es gratuita, sin registro, y funciona íntegramente en el navegador: tu archivo nunca sale de tu dispositivo. Instalable como aplicación (PWA), sigue funcionando sin conexión en la montaña, con un roadbook imprimible y un perfil de altitud."
+    "p3": "La herramienta es gratuita, sin registro, y funciona íntegramente en el navegador: tu archivo nunca sale de tu dispositivo. Instalable como aplicación (PWA), sigue funcionando sin conexión en la montaña, con un roadbook imprimible y un perfil de altitud.",
+    "github": "Código fuente en GitHub"
   },
   "lang": { "aria": "Idioma" },
   "menu": { "open": "Abrir el menú", "close": "Cerrar el menú" },
@@ -74,9 +75,15 @@
   "water": { "default": "Punto de agua", "zoomIn": "Haz zoom para cargar los puntos de agua" },
   "share": {
     "btn": "Compartir",
-    "title": "Copiar un enlace que contiene el track y sus waypoints — no se envía nada a un servidor.",
+    "title": "Comparte el track y sus waypoints por enlace o archivo GPX — no se envía nada a un servidor.",
     "defaultName": "Track compartido",
-    "copyPrompt": "Copia el enlace para compartir:"
+    "copyPrompt": "Copia el enlace para compartir:",
+    "modalTitle": "Compartir el track",
+    "close": "Cerrar",
+    "linkBtn": "Copiar el enlace",
+    "linkHelp": "El track y sus waypoints viajan en el enlace — no se envía nada a un servidor.",
+    "fileBtn": "Enviar el archivo GPX",
+    "fileHelp": "Comparte el archivo completo — sin simplificación — mediante el menú de compartir del dispositivo."
   },
   "toast": {
     "fileError": "Error al leer el archivo",

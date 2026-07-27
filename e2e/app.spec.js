@@ -115,6 +115,61 @@ test('an invalid custom Overpass query is refused with a targeted error', async 
   await expect(page.locator('#stat-wpt')).toHaveText('0');
 });
 
+test('the share modal copies the encoded link', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await loadTrack(page);
+
+  await page.click('#btn-share');
+  await expect(page.locator('#share-modal')).toBeVisible();
+  await expect(page.locator('#share-choice')).toBeVisible();
+
+  // Link mode: closes the modal, fills the hash and the clipboard.
+  await page.click('#share-link');
+  await expect(page.locator('#share-modal')).toBeHidden();
+  await expect(page.locator('#toast')).toContainText('copied');
+  expect(page.url()).toContain('track=');
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain('#');
+  expect(copied).toContain('track=');
+});
+
+test('the file option shares the full GPX through the Web Share API', async ({ page }) => {
+  // Desktop Chromium has no Web Share: stub it before the app boots. The
+  // option is hidden without the stub (covered by the modal test's layout).
+  await page.addInitScript(() => {
+    window.__shared = null;
+    navigator.canShare = (d) => !!(d && d.files && d.files.length);
+    navigator.share = async (d) => {
+      const f = d.files[0];
+      window.__shared = { name: f.name, type: f.type, size: f.size, title: d.title };
+    };
+  });
+  await page.reload();
+  await loadTrack(page);
+
+  await page.click('#btn-share');
+  await expect(page.locator('#share-file')).toBeVisible();
+  await page.click('#share-file');
+  await expect(page.locator('#share-modal')).toBeHidden();
+
+  const shared = await page.evaluate(() => window.__shared);
+  expect(shared.name).toMatch(/\.gpx$/);
+  expect(shared.type).toBe('application/gpx+xml');
+  expect(shared.size).toBeGreaterThan(500); // the whole track, not a stub
+});
+
+test('the about section links to the GitHub repository', async ({ page }) => {
+  // On the dev server the link is derived from the canonical URL injected
+  // at build time (package.json homepage).
+  await page.click('details.about > summary');
+  const link = page.locator('#github-link');
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute(
+    'href',
+    'https://github.com/krisanselmo/mountaingpx'
+  );
+});
+
 test('a multi-track GPX warns that the tracks were concatenated', async ({ page }) => {
   const multi = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">

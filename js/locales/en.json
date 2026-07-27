@@ -7,7 +7,8 @@
     "title": "About Mountain GPX",
     "p1": "Mountain GPX automatically adds waypoints to a hiking, trail running or mountain-bike GPX track: peaks, mountain passes, huts and shelters, springs, fountains and water points, lakes, waterfalls, viewpoints… Points of interest come from OpenStreetMap and are snapped onto your route.",
     "p2": "Import your GPX, FIT, TCX or KML track (exported from Strava, Komoot, Garmin Connect…), pick the point-of-interest types, then download the enriched track as GPX or TCX (a Garmin course with typed CoursePoints) for your watch or GPS.",
-    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile."
+    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile.",
+    "github": "Source code on GitHub"
   },
   "lang": { "aria": "Language" },
   "menu": { "open": "Open menu", "close": "Close menu" },
@@ -74,9 +75,15 @@
   "water": { "default": "Water point", "zoomIn": "Zoom in to load water points" },
   "share": {
     "btn": "Share",
-    "title": "Copy a link that carries the track and its waypoints — nothing is sent to a server.",
+    "title": "Share the track and its waypoints by link or GPX file — nothing is sent to a server.",
     "defaultName": "Shared track",
-    "copyPrompt": "Copy the share link:"
+    "copyPrompt": "Copy the share link:",
+    "modalTitle": "Share the track",
+    "close": "Close",
+    "linkBtn": "Copy the link",
+    "linkHelp": "The track and its waypoints travel in the link — nothing is sent to a server.",
+    "fileBtn": "Send the GPX file",
+    "fileHelp": "Shares the full file — no simplification — through the device share menu."
   },
   "toast": {
     "fileError": "Error reading the file",

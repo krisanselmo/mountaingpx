@@ -7,7 +7,8 @@
     "title": "Über Mountain GPX",
     "p1": "Mountain GPX ergänzt einen GPX-Track fürs Wandern, Trailrunning oder Mountainbiken automatisch um Wegpunkte: Gipfel, Pässe, Hütten und Unterstände, Quellen, Brunnen und Wasserstellen, Seen, Wasserfälle, Aussichtspunkte… Die POIs stammen aus OpenStreetMap und werden an Ihre Route angeheftet.",
     "p2": "Importieren Sie Ihren GPX-, FIT-, TCX- oder KML-Track (aus Strava, Komoot, Garmin Connect…), wählen Sie die POI-Typen und laden Sie den angereicherten Track als GPX oder TCX (Garmin-Strecke mit typisierten CoursePoints) für Ihre Uhr oder Ihr GPS herunter.",
-    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil."
+    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil.",
+    "github": "Quellcode auf GitHub"
   },
   "lang": { "aria": "Sprache" },
   "menu": { "open": "Menü öffnen", "close": "Menü schließen" },
@@ -74,9 +75,15 @@
   "water": { "default": "Wasserstelle", "zoomIn": "Zoomen Sie hinein, um Wasserstellen zu laden" },
   "share": {
     "btn": "Teilen",
-    "title": "Einen Link kopieren, der den Track und seine Wegpunkte enthält — nichts wird an einen Server gesendet.",
+    "title": "Track und Wegpunkte per Link oder GPX-Datei teilen — nichts wird an einen Server gesendet.",
     "defaultName": "Geteilter Track",
-    "copyPrompt": "Kopieren Sie den Freigabelink:"
+    "copyPrompt": "Kopieren Sie den Freigabelink:",
+    "modalTitle": "Track teilen",
+    "close": "Schließen",
+    "linkBtn": "Link kopieren",
+    "linkHelp": "Der Track und seine Wegpunkte reisen im Link mit — nichts wird an einen Server gesendet.",
+    "fileBtn": "GPX-Datei senden",
+    "fileHelp": "Teilt die vollständige Datei — ohne Vereinfachung — über das Teilen-Menü des Geräts."
   },
   "toast": {
     "fileError": "Fehler beim Lesen der Datei",

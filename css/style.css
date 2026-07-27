@@ -172,6 +172,11 @@ body {
 /* ---------------- "About" panel ---------------- */
 .about { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
 .about-body p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 8px 0; }
+.about-github a {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--accent-2); font-size: 12px; text-decoration: none;
+}
+.about-github a:hover { text-decoration: underline; }
 .check input { accent-color: var(--accent); }
 
 /* ---------------- Buttons ---------------- */
@@ -384,6 +389,49 @@ body {
 }
 .toast-action:hover { background: rgba(242, 160, 61, .12); }
 
+/* ---------------- Share modal ---------------- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 1800;
+  background: rgba(6, 10, 14, .55); backdrop-filter: blur(1px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal-backdrop[hidden] { display: none; }
+.modal {
+  width: min(420px, 100%);
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .5);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--line);
+}
+.modal-head h2 { margin: 0; font-size: 16px; }
+.modal-close {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-2); color: var(--muted);
+  border: 1px solid var(--line); cursor: pointer;
+}
+.modal-close:hover { color: var(--text); }
+
+.share-choice { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; }
+.share-choice[hidden] { display: none; }
+.share-option {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  color: var(--text); padding: 12px 14px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.share-option[hidden] { display: none; }
+.share-option:hover:not(:disabled) { border-color: var(--accent-2); background: rgba(242, 160, 61, .07); }
+.share-option:disabled { opacity: .5; cursor: wait; }
+.share-option > svg { flex: none; color: var(--accent-2); }
+.share-option-text { min-width: 0; }
+.share-option-text b { display: block; font-size: 14px; }
+.share-option-text small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+
 /* ---------------- Popups ---------------- */
 .wpt-popup h3 { margin: 0 0 6px; font-size: 15px; }
 .wpt-edit { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
@@ -422,7 +470,7 @@ body {
     background: #fff; color: #000;
   }
   #sidebar, #menu-btn, #backdrop, .toolbar, #map, .profile-wrap,
-  .overlay, .toast, .rb-actions {
+  .overlay, .toast, .rb-actions, .modal-backdrop {
     display: none !important;
   }
   #main, #map-wrap { display: block; position: static; }

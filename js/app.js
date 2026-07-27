@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import * as GPX from './gpx.js';
+import { repoUrlFrom } from './github.js';
 import * as TCX from './tcx.js';
 import * as Share from './share.js';
 import * as Formats from './formats.js';
@@ -887,33 +888,81 @@ async function copyText(text) {
   }
 }
 
-/** Encode the current track into the hash and copy the share link. */
-async function shareTrack() {
-  if (!state.route) return;
-  const btn = $('#btn-share');
-  btn.disabled = true;
-  try {
-    const res = await Share.encodeFit(state.route, shareWpts());
-    state.shareCode = res.code;
-    updateHash();
-    const url = location.origin + location.pathname + '#track=' + res.code;
-    if (await copyText(url)) {
-      toast(
-        res.simplified
-          ? t('toast.shareCopiedSimplified', { n: res.points, total: res.total })
-          : t('toast.shareCopied'),
-        'ok'
-      );
-    } else {
-      window.prompt(t('share.copyPrompt'), url);
-    }
-  } catch (err) {
-    console.error(err);
-    toast(t('error.shareFailed'), 'error');
-  } finally {
-    btn.disabled = false;
+// ---- Share modal ---------------------------------------------------------
+/** Open/close the share modal. */
+function setShareModal(open) {
+  $('#share-modal').hidden = !open;
+  if (open) {
+    $('#share-link').focus();
+  } else {
+    $('#btn-share').focus();
   }
 }
+
+/**
+ * Encode the current track into the hash and return the share URL.
+ * Every share mode goes through this, so the address bar always carries
+ * the full-quality link whatever mode was picked.
+ */
+async function makeShareUrl() {
+  const res = await Share.encodeFit(state.route, shareWpts());
+  state.shareCode = res.code;
+  updateHash();
+  return { ...res, url: location.origin + location.pathname + '#track=' + res.code };
+}
+
+/** Wrap a share action: guard on the route and disable the clicked button. */
+function shareAction(btnSel, fn) {
+  return async () => {
+    if (!state.route) return;
+    const btn = $(btnSel);
+    btn.disabled = true;
+    try {
+      await fn();
+    } catch (err) {
+      console.error(err);
+      toast(t('error.shareFailed'), 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  };
+}
+
+/** "Copier le lien": encode into the hash and copy the URL. */
+const shareCopyLink = shareAction('#share-link', async () => {
+  const res = await makeShareUrl();
+  setShareModal(false);
+  if (await copyText(res.url)) {
+    toast(
+      res.simplified
+        ? t('toast.shareCopiedSimplified', { n: res.points, total: res.total })
+        : t('toast.shareCopied'),
+      'ok'
+    );
+  } else {
+    window.prompt(t('share.copyPrompt'), res.url);
+  }
+});
+
+/**
+ * "Envoyer le fichier GPX": hand the full-fidelity GPX (track + waypoints,
+ * nothing simplified) to the OS share sheet through the Web Share API.
+ * The option only shows on browsers that can share files (see wire()).
+ */
+const shareFile = shareAction('#share-file', async () => {
+  const base = (state.route.name || 'mountaingpx').replace(/[^\w.-]+/g, '_');
+  const file = new File([state.lastGpx], base + '_wpt.gpx', {
+    type: 'application/gpx+xml',
+  });
+  try {
+    await navigator.share({ files: [file], title: state.trackName || base });
+  } catch (err) {
+    if (err && err.name === 'AbortError') return; // user closed the OS sheet
+    throw err;
+  }
+  setShareModal(false);
+});
+
 
 /** Load a track shared through #track=… (fit unless a #map= view is set). */
 async function loadSharedTrack(code, fit) {
@@ -1157,6 +1206,7 @@ function wire() {
     if (e.key !== 'Escape') return;
     setMenu(false);
     setRoadbook(false);
+    if (!$('#share-modal').hidden) setShareModal(false);
   });
 
   // Roadbook panel.
@@ -1167,7 +1217,21 @@ function wire() {
   $('#rb-print').addEventListener('click', () => window.print());
 
   $('#btn-generate').addEventListener('click', generate);
-  $('#btn-share').addEventListener('click', shareTrack);
+
+  // Share modal: pick a mode (link / GPX file).
+  $('#btn-share').addEventListener('click', () => state.route && setShareModal(true));
+  $('#share-close').addEventListener('click', () => setShareModal(false));
+  $('#share-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) setShareModal(false); // backdrop click
+  });
+  $('#share-link').addEventListener('click', shareCopyLink);
+  // Web Share with files (mostly mobile): reveal the option when supported.
+  try {
+    const probe = new File([''], 'probe.gpx', { type: 'application/gpx+xml' });
+    $('#share-file').hidden =
+      !(navigator.canShare && navigator.canShare({ files: [probe] }));
+  } catch (_) {} // File constructor missing: keep the option hidden
+  $('#share-file').addEventListener('click', shareFile);
   $('#btn-download').addEventListener('click', download);
   $('#btn-download-tcx').addEventListener('click', downloadTcx);
   $('#overpass-custom').addEventListener('change', () => {
@@ -1305,6 +1369,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initMap();
   buildPoiPanel();
   wire();
+
+  // "À propos": repository link derived from the GitHub Pages host — the
+  // canonical URL (injected at build time) covers dev servers and previews.
+  const gh = repoUrlFrom([
+    location.href,
+    document.querySelector('link[rel=canonical]')?.href,
+  ]);
+  if (gh) {
+    $('#github-link').href = gh;
+    $('#github-link').closest('p').hidden = false;
+  }
 
   // Track shared through the URL: decode it and load it like a local file.
   // When the hash also pins a #map= view, respect it instead of fitting.

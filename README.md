@@ -52,11 +52,14 @@ https://krisanselmo.github.io/mountaingpx/en.html
 - Roadbook : liste des waypoints triés par kilométrage (icône, type, km,
   altitude), cliquables pour centrer la carte, imprimable (mise en page
   d'impression dédiée).
-- Partage de la trace par URL : la trace complète et ses waypoints (nom,
-  type, position, altitude) sont encodés dans le lien (`#track=…` — deltas +
-  varint + deflate + base64url), sans aucun serveur. Les traces trop longues
-  sont simplifiées (Douglas-Peucker) juste assez pour tenir dans l'URL
-  (~4000 caractères) ; les waypoints, eux, ne sont jamais simplifiés.
+- Partage de la trace (modale au choix) : par URL — la trace complète et ses
+  waypoints (nom, type, position, altitude) sont encodés dans le lien
+  (`#track=…` — deltas + varint + deflate + base64url), sans aucun serveur ;
+  les traces trop longues sont simplifiées (Douglas-Peucker) juste assez
+  pour tenir dans l'URL (~4000 caractères), les waypoints, eux, ne sont
+  jamais simplifiés. La modale propose aussi l'envoi du fichier GPX complet
+  — sans simplification — par le menu de partage de l'appareil (Web Share,
+  mobile surtout).
 - Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
   (`<time>`) du fichier source sont conservés (interpolés sur les points
   insérés par l'accrochage).
