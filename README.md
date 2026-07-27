@@ -2,95 +2,70 @@
 
 ![Mountain GPX — waypoints automatiques sur vos traces GPX](public/og-image.png)
 
-Application web qui ajoute automatiquement des waypoints (sommets, cols,
-refuges, points d'eau…) à une trace GPX, à partir des données OpenStreetMap.
-100 % client-side : le fichier GPX est traité dans le navigateur, seules des
-requêtes vers l'API Overpass sont émises.
+Ajoute automatiquement des waypoints (sommets, cols, refuges, points d'eau…)
+à une trace GPX à partir des données OpenStreetMap. 100 % client-side : le
+fichier est traité dans le navigateur, seules les requêtes Overpass sortent.
 
-Déployée sur https://krisanselmo.github.io/mountaingpx/
+https://krisanselmo.github.io/mountaingpx/
 
 ## English
 
-Mountain GPX automatically adds waypoints (peaks, mountain passes, huts,
-water points, lakes, waterfalls, viewpoints…) to a hiking, trail-running or
-mountain-bike GPX track, using OpenStreetMap data (Overpass API). It snaps
-each point of interest onto the route, draws an elevation profile and a
-printable roadbook, and exports the enriched track as GPX or as a Garmin
-TCX course with typed CoursePoints. Free, no sign-up, 100% client-side —
-your file never leaves the browser — and installable as an offline-capable
-PWA. Available in English, French, German, Spanish and Italian:
+Mountain GPX adds waypoints (peaks, passes, huts, water points, lakes,
+waterfalls, viewpoints…) to a hiking, trail-running or mountain-bike GPX
+track from OpenStreetMap data, snaps them onto the route, draws an elevation
+profile and a printable roadbook, and exports to GPX or Garmin TCX. No
+sign-up, 100% client-side, installable as an offline-capable PWA. Available
+in English, French, German, Spanish and Italian:
 https://krisanselmo.github.io/mountaingpx/en.html
 
 ## Fonctionnalités
 
-- Import GPX (`trk` et `rte`), FIT (activités et parcours Garmin, décodeur
-  binaire maison), TCX (`Trackpoint` + `CoursePoint` typés) et KML
-  (`LineString`, `gx:Track`, placemarks) par glisser-déposer ou sélecteur
-  de fichier.
-- Les waypoints (`wpt`) déjà présents dans le fichier — généré par Mountain
-  GPX ou non — sont affichés sur la carte, le profil et le roadbook ; leur
-  `type`/`sym` est rattaché au catalogue de POI, avec repli sur un type
-  générique quand il n'est pas supporté, et le `type` d'origine est conservé
-  à l'export.
-- Récupération des POI via l'API Overpass : sommets, cols, refuges, fontaines,
-  lacs, cascades, chapelles, points de vue, etc.
-- Accrochage des POI sur la trace : distance de Haversine, point le plus
-  proche, projection perpendiculaire sur le segment.
-- Sélection par type de POI, « avec nom » et/ou « sans nom », requête Overpass
-  personnalisée, distance d'accrochage réglable, inversion du sens de la trace.
-- Carte Leaflet (OpenTopoMap / OpenStreetMap / satellite Esri, overlay
-  sentiers, overlay points d'eau) avec popups des tags OSM ; renommage et
-  suppression des waypoints depuis la carte (suppression annulable depuis
-  le toast).
-- Waypoints manuels : clic droit (appui long sur mobile) sur la carte pour
-  ajouter un waypoint nommé et typé (ravitaillement, rendez-vous…), inclus
-  dans le roadbook, le partage et les exports.
-- Repères réguliers le long de la trace, configurables dans les options
-  avancées : tous les N km ou tous les N m de D+ cumulé.
-- Profil altimétrique et statistiques (distance, D+, altitude max) ; le
-  survol du profil (souris ou doigt) suit la position sur la carte.
-- Roadbook : liste des waypoints triés par kilométrage (icône, type, km,
-  altitude), cliquables pour centrer la carte, imprimable (mise en page
-  d'impression dédiée).
-- Partage de la trace (modale au choix) : par URL — la trace complète et ses
-  waypoints (nom, type, position, altitude) sont encodés dans le lien
-  (`#track=…` — deltas + varint + deflate + base64url), sans aucun serveur ;
-  les traces trop longues sont simplifiées (Douglas-Peucker) juste assez
-  pour tenir dans l'URL (~4000 caractères), les waypoints, eux, ne sont
-  jamais simplifiés. La modale propose aussi l'envoi du fichier GPX complet
-  — sans simplification — par le menu de partage de l'appareil (Web Share,
-  mobile surtout).
-- Chargement d'une trace par URL : `#gpx=<url percent-encodée>` télécharge le
-  fichier et l'affiche comme un fichier ouvert localement (GPX, FIT, TCX ou
-  KML — le format est reconnu d'après le contenu, pas d'après l'extension : une
-  URL d'export n'en a souvent aucune). Le paramètre est conservé dans le hash,
-  donc un déplacement de la carte ne l'effface pas, et `#map=` est respecté
-  s'il est présent. Les deux formes de lien n'ont pas le même compromis :
-  - `#track=<code>` est autonome — la trace et ses waypoints voyagent dans le
-    lien, sans réseau ni serveur, donc il fonctionne hors-ligne — mais la trace
-    est simplifiée juste assez pour tenir dans ~4000 caractères ;
-  - `#gpx=<url>` reste en pleine résolution — le lien ne transporte qu'une
-    référence — mais dépend du réseau et de l'hébergeur : le fichier doit
-    rester en ligne **et** autoriser la lecture cross-origin (CORS).
+**Import** — GPX (`trk`, `rte`), FIT (activités et parcours Garmin), TCX
+(`Trackpoint`, `CoursePoint`) et KML (`LineString`, `gx:Track`, placemarks),
+par glisser-déposer ou sélecteur de fichier. Format détecté d'après le
+contenu, pas l'extension.
 
-  En pratique le CORS est la première cause d'échec, et l'utilisateur ne peut
-  rien y faire côté application : GitHub raw et les Gists l'autorisent, la
-  plupart des sites de traces non. Le message d'erreur le dit explicitement et
-  distingue ce cas d'un 404 (lien cassé). Seules les URL `https:` sont
-  acceptées et la lecture est plafonnée à 8 Mo. Si le hash porte les deux
-  paramètres, `#track=` gagne — c'est un tracé complet, pas une référence
-  réseau ; et partager une trace chargée par URL produit toujours un
-  `#track=` : les deux canaux ne se mélangent pas.
-- Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
-  (`<time>`) du fichier source sont conservés (interpolés sur les points
-  insérés par l'accrochage).
-- Export TCX (parcours Garmin) : la trace enrichie et les waypoints typés
-  (`CoursePoint` : sommet, eau, ravitaillement…) importables dans Garmin Connect.
-- Préférences mémorisées dans `localStorage`.
-- **PWA installable** : l'application peut être ajoutée à l'écran d'accueil
-  (mobile) ou installée comme app de bureau, et fonctionne hors-ligne grâce à
-  un service worker (mise en cache de l'app, des tuiles carto déjà consultées
-  et des réponses Overpass).
+**Waypoints existants** — affichés sur la carte, le profil et le roadbook.
+Leur `type`/`sym` est rattaché au catalogue de POI (repli sur un type
+générique) et conservé à l'export.
+
+**POI Overpass** — sommets, cols, refuges, fontaines, lacs, cascades,
+chapelles, points de vue… Sélection par type, « avec nom » / « sans nom »,
+requête personnalisée, distance d'accrochage réglable, inversion du sens.
+
+**Accrochage** — distance de Haversine, point le plus proche, projection
+perpendiculaire sur le segment.
+
+**Carte** — Leaflet (OpenTopoMap / OpenStreetMap / satellite Esri, overlays
+sentiers et points d'eau), popups des tags OSM, renommage et suppression des
+waypoints (annulable depuis le toast).
+
+**Waypoints manuels** — clic droit (appui long sur mobile) pour ajouter un
+waypoint nommé et typé (ravitaillement, rendez-vous…).
+
+**Repères réguliers** — tous les N km ou tous les N m de D+ cumulé.
+
+**Profil altimétrique** — distance, D+, altitude max ; le survol (souris ou
+doigt) suit la position sur la carte.
+
+**Roadbook** — waypoints triés par kilométrage (icône, type, km, altitude),
+cliquables pour centrer la carte, imprimable.
+
+**Partage** — par URL (`#track=…`, trace et waypoints encodés dans le lien,
+sans serveur) ou par envoi du fichier GPX complet via le menu de partage de
+l'appareil (Web Share).
+
+**Chargement par URL** — `#gpx=<url percent-encodée>` télécharge et affiche
+un fichier distant. URL `https:` uniquement, lecture plafonnée à 8 Mo.
+
+**Exports** — GPX enrichi (horodatages du fichier source préservés,
+interpolés sur les points insérés) et TCX (parcours Garmin, `CoursePoint`
+typés) importable dans Garmin Connect.
+
+**PWA installable** — écran d'accueil ou app de bureau, fonctionne
+hors-ligne (app, tuiles carto déjà consultées, réponses Overpass).
+
+Préférences mémorisées dans `localStorage`.
 
 ## Développement
 
@@ -99,18 +74,17 @@ Build [Vite](https://vite.dev), Leaflet en dépendance npm.
 ```bash
 npm install
 npm run dev        # serveur de développement (http://localhost:5173)
-npm test           # tests unitaires (node --test), exécutés aussi par la CI
-npm run test:e2e   # tests end-to-end Playwright (Overpass simulé), aussi en CI
+npm test           # tests unitaires (node --test)
+npm run test:e2e   # tests end-to-end Playwright (Overpass simulé)
 npm run build      # build de production dans dist/
 npm run preview    # sert le build de production en local
 ```
 
-Pour les tests end-to-end, `npx playwright install chromium` télécharge le
-navigateur au premier lancement (ou pointez `PLAYWRIGHT_CHROMIUM_PATH` vers
-un Chromium déjà installé).
+Les tests e2e nécessitent `npx playwright install chromium` au premier
+lancement, ou `PLAYWRIGHT_CHROMIUM_PATH` vers un Chromium existant.
 
-`dist/` est un site statique à chemins relatifs (`base: './'`), déployable sur
-n'importe quel hébergeur statique.
+`dist/` est un site statique à chemins relatifs (`base: './'`), déployable
+sur n'importe quel hébergeur statique.
 
 ## Structure
 
@@ -137,39 +111,14 @@ n'importe quel hébergeur statique.
     └── app.js          # carte Leaflet, UI, orchestration
 ```
 
-## Déploiement
-
-`.github/workflows/deploy-webapp.yml` : à chaque push sur `master`,
-`npm ci && npm test && npm run build` puis publication de `dist/` à la
-racine de la branche `gh-pages`, servie par GitHub Pages. Si les tests ou
-le build échouent, rien n'est déployé.
-
-`.github/workflows/pr-preview.yml` : chaque pull request est déployée en
-préversion sous `pr-preview/pr-<n>/` de la branche `gh-pages`, et le lien de
-test est posté automatiquement en commentaire de la PR. Nécessite que la
-source GitHub Pages du dépôt soit « Deploy from a branch : gh-pages /(root) »
-(Settings → Pages).
-
-Le service worker de production est servi depuis la racine de `gh-pages` :
-sa portée englobe donc aussi les préversions. Sans précaution, son repli de
-navigation (`navigateFallback: index.html`) répondrait aux URL de préversion
-avec la coquille de l'application *de production*, et la préversion resterait
-invisible pour quiconque a déjà installé la PWA. D'où le
-`navigateFallbackDenylist: [/\/pr-preview\//]` de `vite.config.js`.
-
 ## Notes
 
-- Les requêtes Overpass sont réparties sur plusieurs instances publiques :
-  la trace est découpée en segments interrogés en parallèle, et chaque requête
-  est relancée sur une autre instance après 8 s sans réponse.
-- Les marqueurs sont des `L.divIcon` SVG générés par `js/icons.js` — aucun
-  asset image.
-- `scripts/build-lang-pages.mjs` génère au build une page d'entrée par
-  langue (`en.html`, `de.html`…) avec les meta traduites, ainsi que
-  `sitemap.xml` ; les préversions de PR sont marquées `noindex`
-  (`NOINDEX_BUILD=1` dans `pr-preview.yml`).
-- L'URL publique n'est écrite nulle part en dur : elle est résolue par
-  `scripts/site-url.mjs` — variable d'environnement `SITE_URL`, sinon
-  dérivée de `GITHUB_REPOSITORY` sur GitHub Actions (un fork déploie donc
-  sur `https://<owner>.github.io/<repo>/` sans rien configurer), sinon le
-  champ `homepage` de `package.json` (builds locaux).
+- Requêtes Overpass réparties sur plusieurs instances publiques : la trace
+  est découpée en segments interrogés en parallèle, chaque requête étant
+  relancée sur une autre instance après 8 s sans réponse.
+- Marqueurs en `L.divIcon` SVG générés par `js/icons.js` — aucun asset image.
+- `scripts/build-lang-pages.mjs` génère une page d'entrée par langue
+  (`en.html`, `de.html`…) avec les meta traduites, plus `sitemap.xml`.
+- L'URL publique n'est pas écrite en dur : `scripts/site-url.mjs` la résout
+  via `SITE_URL`, sinon le dépôt courant, sinon le champ `homepage` de
+  `package.json`.
