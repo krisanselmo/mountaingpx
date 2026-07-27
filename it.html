@@ -54,8 +54,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mountain GPX">
-  <script type="module" crossorigin src="./assets/index-DwB2JKoV.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Dm5Qbay4.css">
+  <script type="module" crossorigin src="./assets/index-BgSLLW1g.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DXfT9hMH.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
   <button id="menu-btn" class="menu-btn" type="button" data-i18n-aria-label="menu.open" aria-controls="sidebar" aria-expanded="false">
@@ -129,6 +129,12 @@
           <p data-i18n="about.p1">Mountain GPX ajoute automatiquement des waypoints à une trace GPX de randonnée, de trail ou de VTT : sommets, cols, refuges, cabanes, sources, fontaines et points d'eau, lacs, cascades, points de vue… Les points d'intérêt proviennent d'OpenStreetMap et sont accrochés au plus près de votre parcours.</p>
           <p data-i18n="about.p2">Importez votre fichier GPX (exporté de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.</p>
           <p data-i18n="about.p3">L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique.</p>
+          <p class="about-github" hidden>
+            <a id="github-link" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span data-i18n="about.github">Code source sur GitHub</span>
+            </a>
+          </p>
         </div>
       </details>
     </section>
@@ -198,6 +204,33 @@
       <p id="overlay-msg" data-i18n="overlay.querying">Interrogation d'OpenStreetMap…</p>
     </div>
   </main>
+
+  <div id="share-modal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+      <header class="modal-head">
+        <h2 id="share-modal-title" data-i18n="share.modalTitle">Partager la trace</h2>
+        <button id="share-close" class="modal-close" type="button" data-i18n-aria-label="share.close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+      </header>
+      <div id="share-choice" class="share-choice">
+        <button id="share-link" class="share-option" type="button">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span class="share-option-text">
+            <b data-i18n="share.linkBtn">Copier le lien</b>
+            <small data-i18n="share.linkHelp">La trace et ses waypoints voyagent dans le lien — rien n'est envoyé sur un serveur.</small>
+          </span>
+        </button>
+        <button id="share-file" class="share-option" type="button" hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M19 8v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7z"/><path d="M12 17v-6"/><path d="M9.5 13.5 12 11l2.5 2.5"/></svg>
+          <span class="share-option-text">
+            <b data-i18n="share.fileBtn">Envoyer le fichier GPX</b>
+            <small data-i18n="share.fileHelp">Partage le fichier complet — sans simplification — via le menu de partage de l'appareil.</small>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="toast" class="toast"></div>
 
