@@ -61,7 +61,8 @@
   },
   "overlay": {
     "querying": "Interrogation d'OpenStreetMap…",
-    "queryingProgress": "Interrogation d'OpenStreetMap… {done}/{total}"
+    "queryingProgress": "Interrogation d'OpenStreetMap… {done}/{total}",
+    "fetchingTrack": "Téléchargement de la trace…"
   },
   "map": { "start": "Départ", "end": "Arrivée" },
   "popup": { "rename": "Renommer", "delete": "Retirer de la trace", "nameAria": "Nom du waypoint" },
@@ -106,6 +107,12 @@
   "error": {
     "shareInvalid": "Lien de partage invalide ou tronqué",
     "shareFailed": "Impossible de créer le lien de partage",
+    "gpxUrlScheme": "Seule une adresse https:// peut être chargée via #gpx=.",
+    "gpxUrlCors": "Aucune réponse de {host} : l'hébergeur n'autorise pas la lecture cross-origin (CORS) — c'est la cause habituelle, et seul l'hébergeur peut la corriger — ou le réseau est coupé. Ce n'est pas un fichier absent : celui-là renvoie une erreur HTTP 404. GitHub raw et les Gists autorisent le CORS, la plupart des sites de traces non — hébergez le fichier ailleurs.",
+    "gpxUrlTimeout": "{host} n'a pas répondu en {s} s : le téléchargement a été abandonné. L'hébergeur est peut-être indisponible ou très lent — réessayez, ou hébergez le fichier ailleurs.",
+    "gpxUrlHttp": "{host} a répondu HTTP {status} : le lien est cassé, ou le fichier n'est pas public. Le téléchargement, lui, n'a pas été bloqué.",
+    "gpxUrlFormat": "Le fichier téléchargé depuis {host} n'est pas une trace reconnaissable (GPX, FIT, TCX ou KML) — vérifiez que le lien pointe vers le fichier lui-même et non vers une page web.",
+    "gpxUrlTooBig": "Le fichier hébergé sur {host} est trop volumineux pour être ouvert dans le navigateur (limite {max} Mo).",
     "badFormat": "Format non pris en charge — fichier .gpx, .fit, .tcx ou .kml attendu",
     "fileInvalidXml": "Fichier invalide : le XML ne peut pas être lu.",
     "gpxInvalidXml": "Fichier GPX invalide : le XML ne peut pas être lu.",

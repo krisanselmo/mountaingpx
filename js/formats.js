@@ -30,6 +30,45 @@ export function parse(ext, content) {
   }
 }
 
+// ---- Format detection (downloaded tracks) --------------------------------
+// A file picked locally always has a meaningful extension; bytes pulled from
+// a URL often don't (…/routes/42/export, /download?id=7), so the content has
+// to decide.
+const FIT_MAGIC = [0x2e, 0x46, 0x49, 0x54]; // ".FIT" at offset 8 of the header
+
+/** Root element of each XML format, lowercased (namespace prefixes aside). */
+const XML_ROOTS = [
+  ['<gpx', 'gpx'],
+  ['<trainingcenterdatabase', 'tcx'],
+  ['<kml', 'kml'],
+];
+
+/**
+ * Guess the format of a track read as bytes. The content decides and the
+ * name (a file name or a URL path) only breaks ties, because an export URL
+ * frequently carries no extension at all — and when it does carry one, it is
+ * not necessarily the truth. Returns one of EXTENSIONS, or null when nothing
+ * identifies the bytes as a supported track.
+ */
+export function detect(bytes, name = '') {
+  const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  if (u8.length >= 12 && FIT_MAGIC.every((b, i) => u8[8 + i] === b)) return 'fit';
+
+  // Head of the document only: enough to reach the root element past a BOM,
+  // an XML declaration or a comment, without decoding a whole megabyte.
+  const head = new TextDecoder('utf-8', { fatal: false })
+    .decode(u8.subarray(0, 4096))
+    .toLowerCase();
+  for (const [needle, ext] of XML_ROOTS) if (head.includes(needle)) return ext;
+
+  // No recognizable root: fall back on a supported extension (unusual
+  // namespace prefix, oddly padded file…), and refuse anything else — an
+  // HTML error page is the common case here.
+  const m = /\.([a-z0-9]+)$/i.exec(String(name));
+  const ext = m ? m[1].toLowerCase() : '';
+  return EXTENSIONS.includes(ext) ? ext : null;
+}
+
 function parseXml(xmlString) {
   const doc = new DOMParser().parseFromString(xmlString, 'application/xml');
   if (doc.querySelector('parsererror')) throw errWithCode('error.fileInvalidXml');

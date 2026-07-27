@@ -61,7 +61,8 @@
   },
   "overlay": {
     "querying": "Interrogazione di OpenStreetMap…",
-    "queryingProgress": "Interrogazione di OpenStreetMap… {done}/{total}"
+    "queryingProgress": "Interrogazione di OpenStreetMap… {done}/{total}",
+    "fetchingTrack": "Download della traccia…"
   },
   "map": { "start": "Partenza", "end": "Arrivo" },
   "popup": { "rename": "Rinomina", "delete": "Rimuovi dalla traccia", "nameAria": "Nome del waypoint" },
@@ -106,6 +107,12 @@
   "error": {
     "shareInvalid": "Link di condivisione non valido o troncato",
     "shareFailed": "Impossibile creare il link di condivisione",
+    "gpxUrlScheme": "Con #gpx= si può caricare solo un indirizzo https://.",
+    "gpxUrlCors": "Nessuna risposta da {host}: l'host non consente letture cross-origin (CORS) — la causa più comune, e solo l'host può risolverla — oppure la rete non è raggiungibile. Non è un file mancante: quello restituirebbe un HTTP 404. GitHub raw e i Gist consentono il CORS, la maggior parte dei siti di tracce no — ospita il file altrove.",
+    "gpxUrlTimeout": "{host} non ha risposto entro {s} s: download interrotto. L'host potrebbe essere non raggiungibile o molto lento — riprova, oppure ospita il file altrove.",
+    "gpxUrlHttp": "{host} ha risposto HTTP {status}: il link è rotto o il file non è pubblico. Il download in sé non è stato bloccato.",
+    "gpxUrlFormat": "Il file scaricato da {host} non è una traccia riconoscibile (GPX, FIT, TCX o KML) — verifica che il link punti al file stesso e non a una pagina web.",
+    "gpxUrlTooBig": "Il file ospitato su {host} è troppo grande per essere aperto nel browser (limite {max} MB).",
     "badFormat": "Formato non supportato — è atteso un file .gpx, .fit, .tcx o .kml",
     "fileInvalidXml": "File non valido: impossibile leggere l'XML.",
     "gpxInvalidXml": "File GPX non valido: impossibile leggere l'XML.",

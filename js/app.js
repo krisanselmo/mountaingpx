@@ -46,6 +46,7 @@ const state = {
   lastGpx: null,
   lastTcx: null,
   shareCode: null, // encoded track kept in the URL hash (#track=…)
+  gpxUrl: null, // source URL of a track loaded from the hash (#gpx=…)
   showProfileWpts: true,
   genElements: null, // raw OSM elements of the last generation (all types)
   genCustom: '',     // custom query used by the last generation
@@ -298,28 +299,64 @@ function initMap() {
 }
 
 /**
- * Parse the URL hash into { view?, track? }. Both parts can coexist
- * (#map=zoom/lat/lon&track=<code>) so a shared track survives panning
+ * Turn a #gpx= value into a URL we accept to fetch. The value is
+ * percent-encoded (its own query string would otherwise collide with the
+ * hash separators), and only https: is allowed: no data:/blob:/file:
+ * smuggling, and no cleartext fetch from a page served over TLS.
+ * Returns null when the value must be refused.
+ */
+function trackUrlFrom(raw) {
+  try {
+    const u = new URL(decodeURIComponent(raw));
+    return u.protocol === 'https:' ? u.href : null;
+  } catch (_) {
+    return null; // malformed percent-encoding, or not an absolute URL
+  }
+}
+
+/**
+ * Parse the URL hash into { view?, track?, gpx?, gpxError? }. The parts can
+ * coexist (#map=zoom/lat/lon&track=<code>) so a shared track survives panning
  * and page reloads.
+ *
+ * `track` carries a whole track inline, `gpx` only points at one over the
+ * network, so a hash bearing both keeps `track` and drops `gpx`. A #gpx=
+ * value that is refused yields `gpxError`, the i18n code to report.
  */
 function parseHash(hash) {
   const out = {};
   for (const part of String(hash || '').replace(/^#/, '').split('&')) {
     const m = /^map=(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/.exec(part);
     if (m) out.view = { zoom: parseFloat(m[1]), lat: parseFloat(m[2]), lon: parseFloat(m[3]) };
-    const t = /^track=([A-Za-z0-9_-]+)$/.exec(part);
-    if (t) out.track = t[1];
+    const tr = /^track=([A-Za-z0-9_-]+)$/.exec(part);
+    if (tr) out.track = tr[1];
+    const g = /^gpx=(.+)$/.exec(part);
+    if (g) {
+      const url = trackUrlFrom(g[1]);
+      if (url) out.gpx = url;
+      else out.gpxError = 'error.gpxUrlScheme';
+    }
+  }
+  if (out.track) {
+    delete out.gpx;
+    delete out.gpxError;
   }
   return out;
 }
 
-/** Rewrite the hash from the current map view, keeping the shared track. */
+/**
+ * Rewrite the hash from the current map view, keeping the active track
+ * reference: the inline code (#track=) or the source URL (#gpx=) — never
+ * both, they are two channels for the same slot and #track= wins.
+ */
 function updateHash() {
   const c = state.map.getCenter();
-  const track = state.shareCode ? `&track=${state.shareCode}` : '';
+  let ref = '';
+  if (state.shareCode) ref = `&track=${state.shareCode}`;
+  else if (state.gpxUrl) ref = `&gpx=${encodeURIComponent(state.gpxUrl)}`;
   history.replaceState(
     null, '',
-    `#map=${state.map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}${track}`
+    `#map=${state.map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}${ref}`
   );
 }
 
@@ -809,6 +846,9 @@ function loadRoute(route, displayName, fit = true) {
   $('#btn-share').hidden = false;
   syncWaypointUI();
   updatePoiCounts();
+  // Reflect the new track reference right away: fitting the bounds usually
+  // fires `moveend` and does it, but not when the view does not actually move.
+  updateHash();
   toast(state.fileWpts.length
     ? t('toast.trackLoadedWpts', { n: route.lat.length, w: state.fileWpts.length })
     : t('toast.trackLoaded', { n: route.lat.length }), 'ok');
@@ -825,8 +865,10 @@ function handleFile(file) {
   reader.onload = () => {
     try {
       const route = Formats.parse(ext, reader.result);
-      // A locally opened file replaces any track shared through the URL.
+      // A locally opened file replaces any track referenced by the URL,
+      // whether it travelled inline (#track=) or by link (#gpx=).
       state.shareCode = null;
+      state.gpxUrl = null;
       loadRoute(route, route.name || file.name);
       // Several <trk> in one file are concatenated: warn, the resulting
       // profile and roadbook can be surprising.
@@ -907,6 +949,9 @@ function setShareModal(open) {
 async function makeShareUrl() {
   const res = await Share.encodeFit(state.route, shareWpts());
   state.shareCode = res.code;
+  // Sharing always produces a self-contained #track= link, even for a track
+  // pulled from a URL: the source reference is dropped, not mixed in.
+  state.gpxUrl = null;
   updateHash();
   return { ...res, url: location.origin + location.pathname + '#track=' + res.code };
 }
@@ -973,6 +1018,148 @@ async function loadSharedTrack(code, fit) {
   } catch (err) {
     console.warn('Shared track:', err.message || err);
     toast(t(err.code || 'error.shareInvalid'), 'error');
+  }
+}
+
+// ---- Track loaded from a URL (#gpx=…) ------------------------------------
+// The link only references the file: it stays full resolution (no
+// simplification, unlike #track=) but depends on the host still serving it,
+// and on that host allowing cross-origin reads.
+
+/**
+ * Read cap for a downloaded track. A GPS export is a few hundred kB; past
+ * this we refuse rather than freeze the page decoding and drawing it.
+ */
+const TRACK_URL_MAX_BYTES = 8 * 1024 * 1024;
+
+/** Build an Error carrying an i18n `code` (translated at the display site). */
+function errWithCode(code, params) {
+  const e = new Error(code);
+  e.code = code;
+  if (params) e.params = params;
+  return e;
+}
+
+/** Host of a URL, for the error messages (the user's only actionable hint). */
+function hostOf(url) {
+  try {
+    return new URL(url).host;
+  } catch (_) {
+    return url;
+  }
+}
+
+/** Track name derived from the URL when the file itself carries none. */
+function nameFromUrl(url) {
+  try {
+    const last = new URL(url).pathname.split('/').filter(Boolean).pop() || '';
+    return decodeURIComponent(last).replace(/\.[a-z0-9]+$/i, '');
+  } catch (_) {
+    return '';
+  }
+}
+
+/** Read a response body, giving up as soon as it exceeds `max` bytes. */
+async function readCapped(res, max, host) {
+  const tooBig = () => errWithCode('error.gpxUrlTooBig', {
+    host,
+    max: Math.round(max / (1024 * 1024)),
+  });
+  // An announced length saves downloading the file at all; it is only a hint
+  // (absent on chunked responses, and not necessarily honest), so the read
+  // below counts the bytes anyway.
+  if (parseInt(res.headers.get('content-length') || '', 10) > max) throw tooBig();
+
+  if (!res.body || typeof res.body.getReader !== 'function') {
+    const buf = await res.arrayBuffer(); // no streams: check after the fact
+    if (buf.byteLength > max) throw tooBig();
+    return buf;
+  }
+  const reader = res.body.getReader();
+  const chunks = [];
+  let size = 0;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) {
+      reader.cancel().catch(() => {});
+      throw tooBig();
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(size);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.byteLength;
+  }
+  return out.buffer;
+}
+
+/** Deadline for the whole download: a stalled host must not lock the UI. */
+const TRACK_URL_TIMEOUT_MS = 20_000;
+
+/** Download the track bytes, mapping every failure onto an i18n code. */
+async function fetchTrackBytes(url) {
+  const host = hostOf(url);
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), TRACK_URL_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      credentials: 'omit',
+      signal: ctl.signal,
+    });
+    if (!res.ok) throw errWithCode('error.gpxUrlHttp', { host, status: res.status });
+    return await readCapped(res, TRACK_URL_MAX_BYTES, host);
+  } catch (err) {
+    if (err.code) throw err; // already diagnosed (HTTP status, size cap)
+    if (ctl.signal.aborted) {
+      throw errWithCode('error.gpxUrlTimeout', {
+        host, s: Math.round(TRACK_URL_TIMEOUT_MS / 1000),
+      });
+    }
+    // The browser never tells the page *why* a cross-origin fetch failed: a
+    // missing Access-Control-Allow-Origin, a DNS error and an offline device
+    // all reject the same way. A refused CORS read being by far the most
+    // frequent cause, the message names it and says how to tell it apart from
+    // a missing file (which does come back as an HTTP status).
+    throw errWithCode('error.gpxUrlCors', { host });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Load the track a #gpx= link points at: download it, detect its format from
+ * the bytes (an export URL often has no extension), then install it like a
+ * locally opened file. `fit` is false when the hash also pins a #map= view.
+ */
+async function loadTrackFromUrl(url, fit) {
+  $('#overlay-msg').textContent = t('overlay.fetchingTrack');
+  setBusy(true);
+  try {
+    const buf = await fetchTrackBytes(url);
+    const ext = Formats.detect(buf, new URL(url).pathname);
+    if (!ext) throw errWithCode('error.gpxUrlFormat', { host: hostOf(url) });
+    const route = Formats.parse(
+      ext,
+      Formats.BINARY_EXTENSIONS.includes(ext) ? buf : new TextDecoder().decode(buf)
+    );
+    // The URL replaces any inline track and is kept in the hash by
+    // updateHash(), so panning the map does not drop the parameter.
+    state.shareCode = null;
+    state.gpxUrl = url;
+    loadRoute(route, route.name || nameFromUrl(url) || t('share.defaultName'), fit);
+    if (route.trackCount > 1) {
+      toast(t('toast.multiTrack', { n: route.trackCount }), 'warn');
+    }
+  } catch (err) {
+    console.warn('Track URL:', err.message || err);
+    toast(err.code ? t(err.code, err.params) : (err.message || t('toast.fileError')), 'error');
+  } finally {
+    setBusy(false);
   }
 }
 
@@ -1381,8 +1568,11 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#github-link').closest('p').hidden = false;
   }
 
-  // Track shared through the URL: decode it and load it like a local file.
-  // When the hash also pins a #map= view, respect it instead of fitting.
+  // Track carried by the URL: either inline (#track=<code>, decoded locally)
+  // or by reference (#gpx=<encoded url>, downloaded). When the hash also pins
+  // a #map= view, respect it instead of fitting the track bounds.
   const h = parseHash(location.hash);
   if (h.track) loadSharedTrack(h.track, !h.view);
+  else if (h.gpx) loadTrackFromUrl(h.gpx, !h.view);
+  else if (h.gpxError) toast(t(h.gpxError), 'error');
 });

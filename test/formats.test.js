@@ -196,3 +196,31 @@ test('parse: dispatches gpx too and rejects unknown extensions', () => {
   assert.equal(route.lat.length, 2);
   assert.throws(() => Formats.parse('doc', ''), (e) => e.code === 'error.badFormat');
 });
+
+// ---- format detection (downloaded tracks) ----------------------------------
+const bytes = (s) => new TextEncoder().encode(s);
+const GPX_MIN = '<gpx version="1.1"><trk><trkseg>'
+  + '<trkpt lat="45.0" lon="6.0"/><trkpt lat="45.1" lon="6.1"/></trkseg></trk></gpx>';
+
+test('detect: the content decides, extension or not', () => {
+  // An export URL with no extension at all — the common case.
+  assert.equal(Formats.detect(bytes(GPX_MIN), '/routes/42/export'), 'gpx');
+  assert.equal(Formats.detect(bytes(TCX_COURSE), '/download'), 'tcx');
+  assert.equal(Formats.detect(bytes(KML), '/download'), 'kml');
+  assert.equal(Formats.detect(buildFit([{ kind: 'record', lat: 45.9, lon: 6.87, ele: 1 }])), 'fit');
+  // A BOM, an XML declaration and a comment before the root element.
+  assert.equal(Formats.detect(bytes('﻿<?xml version="1.0"?>\n<!-- x -->\n' + GPX_MIN)), 'gpx');
+});
+
+test('detect: content wins over a misleading extension', () => {
+  assert.equal(Formats.detect(bytes(TCX_COURSE), '/a/track.gpx'), 'tcx');
+});
+
+test('detect: the extension only breaks ties', () => {
+  // Nothing recognizable in the head: a supported extension is trusted…
+  assert.equal(Formats.detect(bytes('<Document><x/></Document>'), '/a/track.kml'), 'kml');
+  // …and anything else is refused, an HTML error page above all.
+  assert.equal(Formats.detect(bytes('<!doctype html><html><body>404</body></html>'), '/t.gpx.html'), null);
+  assert.equal(Formats.detect(bytes('<Document/>'), '/routes/42'), null);
+  assert.equal(Formats.detect(new Uint8Array(0), ''), null);
+});

@@ -170,6 +170,144 @@ test('the about section links to the GitHub repository', async ({ page }) => {
   );
 });
 
+// ---- Loading a track from a URL (#gpx=) ---------------------------------
+// The fixture is served through an intercepted route: no real host, and the
+// CORS headers (or their absence) are ours to choose.
+const FIXTURE_BODY = fs.readFileSync(FIXTURE_GPX);
+// Deliberately extensionless, like a real export endpoint: the format can
+// only be detected from the bytes.
+const GPX_URL = 'https://tracks.example.org/routes/42/export';
+
+/**
+ * Serve `url` to the page. Registered inside the test, so it wins over the
+ * catch-all installed by beforeEach.
+ *
+ * `blocked: true` stands for a host that does not allow cross-origin reads:
+ * fulfilled routes bypass the browser's CORS checks, so the refusal is
+ * simulated by failing the request — which is exactly what the page sees of
+ * a CORS block (a rejected fetch, no status, no reason).
+ */
+function serveTrackUrl(page, url, opts = {}) {
+  const { status = 200, body = FIXTURE_BODY, blocked = false,
+    contentType = 'application/octet-stream' } = opts;
+  return page.route(url, (route) => (blocked
+    ? route.abort('failed')
+    : route.fulfill({
+      status,
+      contentType,
+      headers: { 'access-control-allow-origin': '*' },
+      body,
+    })));
+}
+
+/** Boot the app on `hash`: goto() alone would only move the fragment. */
+async function openWithHash(page, hash) {
+  await page.goto('/' + hash);
+  await page.reload();
+}
+
+const gpxHash = (url) => '#gpx=' + encodeURIComponent(url);
+
+test('#gpx= loads the track, its format detected from the content', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL);
+  await openWithHash(page, gpxHash(GPX_URL));
+
+  await expect(page.locator('#toast')).toContainText('Track loaded');
+  await expect(page.locator('#stat-dist')).toHaveText('1.0 km');
+  await expect(page.locator('#stat-dplus')).toHaveText('+180 m');
+  await expect(page.locator('#track-name')).toHaveText('Trace E2E');
+  // The URL is the app's track reference now: it stays in the hash.
+  await expect.poll(() => page.url()).toContain('gpx=');
+});
+
+test('#gpx= on a host without CORS says so, and that it is not a 404', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL, { blocked: true });
+  await openWithHash(page, gpxHash(GPX_URL));
+
+  const toast = page.locator('#toast');
+  await expect(toast).toContainText('CORS');
+  await expect(toast).toContainText('404'); // explicitly ruled out
+  await expect(page.locator('#stat-dist')).toHaveText('—');
+});
+
+test('#gpx= on a broken link reports the HTTP status', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL, { status: 404, body: 'Not Found' });
+  await openWithHash(page, gpxHash(GPX_URL));
+
+  await expect(page.locator('#toast')).toContainText('HTTP 404');
+  await expect(page.locator('#toast')).not.toContainText('CORS');
+});
+
+test('#gpx= pointing at a web page is refused as an unknown format', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL, {
+    contentType: 'text/html',
+    body: '<!doctype html><html><body><h1>Route 42</h1></body></html>',
+  });
+  await openWithHash(page, gpxHash(GPX_URL));
+
+  await expect(page.locator('#toast')).toContainText('not a recognizable track');
+  await expect(page.locator('#stat-dist')).toHaveText('—');
+});
+
+test('#gpx= refuses anything but an https URL', async ({ page }) => {
+  await openWithHash(page, gpxHash('http://tracks.example.org/routes/42.gpx'));
+  await expect(page.locator('#toast')).toContainText('https://');
+});
+
+test('a hash carrying both track= and gpx= keeps the inline track', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  // Get a real share code from the app itself.
+  await loadTrack(page);
+  await page.click('#btn-share');
+  await page.click('#share-link');
+  await expect(page.locator('#toast')).toContainText('copied');
+  const code = /track=([A-Za-z0-9_-]+)/.exec(page.url())[1];
+
+  let downloads = 0;
+  page.on('request', (r) => {
+    if (r.url().startsWith(GPX_URL)) downloads++;
+  });
+  await serveTrackUrl(page, GPX_URL); // served, but nothing must ask for it
+  await openWithHash(page, `#track=${code}&gpx=${encodeURIComponent(GPX_URL)}`);
+
+  await expect(page.locator('#stat-dist')).toHaveText('1.0 km');
+  await expect.poll(() => page.url()).toContain('track=');
+  expect(page.url()).not.toContain('gpx=');
+  expect(downloads).toBe(0);
+});
+
+test('the #gpx= parameter survives a map move', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL);
+  await openWithHash(page, gpxHash(GPX_URL));
+  await expect(page.locator('#stat-dist')).toHaveText('1.0 km');
+  await expect.poll(() => page.url()).toMatch(/#map=[^&]+&gpx=https/);
+  const before = page.url();
+
+  // Drag the map away from the track (which runs down the middle).
+  const box = await page.locator('#map').boundingBox();
+  const x = box.x + box.width * 0.8;
+  const y = box.y + box.height * 0.75;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - 140, y - 70, { steps: 10 });
+  await page.mouse.up();
+
+  // Rewritten view, same track reference — a pan must not drop it.
+  await expect.poll(() => page.url()).not.toBe(before);
+  expect(page.url()).toMatch(/#map=[^&]+&gpx=https/);
+  await expect(page.locator('#stat-dist')).toHaveText('1.0 km');
+});
+
+test('opening a local file clears the #gpx= parameter', async ({ page }) => {
+  await serveTrackUrl(page, GPX_URL);
+  await openWithHash(page, gpxHash(GPX_URL));
+  await expect.poll(() => page.url()).toContain('gpx=');
+
+  await page.setInputFiles('#file-input', FIXTURE_GPX);
+  await expect.poll(() => page.url()).not.toContain('gpx=');
+  await expect(page.locator('#stat-dist')).toHaveText('1.0 km');
+});
+
 test('a multi-track GPX warns that the tracks were concatenated', async ({ page }) => {
   const multi = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
