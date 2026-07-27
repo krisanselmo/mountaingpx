@@ -150,6 +150,13 @@ test est posté automatiquement en commentaire de la PR. Nécessite que la
 source GitHub Pages du dépôt soit « Deploy from a branch : gh-pages /(root) »
 (Settings → Pages).
 
+Le service worker de production est servi depuis la racine de `gh-pages` :
+sa portée englobe donc aussi les préversions. Sans précaution, son repli de
+navigation (`navigateFallback: index.html`) répondrait aux URL de préversion
+avec la coquille de l'application *de production*, et la préversion resterait
+invisible pour quiconque a déjà installé la PWA. D'où le
+`navigateFallbackDenylist: [/\/pr-preview\//]` de `vite.config.js`.
+
 ## Notes
 
 - Les requêtes Overpass sont réparties sur plusieurs instances publiques :
