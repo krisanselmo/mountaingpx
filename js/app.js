@@ -5,7 +5,6 @@
  */
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import QRCode from 'qrcode';
 
 import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
@@ -889,27 +888,14 @@ async function copyText(text) {
 }
 
 // ---- Share modal ---------------------------------------------------------
-// URL-length ceiling for the QR code: a QR code tops out at 2953 bytes
-// (version 40, byte mode, error correction L), so unlike the copied link
-// (Share.CHAR_BUDGET) the ceiling is a hard physical limit — kept slightly
-// under capacity, and the track is simplified further when needed.
-const QR_URL_BUDGET = 2800;
-
-/** Open/close the share modal; reopening always lands on the choice view. */
+/** Open/close the share modal. */
 function setShareModal(open) {
   $('#share-modal').hidden = !open;
   if (open) {
-    setShareQrView(false);
     $('#share-link').focus();
   } else {
     $('#btn-share').focus();
   }
-}
-
-/** Swap the modal between the mode-choice view and the QR code view. */
-function setShareQrView(on) {
-  $('#share-choice').hidden = on;
-  $('#share-qr-view').hidden = !on;
 }
 
 /**
@@ -955,37 +941,6 @@ const shareCopyLink = shareAction('#share-link', async () => {
   } else {
     window.prompt(t('share.copyPrompt'), res.url);
   }
-});
-
-/** "QR code": render the share URL as a QR code inside the modal. */
-const shareQr = shareAction('#share-qr', async () => {
-  let res = await makeShareUrl();
-  let url = res.url;
-  if (url.length > QR_URL_BUDGET) {
-    const prefix = location.origin + location.pathname + '#track=';
-    res = await Share.encodeFit(state.route, shareWpts(), QR_URL_BUDGET - prefix.length);
-    url = prefix + res.code;
-  }
-  // Integer scale keeps the modules crisp whatever the QR version; the CSS
-  // sizes the canvas down/up to the modal width.
-  const canvas = $('#share-qr-canvas');
-  await QRCode.toCanvas(canvas, url, {
-    errorCorrectionLevel: 'L',
-    margin: 2,
-    scale: 4,
-    color: { dark: '#0f1720', light: '#ffffff' },
-  });
-  // toCanvas pins the on-screen size with an inline style: clear it so the
-  // stylesheet keeps the code inside the modal.
-  canvas.style.width = '';
-  canvas.style.height = '';
-  const note = $('#share-qr-note');
-  note.hidden = !res.simplified;
-  if (res.simplified) {
-    note.textContent = t('share.qrSimplified', { n: res.points, total: res.total });
-  }
-  setShareQrView(true);
-  $('#share-qr-back').focus();
 });
 
 /**
@@ -1273,14 +1228,13 @@ function wire() {
 
   $('#btn-generate').addEventListener('click', generate);
 
-  // Share modal: pick a mode (link / QR code / Garmin).
+  // Share modal: pick a mode (link / GPX file / Garmin).
   $('#btn-share').addEventListener('click', () => state.route && setShareModal(true));
   $('#share-close').addEventListener('click', () => setShareModal(false));
   $('#share-modal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) setShareModal(false); // backdrop click
   });
   $('#share-link').addEventListener('click', shareCopyLink);
-  $('#share-qr').addEventListener('click', shareQr);
   $('#share-garmin').addEventListener('click', shareGarmin);
   // Web Share with files (mostly mobile): reveal the option when supported.
   try {
@@ -1289,10 +1243,6 @@ function wire() {
       !(navigator.canShare && navigator.canShare({ files: [probe] }));
   } catch (_) {} // File constructor missing: keep the option hidden
   $('#share-file').addEventListener('click', shareFile);
-  $('#share-qr-back').addEventListener('click', () => {
-    setShareQrView(false);
-    $('#share-qr').focus();
-  });
   $('#btn-download').addEventListener('click', download);
   $('#btn-download-tcx').addEventListener('click', downloadTcx);
   $('#overpass-custom').addEventListener('change', () => {

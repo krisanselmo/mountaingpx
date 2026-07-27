@@ -427,18 +427,6 @@ body {
 .share-option-text b { display: block; font-size: 14px; }
 .share-option-text small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.4; }
 
-.share-qr-view {
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  padding: 16px 18px 18px;
-}
-.share-qr-view[hidden] { display: none; }
-/* White card behind the QR code: scanners need the light quiet zone. */
-.share-qr-box { background: #fff; border-radius: 10px; padding: 8px; line-height: 0; }
-/* The canvas bitmap is rendered at an integer module scale (crisp), then
-   resized here; smooth interpolation keeps dense codes scannable. */
-#share-qr-canvas { display: block; width: min(348px, 72vw); height: auto; }
-.share-note { margin: 0; color: var(--muted); font-size: 12px; text-align: center; }
-
 /* ---------------- Popups ---------------- */
 .wpt-popup h3 { margin: 0 0 6px; font-size: 15px; }
 .wpt-edit { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
