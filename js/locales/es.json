@@ -74,9 +74,19 @@
   "water": { "default": "Punto de agua", "zoomIn": "Haz zoom para cargar los puntos de agua" },
   "share": {
     "btn": "Compartir",
-    "title": "Copiar un enlace que contiene el track y sus waypoints — no se envía nada a un servidor.",
+    "title": "Comparte el track y sus waypoints por enlace o código QR — no se envía nada a un servidor.",
     "defaultName": "Track compartido",
-    "copyPrompt": "Copia el enlace para compartir:"
+    "copyPrompt": "Copia el enlace para compartir:",
+    "modalTitle": "Compartir el track",
+    "close": "Cerrar",
+    "linkBtn": "Copiar el enlace",
+    "linkHelp": "El track y sus waypoints viajan en el enlace — no se envía nada a un servidor.",
+    "qrBtn": "Código QR",
+    "qrHelp": "Muestra un código QR para escanearlo con otro dispositivo.",
+    "qrSimplified": "Track simplificado a {n} puntos (de {total}) para caber en el código QR.",
+    "back": "Volver",
+    "garminBtn": "Abrir en Garmin Connect",
+    "garminHelp": "Descarga el recorrido TCX y abre la página de importación de Garmin Connect."
   },
   "toast": {
     "fileError": "Error al leer el archivo",
@@ -94,7 +104,8 @@
     "partialFail": "{n} waypoint(s) — no se pudieron consultar {failed}/{total} tramo(s) del recorrido, inténtalo de nuevo",
     "overpassError": "Overpass: {msg}",
     "shareCopied": "Enlace para compartir copiado al portapapeles",
-    "shareCopiedSimplified": "Enlace copiado — track simplificado a {n} puntos (de {total}) para caber en la URL"
+    "shareCopiedSimplified": "Enlace copiado — track simplificado a {n} puntos (de {total}) para caber en la URL",
+    "garminExport": "Recorrido TCX descargado — impórtalo en la página de Garmin Connect que se acaba de abrir"
   },
   "error": {
     "shareInvalid": "Enlace para compartir no válido o truncado",

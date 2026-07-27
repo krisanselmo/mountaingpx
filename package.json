@@ -12,7 +12,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

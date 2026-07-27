@@ -5,6 +5,7 @@
  */
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import QRCode from 'qrcode';
 
 import * as GPX from './gpx.js';
 import * as TCX from './tcx.js';
@@ -887,33 +888,109 @@ async function copyText(text) {
   }
 }
 
-/** Encode the current track into the hash and copy the share link. */
-async function shareTrack() {
-  if (!state.route) return;
-  const btn = $('#btn-share');
-  btn.disabled = true;
-  try {
-    const res = await Share.encodeFit(state.route, shareWpts());
-    state.shareCode = res.code;
-    updateHash();
-    const url = location.origin + location.pathname + '#track=' + res.code;
-    if (await copyText(url)) {
-      toast(
-        res.simplified
-          ? t('toast.shareCopiedSimplified', { n: res.points, total: res.total })
-          : t('toast.shareCopied'),
-        'ok'
-      );
-    } else {
-      window.prompt(t('share.copyPrompt'), url);
-    }
-  } catch (err) {
-    console.error(err);
-    toast(t('error.shareFailed'), 'error');
-  } finally {
-    btn.disabled = false;
+// ---- Share modal ---------------------------------------------------------
+// URL-length ceiling for the QR code: beyond that the code gets too dense to
+// scan reliably from a screen, so the track is simplified further than the
+// copied-link version (which uses the roomier Share.CHAR_BUDGET).
+const QR_URL_BUDGET = 1500;
+
+/** Open/close the share modal; reopening always lands on the choice view. */
+function setShareModal(open) {
+  $('#share-modal').hidden = !open;
+  if (open) {
+    setShareQrView(false);
+    $('#share-link').focus();
+  } else {
+    $('#btn-share').focus();
   }
 }
+
+/** Swap the modal between the mode-choice view and the QR code view. */
+function setShareQrView(on) {
+  $('#share-choice').hidden = on;
+  $('#share-qr-view').hidden = !on;
+}
+
+/**
+ * Encode the current track into the hash and return the share URL.
+ * Every share mode goes through this, so the address bar always carries
+ * the full-quality link whatever mode was picked.
+ */
+async function makeShareUrl() {
+  const res = await Share.encodeFit(state.route, shareWpts());
+  state.shareCode = res.code;
+  updateHash();
+  return { ...res, url: location.origin + location.pathname + '#track=' + res.code };
+}
+
+/** Wrap a share action: guard on the route and disable the clicked button. */
+function shareAction(btnSel, fn) {
+  return async () => {
+    if (!state.route) return;
+    const btn = $(btnSel);
+    btn.disabled = true;
+    try {
+      await fn();
+    } catch (err) {
+      console.error(err);
+      toast(t('error.shareFailed'), 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  };
+}
+
+/** "Copier le lien": encode into the hash and copy the URL. */
+const shareCopyLink = shareAction('#share-link', async () => {
+  const res = await makeShareUrl();
+  setShareModal(false);
+  if (await copyText(res.url)) {
+    toast(
+      res.simplified
+        ? t('toast.shareCopiedSimplified', { n: res.points, total: res.total })
+        : t('toast.shareCopied'),
+      'ok'
+    );
+  } else {
+    window.prompt(t('share.copyPrompt'), res.url);
+  }
+});
+
+/** "QR code": render the share URL as a QR code inside the modal. */
+const shareQr = shareAction('#share-qr', async () => {
+  let res = await makeShareUrl();
+  let url = res.url;
+  if (url.length > QR_URL_BUDGET) {
+    const prefix = location.origin + location.pathname + '#track=';
+    res = await Share.encodeFit(state.route, shareWpts(), QR_URL_BUDGET - prefix.length);
+    url = prefix + res.code;
+  }
+  await QRCode.toCanvas($('#share-qr-canvas'), url, {
+    errorCorrectionLevel: 'L',
+    margin: 2,
+    width: 320,
+    color: { dark: '#0f1720', light: '#ffffff' },
+  });
+  const note = $('#share-qr-note');
+  note.hidden = !res.simplified;
+  if (res.simplified) {
+    note.textContent = t('share.qrSimplified', { n: res.points, total: res.total });
+  }
+  setShareQrView(true);
+  $('#share-qr-back').focus();
+});
+
+/**
+ * "Ouvrir dans Garmin Connect": Garmin has no URL to open a remote course,
+ * so the closest hand-off is downloading the TCX course (typed CoursePoints)
+ * and opening Garmin Connect's import page for the user to drop it in.
+ */
+const shareGarmin = shareAction('#share-garmin', async () => {
+  saveFile(state.lastTcx, 'tcx', 'application/vnd.garmin.tcx+xml');
+  window.open('https://connect.garmin.com/modern/import-data', '_blank', 'noopener');
+  setShareModal(false);
+  toast(t('toast.garminExport'), 'ok');
+});
 
 /** Load a track shared through #track=… (fit unless a #map= view is set). */
 async function loadSharedTrack(code, fit) {
@@ -1157,6 +1234,7 @@ function wire() {
     if (e.key !== 'Escape') return;
     setMenu(false);
     setRoadbook(false);
+    if (!$('#share-modal').hidden) setShareModal(false);
   });
 
   // Roadbook panel.
@@ -1167,7 +1245,20 @@ function wire() {
   $('#rb-print').addEventListener('click', () => window.print());
 
   $('#btn-generate').addEventListener('click', generate);
-  $('#btn-share').addEventListener('click', shareTrack);
+
+  // Share modal: pick a mode (link / QR code / Garmin).
+  $('#btn-share').addEventListener('click', () => state.route && setShareModal(true));
+  $('#share-close').addEventListener('click', () => setShareModal(false));
+  $('#share-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) setShareModal(false); // backdrop click
+  });
+  $('#share-link').addEventListener('click', shareCopyLink);
+  $('#share-qr').addEventListener('click', shareQr);
+  $('#share-garmin').addEventListener('click', shareGarmin);
+  $('#share-qr-back').addEventListener('click', () => {
+    setShareQrView(false);
+    $('#share-qr').focus();
+  });
   $('#btn-download').addEventListener('click', download);
   $('#btn-download-tcx').addEventListener('click', downloadTcx);
   $('#overpass-custom').addEventListener('change', () => {

@@ -74,9 +74,19 @@
   "water": { "default": "Water point", "zoomIn": "Zoom in to load water points" },
   "share": {
     "btn": "Share",
-    "title": "Copy a link that carries the track and its waypoints — nothing is sent to a server.",
+    "title": "Share the track and its waypoints by link or QR code — nothing is sent to a server.",
     "defaultName": "Shared track",
-    "copyPrompt": "Copy the share link:"
+    "copyPrompt": "Copy the share link:",
+    "modalTitle": "Share the track",
+    "close": "Close",
+    "linkBtn": "Copy the link",
+    "linkHelp": "The track and its waypoints travel in the link — nothing is sent to a server.",
+    "qrBtn": "QR code",
+    "qrHelp": "Show a QR code to scan with another device.",
+    "qrSimplified": "Track simplified to {n} points (of {total}) to fit in the QR code.",
+    "back": "Back",
+    "garminBtn": "Open in Garmin Connect",
+    "garminHelp": "Downloads the TCX course, then opens the Garmin Connect import page."
   },
   "toast": {
     "fileError": "Error reading the file",
@@ -94,7 +104,8 @@
     "partialFail": "{n} waypoint(s) — {failed}/{total} section(s) of the route could not be queried, try again",
     "overpassError": "Overpass: {msg}",
     "shareCopied": "Share link copied to the clipboard",
-    "shareCopiedSimplified": "Link copied — track simplified to {n} points (of {total}) to fit in the URL"
+    "shareCopiedSimplified": "Link copied — track simplified to {n} points (of {total}) to fit in the URL",
+    "garminExport": "TCX course downloaded — import it on the Garmin Connect page that just opened"
   },
   "error": {
     "shareInvalid": "Invalid or truncated share link",

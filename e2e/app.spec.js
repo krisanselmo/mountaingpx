@@ -115,6 +115,48 @@ test('an invalid custom Overpass query is refused with a targeted error', async 
   await expect(page.locator('#stat-wpt')).toHaveText('0');
 });
 
+test('the share modal offers link, QR code and Garmin hand-off', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await loadTrack(page);
+
+  await page.click('#btn-share');
+  await expect(page.locator('#share-modal')).toBeVisible();
+  await expect(page.locator('#share-choice')).toBeVisible();
+
+  // QR code mode: the modal swaps to a painted canvas.
+  await page.click('#share-qr');
+  await expect(page.locator('#share-qr-view')).toBeVisible();
+  await expect(page.locator('#share-choice')).toBeHidden();
+  const size = await page.locator('#share-qr-canvas')
+    .evaluate((c) => ({ w: c.width, h: c.height }));
+  expect(size.w).toBeGreaterThan(0);
+  expect(size.h).toBeGreaterThan(0);
+  await page.click('#share-qr-back');
+  await expect(page.locator('#share-choice')).toBeVisible();
+
+  // Link mode: closes the modal, fills the hash and the clipboard.
+  await page.click('#share-link');
+  await expect(page.locator('#share-modal')).toBeHidden();
+  await expect(page.locator('#toast')).toContainText('copied');
+  expect(page.url()).toContain('track=');
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain('#');
+  expect(copied).toContain('track=');
+
+  // Garmin mode: downloads the TCX course and opens the import page.
+  // The popup lives outside the page-level routing: block it explicitly.
+  await context.route('**://connect.garmin.com/**', (r) => r.abort());
+  await page.click('#btn-share');
+  const [download, popup] = await Promise.all([
+    page.waitForEvent('download'),
+    page.waitForEvent('popup'),
+    page.click('#share-garmin'),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/\.tcx$/);
+  expect(popup).toBeTruthy();
+  await expect(page.locator('#share-modal')).toBeHidden();
+});
+
 test('a multi-track GPX warns that the tracks were concatenated', async ({ page }) => {
   const multi = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
