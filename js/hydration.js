@@ -36,13 +36,14 @@ export const HEAT_FACTORS = {
 export const KCAL_PER_HOUR = 300;
 
 export const DEFAULTS = {
+  // Off until asked for: the plan annotates the profile and the roadbook,
+  // which most outings do not need.
+  enabled: false,
   intake: 500,        // mL/h drunk in temperate conditions
   capacity: 1000,     // mL carried at once (flasks + bladder)
   speed: 5,           // km-effort per hour
   heat: 'temperate',  // key of HEAT_FACTORS
   sources: 'hut',     // key of SOURCE_SETS
-  remind: false,      // insert "drink" reminder waypoints
-  remindKm: 5,        // ... every N km
 };
 
 /*
@@ -74,12 +75,8 @@ export const SOURCE_SETS = {
 };
 
 // Two sources within this distance are the same stop (a fountain next to a
-// hut must not produce a 30 m leg with a 0 L refill).
+// hut must not produce a 30 m leg of its own).
 const MERGE_KM = 0.2;
-
-// Safety cap, mirroring milestones.js: an absurd interval on a long track
-// must not bury the map under thousands of reminder waypoints.
-const MAX_REMINDERS = 200;
 
 /**
  * Cumulative distance (km) and cumulative positive gain (m) at each route
@@ -100,10 +97,7 @@ export function cumulative(route) {
 
 /** Water-source kind of a waypoint, or null when it is not one. */
 export function sourceKind(p) {
-  // Reminder waypoints are our own output: they mark where to drink, not
-  // where to fill up, and must never be counted as a source.
-  if (!p || p.drinkReminder) return null;
-  return SOURCE_KINDS[p.queryName] || null;
+  return (p && SOURCE_KINDS[p.queryName]) || null;
 }
 
 /**
@@ -147,11 +141,12 @@ export function stopKey(stop) {
  *
  * Returns null when there is nothing to plan (no route, or a route without
  * two points). Otherwise:
- *   { rate, speed, totalKm, totalDplus, hours, needMl, kcal,
- *     legs[], stops[], fills: Map(stopKey -> mL), carryStartMl,
- *     driest, riskyLegs, sourceCount }
- * A leg is `ok: false` when the water it costs does not fit in the flasks:
- * that is the case worth a warning, on the profile and in the roadbook.
+ *   { rate, speed, capacity, totalKm, totalDplus, hours, needMl, kcal,
+ *     legs[], stops[], legFrom: Map(stopKey -> leg), driest, riskyLegs,
+ *     sourceCount }
+ * A leg is `ok: false` when the water it costs does not fit in the flasks.
+ * Flasks get topped up at every source anyway, so that flag — not a refill
+ * volume — is what the roadbook and the profile show.
  */
 export function buildPlan(route, pts, opts = {}) {
   if (!route || !route.lat || route.lat.length < 2) return null;
@@ -177,12 +172,8 @@ export function buildPlan(route, pts, opts = {}) {
     });
   }
 
-  // What to put in the flasks at each stop: enough for the next leg, or a
-  // full load when the next leg asks for more than they hold.
-  const fills = new Map();
-  for (let i = 0; i < legs.length; i++) {
-    fills.set(stopKey(legs[i].from), Math.min(capacity, legs[i].needMl));
-  }
+  // Leg starting at each stop, so a roadbook row can tell what lies ahead.
+  const legFrom = new Map(legs.map((l) => [stopKey(l.from), l]));
 
   const totalKm = cum.dist[cum.dist.length - 1];
   const totalDplus = cum.gain[cum.gain.length - 1];
@@ -200,54 +191,11 @@ export function buildPlan(route, pts, opts = {}) {
     kcal: Math.round(hours * KCAL_PER_HOUR),
     legs,
     stops,
-    fills,
-    carryStartMl: fills.get('start') || 0,
+    legFrom,
     driest,
     riskyLegs: legs.filter((l) => !l.ok),
     sourceCount: stops.length - 2,
   };
-}
-
-/**
- * Positions of the "drink now" reminders, every `remindKm` along the route.
- * Each carries the amount that should have gone down since the previous one
- * (from the effort of that stretch, so a climb asks for more than a
- * descent), plus the route point it anchors on for the roadbook / profile.
- * Returns [{ lat, lon, index, km, ml }].
- */
-export function drinkReminders(route, opts = {}) {
-  const o = { ...DEFAULTS, ...opts };
-  const every = o.remindKm;
-  if (!route || !route.lat || route.lat.length < 2 || !(every > 0)) return [];
-  const rate = Math.max(0, o.intake) * (HEAT_FACTORS[o.heat] || 1);
-  const speed = o.speed > 0 ? o.speed : DEFAULTS.speed;
-
-  const { lat, lon } = route;
-  const cum = cumulative(route);
-  const total = cum.dist[cum.dist.length - 1];
-  const out = [];
-  let prevEffort = 0;
-  let next = every;
-  for (let i = 1; i < lat.length && out.length < MAX_REMINDERS; i++) {
-    const d = cum.dist[i] - cum.dist[i - 1];
-    while (d > 0 && cum.dist[i] >= next && out.length < MAX_REMINDERS) {
-      // Interpolate the position and the cumulated climb inside the segment.
-      const f = (next - cum.dist[i - 1]) / d;
-      const gain = cum.gain[i - 1] + (cum.gain[i] - cum.gain[i - 1]) * f;
-      const eff = effortKm(next, gain);
-      out.push({
-        lat: lat[i - 1] + (lat[i] - lat[i - 1]) * f,
-        lon: lon[i - 1] + (lon[i] - lon[i - 1]) * f,
-        index: i,
-        km: next,
-        ml: Math.round(((eff - prevEffort) / speed) * rate),
-      });
-      prevEffort = eff;
-      next += every;
-    }
-  }
-  // A reminder landing within a few steps of the finish is noise.
-  return out.filter((r) => total - r.km > every / 4);
 }
 
 // ---- Display helpers (shared by the panel, the roadbook and the profile) --

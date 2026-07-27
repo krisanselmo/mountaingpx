@@ -349,8 +349,16 @@ async function loadLongTrack(page) {
   await page.click('#hydration > summary');
 }
 
-test('the hydration plan sizes the water and flags the dry stretches', async ({ page }) => {
+test('the hydration plan stays off until it is switched on', async ({ page }) => {
   await loadLongTrack(page);
+
+  // Nothing on the profile, in the panel or in the toolbar by default.
+  await expect(page.locator('#stat-water-wrap')).toBeHidden();
+  await expect(page.locator('#profile-hydration')).toHaveCount(0);
+  await expect(page.locator('.hyd-sum')).toHaveCount(0);
+
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
 
   // 20 km + 1080 m of climb = 30.8 km-effort, 6 h 10 at 5 km-effort/h,
   // 500 mL/h -> ~3.1 L, none of which fits in a 1 L pack.
@@ -359,16 +367,34 @@ test('the hydration plan sizes the water and flags the dry stretches', async ({ 
   await expect(page.locator('.hyd-alert')).toBeVisible();
   await expect(page.locator('.hyd-leg')).toHaveCount(1); // no source yet
   await expect(page.locator('.hyd-leg.risky')).toHaveCount(1);
-  // The dry stretch is shaded on the elevation profile.
+  // The dry stretch is shaded on the profile.
   await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(1);
 
-  // The water point found on the track splits the route in two legs and
-  // becomes a refill stop, ticked on the profile.
+  // Switching it back off clears everything outside the panel.
+  await page.uncheck('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+  await expect(page.locator('#stat-water-wrap')).toBeHidden();
+  await expect(page.locator('#profile-hydration')).toHaveCount(0);
+});
+
+test('a water point on the track splits the plan in two legs', async ({ page }) => {
+  await loadLongTrack(page);
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+
+  // The mocked water point sits in the first kilometre: the short leg up to
+  // it is fine, everything after it is not.
   await page.click('#btn-generate');
   await expect(page.locator('.hyd-leg')).toHaveCount(2);
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(1);
   await expect(page.locator('#profile-hydration .hyd-tick-dot')).toHaveCount(1);
+  // The roadbook warns on the row the dry stretch starts from — a risk,
+  // not a volume to pour: the flasks get filled to the brim anyway.
   await page.click('#btn-roadbook');
-  await expect(page.locator('#roadbook-body .rb-note').first()).toContainText('Start with');
+  const note = page.locator('#roadbook-body .rb-note');
+  await expect(note).toHaveCount(1);
+  await expect(note).toContainText('with no water point ahead');
+  await expect(note).not.toContainText(' L');
 
   // A bigger pack covers the whole route: no risky leg left.
   await page.fill('#hyd-capacity', '5000');
@@ -377,44 +403,21 @@ test('the hydration plan sizes the water and flags the dry stretches', async ({ 
   await expect(page.locator('.hyd-alert')).toHaveCount(0);
   await expect(page.locator('.hyd-ok')).toBeVisible();
   await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(0);
+  await expect(page.locator('#roadbook-body .rb-note')).toHaveCount(0);
 });
 
-test('the heat setting drives how much water the plan asks for', async ({ page }) => {
+test('the heat setting drives the amount, and the settings are remembered', async ({ page }) => {
   await loadLongTrack(page);
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
   await expect(page.locator('#stat-water')).toHaveText('3.1 L');
 
   await page.selectOption('#hyd-heat', 'scorching');
   await expect(page.locator('#stat-water')).toHaveText('4.9 L'); // x1.6
 
-  // Settings survive a reload (localStorage), plan included.
   await page.reload();
   await loadLongTrack(page);
+  await expect(page.locator('#hyd-enable')).toBeChecked();
   await expect(page.locator('#hyd-heat')).toHaveValue('scorching');
   await expect(page.locator('#stat-water')).toHaveText('4.9 L');
-});
-
-test('drink reminders become waypoints, exported as water course points', async ({ page }) => {
-  await loadLongTrack(page);
-  await expect(page.locator('#stat-wpt')).toHaveText('0');
-
-  await page.check('#hyd-remind');
-  await page.fill('#hyd-remind-km', '5');
-  await page.dispatchEvent('#hyd-remind-km', 'change');
-
-  // 20 km track: reminders at 5, 10 and 15 km (the one on the finish line
-  // is dropped).
-  await expect(page.locator('#stat-wpt')).toHaveText('3');
-  await page.click('#btn-roadbook');
-  await expect(page.locator('#roadbook-body')).toContainText('Drink');
-
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.click('#btn-download'),
-  ]);
-  const xml = fs.readFileSync(await download.path(), 'utf8');
-  expect((xml.match(/<type>water<\/type>/g) || []).length).toBe(3);
-  expect(xml).toContain('km 10.0');
-
-  // A reminder is not a source: it must not close a leg of the plan.
-  await expect(page.locator('.hyd-leg')).toHaveCount(1);
 });

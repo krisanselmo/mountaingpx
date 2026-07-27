@@ -124,6 +124,9 @@
 
       <details id="hydration" class="poi-group hydration">
         <summary data-i18n="hydration.summary">Hydratation & ravitaillement</summary>
+        <label class="check hyd-enable">
+          <input type="checkbox" id="hyd-enable"> <span data-i18n="hydration.enable">Afficher le plan sur le profil et le roadbook</span>
+        </label>
         <div class="hyd-grid">
           <label class="field">
             <span data-i18n="hydration.intake">Boisson (mL/h)</span>
@@ -156,15 +159,6 @@
           </select>
           <small data-i18n="hydration.sourcesHelp">Parmi les waypoints de la trace : générez d'abord les points d'eau.</small>
         </label>
-        <div class="field">
-          <label class="check">
-            <input type="checkbox" id="hyd-remind"> <span data-i18n="hydration.remind">Rappels « boire » tous les</span>
-          </label>
-          <div class="milestone-row">
-            <input type="number" id="hyd-remind-km" min="1" max="50" step="1" value="5" data-i18n-aria-label="hydration.remindAria" disabled>
-            <span class="hyd-unit" data-i18n="hydration.remindUnit">km</span>
-          </div>
-        </div>
         <div id="hyd-plan" class="hyd-plan"></div>
       </details>
 

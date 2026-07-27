@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildPlan, drinkReminders, stopsAlong, sourceKind, effortKm,
+  buildPlan, stopsAlong, stopKey, sourceKind, effortKm,
   cumulative, formatLiters, formatDuration, HEAT_FACTORS, DEFAULTS,
 } from '../js/hydration.js';
 
@@ -24,7 +24,7 @@ function wpt(index, queryName, id) {
   return { index, queryName, osmType: 'node', id, name: queryName + id, lat: 45 + index * 0.01, lon: 6 };
 }
 
-const OPTS = { intake: 500, capacity: 1000, speed: 5, heat: 'temperate', sources: 'hut' };
+const OPTS = { enabled: true, intake: 500, capacity: 1000, speed: 5, heat: 'temperate', sources: 'hut' };
 
 test('effort km: 100 m of climb costs one flat kilometre', () => {
   assert.equal(effortKm(10, 500), 15);
@@ -43,8 +43,7 @@ test('source kinds follow the trust level of the selected set', () => {
   assert.equal(sourceKind(wpt(1, 'alpine_hut', 1)), 'hut');
   assert.equal(sourceKind(wpt(1, 'spring', 1)), 'natural');
   assert.equal(sourceKind(wpt(1, 'peak', 1)), null);
-  // Our own reminders mark where to drink, never where to fill up.
-  assert.equal(sourceKind({ queryName: 'drinking_water', drinkReminder: true }), null);
+  assert.equal(sourceKind(null), null);
 });
 
 test('stops: start, selected sources in order, finish', () => {
@@ -105,20 +104,20 @@ test('plan: a leg asking for more than the flasks hold is flagged', () => {
   assert.equal(big.legs[0].shortMl, 0);
 });
 
-test('plan: fills carry enough for the next leg, capped by the flasks', () => {
+test('plan: legFrom tells a stop what lies ahead of it', () => {
   const route = climbRoute();
   const source = wpt(18, 'drinking_water', 1); // late source: short last leg
   const plan = buildPlan(route, [source], OPTS);
 
-  // Long first leg: leave with full flasks.
-  assert.equal(plan.carryStartMl, OPTS.capacity);
-  assert.equal(plan.fills.get('start'), OPTS.capacity);
-  // Short last leg: only take what it needs.
-  const fill = plan.fills.get('node1');
-  assert.ok(fill > 0 && fill < OPTS.capacity);
-  assert.equal(fill, plan.legs[1].needMl);
-  // Nothing to fill at the finish.
-  assert.equal(plan.fills.has('end'), false);
+  // The long stretch from the start does not fit in the flasks; the short
+  // one after the source does. That flag is what the roadbook warns on.
+  assert.equal(plan.legFrom.get('start'), plan.legs[0]);
+  assert.equal(plan.legFrom.get('start').ok, false);
+  assert.equal(plan.legFrom.get('node1'), plan.legs[1]);
+  assert.equal(plan.legFrom.get('node1').ok, true);
+  // Nothing starts at the finish.
+  assert.equal(plan.legFrom.has('end'), false);
+  assert.equal(stopKey(plan.stops[1]), 'node1');
 });
 
 test('plan: heat and pace drive the amount', () => {
@@ -138,40 +137,15 @@ test('plan: an unusable route yields no plan', () => {
   assert.equal(buildPlan({ lat: [45], lon: [6], ele: [0] }, [], OPTS), null);
 });
 
+test('the plan is off until asked for', () => {
+  assert.equal(DEFAULTS.enabled, false);
+});
+
 test('plan: falls back on the defaults for absurd settings', () => {
   const route = climbRoute();
   const plan = buildPlan(route, [], { ...OPTS, speed: 0, capacity: -1 });
   assert.equal(plan.speed, DEFAULTS.speed);
   assert.equal(plan.capacity, DEFAULTS.capacity);
-});
-
-test('reminders: one every N km, sip sized by the effort of the stretch', () => {
-  const route = climbRoute();
-  const rem = drinkReminders(route, { ...OPTS, remindKm: 5 });
-  assert.deepEqual(rem.map((r) => r.km), [5, 10, 15, 20]);
-  for (const r of rem) {
-    assert.ok(r.index > 0 && r.index < route.lat.length);
-    assert.ok(r.lat > 45 && r.lat < 45.2);
-  }
-  // Constant slope: every stretch costs the same, and the sips add up to
-  // the water of the legs they cover.
-  const ml = rem.map((r) => r.ml);
-  assert.ok(Math.max(...ml) - Math.min(...ml) <= 1);
-  const plan = buildPlan(route, [], { ...OPTS, remindKm: 5 });
-  assert.ok(ml.reduce((a, b) => a + b, 0) < plan.needMl);
-});
-
-test('reminders: none when disabled, capped on absurd intervals', () => {
-  const route = climbRoute();
-  assert.deepEqual(drinkReminders(route, { ...OPTS, remindKm: 0 }), []);
-  assert.deepEqual(drinkReminders(null, { ...OPTS, remindKm: 5 }), []);
-  assert.ok(drinkReminders(route, { ...OPTS, remindKm: 0.01 }).length <= 200);
-});
-
-test('reminders: nothing dropped right on the finish line', () => {
-  // ~22.2 km: a reminder every 11.1 km would land exactly on the finish.
-  const rem = drinkReminders(climbRoute(), { ...OPTS, remindKm: 11.12 });
-  assert.deepEqual(rem.map((r) => Math.round(r.km)), [11]);
 });
 
 test('display helpers', () => {

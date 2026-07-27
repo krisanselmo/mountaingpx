@@ -179,7 +179,7 @@ body {
   color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px;
 }
 .field > select { cursor: pointer; }
-.hyd-unit { align-self: center; font-size: 13px; color: var(--muted); }
+.hyd-enable { margin: 4px 0 2px; }
 .hyd-empty { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
 
 .hyd-plan { margin-top: 12px; }
@@ -341,6 +341,9 @@ body {
 .track-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stats { display: flex; gap: 20px; }
 .stat { display: flex; flex-direction: column; align-items: center; }
+/* The water stat only shows with the hydration plan on: display:flex above
+   would otherwise beat the hidden attribute. */
+.stat[hidden] { display: none; }
 .stat b { font-size: 15px; color: var(--accent-2); }
 .stat small { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 

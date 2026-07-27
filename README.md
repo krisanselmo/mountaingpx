@@ -49,10 +49,10 @@ waypoint nommé et typé (ravitaillement, rendez-vous…).
 
 **Hydratation & ravitaillement** — à partir des points d'eau accrochés à la
 trace : eau totale estimée (débit de boisson, allure en km-effort, chaleur),
-portions entre deux ravitaillements avec la quantité à emporter, alerte sur
-celles qui dépassent la contenance portée, quantité à remplir à chaque point
-d'eau (roadbook), portions sèches ombrées sur le profil, et rappels
-« boire » tous les N km exportés comme waypoints.
+portions entre deux ravitaillements, alerte sur celles qui dépassent la
+contenance portée. Affichage désactivé par défaut ; une fois activé, les
+portions sèches sont ombrées sur le profil et le roadbook signale les points
+d'eau après lesquels la suite est trop longue.
 
 **Profil altimétrique** — distance, D+, altitude max ; le survol (souris ou
 doigt) suit la position sur la carte.
