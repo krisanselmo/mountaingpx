@@ -60,6 +60,27 @@ https://krisanselmo.github.io/mountaingpx/en.html
   jamais simplifiés. La modale propose aussi l'envoi du fichier GPX complet
   — sans simplification — par le menu de partage de l'appareil (Web Share,
   mobile surtout).
+- Chargement d'une trace par URL : `#gpx=<url percent-encodée>` télécharge le
+  fichier et l'affiche comme un fichier ouvert localement (GPX, FIT, TCX ou
+  KML — le format est reconnu d'après le contenu, pas d'après l'extension : une
+  URL d'export n'en a souvent aucune). Le paramètre est conservé dans le hash,
+  donc un déplacement de la carte ne l'effface pas, et `#map=` est respecté
+  s'il est présent. Les deux formes de lien n'ont pas le même compromis :
+  - `#track=<code>` est autonome — la trace et ses waypoints voyagent dans le
+    lien, sans réseau ni serveur, donc il fonctionne hors-ligne — mais la trace
+    est simplifiée juste assez pour tenir dans ~4000 caractères ;
+  - `#gpx=<url>` reste en pleine résolution — le lien ne transporte qu'une
+    référence — mais dépend du réseau et de l'hébergeur : le fichier doit
+    rester en ligne **et** autoriser la lecture cross-origin (CORS).
+
+  En pratique le CORS est la première cause d'échec, et l'utilisateur ne peut
+  rien y faire côté application : GitHub raw et les Gists l'autorisent, la
+  plupart des sites de traces non. Le message d'erreur le dit explicitement et
+  distingue ce cas d'un 404 (lien cassé). Seules les URL `https:` sont
+  acceptées et la lecture est plafonnée à 8 Mo. Si le hash porte les deux
+  paramètres, `#track=` gagne — c'est un tracé complet, pas une référence
+  réseau ; et partager une trace chargée par URL produit toujours un
+  `#track=` : les deux canaux ne se mélangent pas.
 - Export GPX enrichi des waypoints, téléchargé localement ; les horodatages
   (`<time>`) du fichier source sont conservés (interpolés sur les points
   insérés par l'accrochage).
@@ -105,7 +126,7 @@ n'importe quel hébergeur statique.
     ├── icons.js        # icônes SVG inline (Lucide, licence ISC + glyphes maison), pins Leaflet
     ├── html.js         # échappement HTML partagé
     ├── gpx.js          # parsing et génération GPX (horodatages préservés)
-    ├── formats.js      # parseurs d'import FIT, TCX et KML
+    ├── formats.js      # parseurs d'import FIT, TCX, KML et détection de format
     ├── milestones.js   # repères distance / D+ le long de la trace
     ├── tcx.js          # génération TCX (parcours Garmin)
     ├── share.js        # encodage compact de la trace pour le partage par URL

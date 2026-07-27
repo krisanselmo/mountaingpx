@@ -375,6 +375,9 @@ body {
   padding: 11px 18px; border-radius: 10px; font-size: 14px; opacity: 0;
   transition: opacity .2s, transform .2s; z-index: 2000; pointer-events: none;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  /* Explanatory messages (a refused #gpx= download says what to do about it)
+     must wrap instead of running off the viewport. */
+  max-width: min(92vw, 560px);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.ok { border-color: var(--ok); }
