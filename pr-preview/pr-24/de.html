@@ -55,8 +55,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mountain GPX">
-  <script type="module" crossorigin src="./assets/index-BcvJ-H2y.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CdR6Nv9M.css">
+  <script type="module" crossorigin src="./assets/index-B6iXO5MO.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BNOBevUt.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
   <button id="menu-btn" class="menu-btn" type="button" data-i18n-aria-label="menu.open" aria-controls="sidebar" aria-expanded="false">
@@ -145,13 +145,15 @@
           <label class="field">
             <span data-i18n="hydration.heat">Conditions</span>
             <select id="hyd-heat">
-              <option value="cool" data-i18n="hydration.heatCool">Frais</option>
-              <option value="temperate" data-i18n="hydration.heatTemperate">Tempéré</option>
-              <option value="hot" data-i18n="hydration.heatHot">Chaud</option>
-              <option value="scorching" data-i18n="hydration.heatScorching">Canicule</option>
+              <option value="cool" data-i18n="hydration.heatCool">Frais (×0.8)</option>
+              <option value="temperate" data-i18n="hydration.heatTemperate">Tempéré (×1)</option>
+              <option value="hot" data-i18n="hydration.heatHot">Chaud (×1.3)</option>
+              <option value="scorching" data-i18n="hydration.heatScorching">Canicule (×1.6)</option>
             </select>
           </label>
         </div>
+        <!-- Filled by app.js: the drink rate actually applied to the plan. -->
+        <small id="hyd-rate" class="hyd-rate"></small>
         <label class="field">
           <span data-i18n="hydration.sources">Points de ravitaillement en eau</span>
           <select id="hyd-sources">
