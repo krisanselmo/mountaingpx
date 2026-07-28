@@ -412,8 +412,14 @@ test('the heat setting drives the amount, and the settings are remembered', asyn
   await page.dispatchEvent('#hyd-enable', 'change');
   await expect(page.locator('#stat-water')).toHaveText('3.1 L');
 
+  // The multiplier is on the option labels, and the help line spells out
+  // the rate the plan runs on.
+  await expect(page.locator('#hyd-heat option[value=hot]')).toHaveText('Hot (\u00d71.3)');
+  await expect(page.locator('#hyd-rate')).toHaveText('Drink rate applied: 500 \u00d7 1 = 500 mL/h');
+
   await page.selectOption('#hyd-heat', 'scorching');
   await expect(page.locator('#stat-water')).toHaveText('4.9 L'); // x1.6
+  await expect(page.locator('#hyd-rate')).toHaveText('Drink rate applied: 500 \u00d7 1.6 = 800 mL/h');
 
   await page.reload();
   await loadLongTrack(page);

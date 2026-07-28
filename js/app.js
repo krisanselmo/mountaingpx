@@ -773,8 +773,23 @@ function updateHydration() {
   state.hydration = state.route && opts.enabled
     ? Hydration.buildPlan(state.route, state.pts, opts)
     : null;
+  renderHeatHelp(opts);
   renderHydrationPanel();
   renderHydrationProfile();
+}
+
+/**
+ * Spell out what the conditions do to the drink rate. The multiplier is on
+ * the option labels; this line shows the product, which is the number the
+ * plan actually runs on.
+ */
+function renderHeatHelp(opts) {
+  const factor = Hydration.HEAT_FACTORS[opts.heat] || 1;
+  $('#hyd-rate').textContent = t('hydration.heatHelp', {
+    intake: opts.intake,
+    factor,
+    rate: Math.round(opts.intake * factor),
+  });
 }
 
 /** Shade the stretches without enough water on the elevation profile. */

@@ -180,6 +180,9 @@ body {
 }
 .field > select { cursor: pointer; }
 .hyd-enable { margin: 4px 0 2px; }
+/* Drink rate after the heat multiplier, right under the two fields it
+   multiplies together. */
+.hyd-rate { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
 .hyd-empty { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
 
 .hyd-plan { margin-top: 12px; }
