@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildPlan, stopsAlong, stopKey, sourceKind, effortKm,
+  buildPlan, stopsAlong, stopKey, sourceKind, effortKm, bandFor,
   cumulative, formatLiters, formatDuration, HEAT_FACTORS, DEFAULTS,
+  INTAKE_BANDS, PACE_BANDS, CAPACITY_BANDS,
 } from '../js/hydration.js';
 
 // Straight route going north: 20 steps of 0.01° of latitude (~1.112 km each,
@@ -146,6 +147,22 @@ test('plan: falls back on the defaults for absurd settings', () => {
   const plan = buildPlan(route, [], { ...OPTS, speed: 0, capacity: -1 });
   assert.equal(plan.speed, DEFAULTS.speed);
   assert.equal(plan.capacity, DEFAULTS.capacity);
+});
+
+test('landmark bands cover every value, defaults included', () => {
+  // The defaults must land on a band a beginner recognises.
+  assert.equal(bandFor(INTAKE_BANDS, DEFAULTS.intake), 'usual');
+  assert.equal(bandFor(PACE_BANDS, DEFAULTS.speed), 'hike');
+  assert.equal(bandFor(CAPACITY_BANDS, DEFAULTS.capacity), 'twoFlasks');
+
+  assert.equal(bandFor(PACE_BANDS, 2), 'stroll');
+  assert.equal(bandFor(PACE_BANDS, 7), 'trail');
+  assert.equal(bandFor(CAPACITY_BANDS, 500), 'oneFlask');
+  assert.equal(bandFor(CAPACITY_BANDS, 1500), 'bladder');
+  // Nothing falls off either end of the scales.
+  for (const bands of [INTAKE_BANDS, PACE_BANDS, CAPACITY_BANDS]) {
+    for (const v of [0, 1, 999, 99999]) assert.ok(bandFor(bands, v));
+  }
 });
 
 test('display helpers', () => {

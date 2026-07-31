@@ -44,13 +44,37 @@
     "stepAria": "Intervalo entre marcas"
   },
   "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "km-esfuerzo/h",
+    "unitVolume": "mL",
+    "intake": "Bebida",
+    "speed": "Ritmo",
+    "capacity": "Capacidad transportada",
+    "effortHelp": "1 km-esfuerzo = 1 km en llano = 100 m de desnivel (ej. 10 km con 600 m = 16 km-esfuerzo).",
+    "intakeBand": {
+      "low": "poca sudoración",
+      "usual": "habitual",
+      "high": "mucha sudoración",
+      "veryHigh": "sudoración muy alta"
+    },
+    "paceBand": {
+      "stroll": "paseo tranquilo",
+      "hike": "senderismo",
+      "fastHike": "senderismo rápido",
+      "trail": "trail tranquilo",
+      "fastTrail": "trail rápido",
+      "race": "ritmo de carrera"
+    },
+    "capacityBand": {
+      "oneFlask": "un botellín",
+      "twoFlasks": "dos botellines",
+      "bladder": "bolsa de hidratación",
+      "big": "bolsa + botellines"
+    },
     "summary": "Hidratación y avituallamiento",
     "enable": "Mostrar el plan en el perfil y el roadbook",
     "off": "Activa la visualización para estimar el agua a llevar y detectar los tramos sin punto de agua.",
     "noteRisk": "Llenar hasta arriba — {km} km sin punto de agua después",
-    "intake": "Bebida (mL/h)",
-    "capacity": "Capacidad transportada (mL)",
-    "speed": "Ritmo (km-esfuerzo/h)",
     "heat": "Condiciones",
     "heatHelp": "Bebida aplicada: {intake} × {factor} = {rate} mL/h",
     "heatCool": "Fresco (×0.8)",

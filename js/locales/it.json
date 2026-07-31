@@ -44,13 +44,37 @@
     "stepAria": "Intervallo tra i riferimenti"
   },
   "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "km-sforzo/h",
+    "unitVolume": "mL",
+    "intake": "Bevanda",
+    "speed": "Andatura",
+    "capacity": "Capacità trasportata",
+    "effortHelp": "1 km-sforzo = 1 km in piano = 100 m di dislivello (es. 10 km con 600 m = 16 km-sforzo).",
+    "intakeBand": {
+      "low": "poca sudorazione",
+      "usual": "consueto",
+      "high": "molta sudorazione",
+      "veryHigh": "sudorazione molto alta"
+    },
+    "paceBand": {
+      "stroll": "camminata tranquilla",
+      "hike": "escursionismo",
+      "fastHike": "escursionismo veloce",
+      "trail": "trail regolare",
+      "fastTrail": "trail veloce",
+      "race": "ritmo gara"
+    },
+    "capacityBand": {
+      "oneFlask": "una borraccia",
+      "twoFlasks": "due borracce",
+      "bladder": "sacca d'acqua",
+      "big": "sacca + borracce"
+    },
     "summary": "Idratazione e rifornimento",
     "enable": "Mostra il piano sul profilo e sul roadbook",
     "off": "Attiva la visualizzazione per stimare l'acqua da portare e individuare i tratti senza punti d'acqua.",
     "noteRisk": "Riempire fino all'orlo — {km} km senza punti d'acqua dopo",
-    "intake": "Bevanda (mL/h)",
-    "capacity": "Capacità trasportata (mL)",
-    "speed": "Andatura (km-sforzo/h)",
     "heat": "Condizioni",
     "heatHelp": "Bevanda applicata: {intake} × {factor} = {rate} mL/h",
     "heatCool": "Fresco (×0.8)",

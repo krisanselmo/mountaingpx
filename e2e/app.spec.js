@@ -341,6 +341,18 @@ function longTrackGpx() {
   return xml + '  </trkseg></trk>\n</gpx>\n';
 }
 
+/**
+ * Move one of the hydration sliders. `fill` refuses a range input, so the
+ * value is set directly and both events the app listens to are fired.
+ */
+async function setSlider(page, selector, value) {
+  await page.$eval(selector, (el, v) => {
+    el.value = v;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, String(value));
+}
+
 async function loadLongTrack(page) {
   await page.setInputFiles('#file-input', {
     name: 'long.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(longTrackGpx()),
@@ -397,8 +409,8 @@ test('a water point on the track splits the plan in two legs', async ({ page }) 
   await expect(note).not.toContainText(' L');
 
   // A bigger pack covers the whole route: no risky leg left.
-  await page.fill('#hyd-capacity', '5000');
-  await page.dispatchEvent('#hyd-capacity', 'change');
+  await setSlider(page, '#hyd-capacity', 4000);
+  await expect(page.locator('#hyd-capacity-band')).toHaveText('bladder + flasks');
   await expect(page.locator('.hyd-leg.risky')).toHaveCount(0);
   await expect(page.locator('.hyd-alert')).toHaveCount(0);
   await expect(page.locator('.hyd-ok')).toBeVisible();
@@ -411,6 +423,17 @@ test('the heat setting drives the amount, and the settings are remembered', asyn
   await page.check('#hyd-enable');
   await page.dispatchEvent('#hyd-enable', 'change');
   await expect(page.locator('#stat-water')).toHaveText('3.1 L');
+
+  // Each slider spells out what its value means in plain language: that is
+  // the only landmark a first-time user has.
+  // Values shown must be the defaults themselves: a slider whose min is
+  // off its step would snap 1000 mL to 1050.
+  await expect(page.locator('#hyd-intake-val')).toHaveText('500 mL/h');
+  await expect(page.locator('#hyd-capacity-val')).toHaveText('1000 mL');
+  await expect(page.locator('#hyd-speed-val')).toHaveText('5 effort-km/h');
+  await expect(page.locator('#hyd-intake-band')).toHaveText('usual');
+  await expect(page.locator('#hyd-speed-band')).toHaveText('hiking');
+  await expect(page.locator('#hyd-capacity-band')).toHaveText('two flasks');
 
   // The multiplier is on the option labels, and the help line spells out
   // the rate the plan runs on.

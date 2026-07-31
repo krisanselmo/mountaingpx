@@ -74,6 +74,42 @@ export const SOURCE_SETS = {
   all: ['tap', 'hut', 'natural'],
 };
 
+/*
+ * Plain-language landmarks for the three figures the panel asks for. "5
+ * km-effort/h" means nothing to someone who has never counted in km-effort;
+ * "randonnée" does. The UI shows the band name next to the value, so the
+ * slider can be dragged until the label reads like the outing planned.
+ * Labels come from i18n (`hydration.<scale>.<key>`).
+ */
+export const INTAKE_BANDS = [       // mL/h in temperate conditions
+  { upTo: 350, key: 'low' },
+  { upTo: 650, key: 'usual' },
+  { upTo: 850, key: 'high' },
+  { upTo: Infinity, key: 'veryHigh' },
+];
+
+export const PACE_BANDS = [         // km-effort per hour
+  { upTo: 3.5, key: 'stroll' },
+  { upTo: 5, key: 'hike' },
+  { upTo: 6.5, key: 'fastHike' },
+  { upTo: 8.5, key: 'trail' },
+  { upTo: 10.5, key: 'fastTrail' },
+  { upTo: Infinity, key: 'race' },
+];
+
+export const CAPACITY_BANDS = [     // mL carried
+  { upTo: 600, key: 'oneFlask' },
+  { upTo: 1200, key: 'twoFlasks' },
+  { upTo: 2200, key: 'bladder' },
+  { upTo: Infinity, key: 'big' },
+];
+
+/** Band key a value falls into (see INTAKE_BANDS & co). */
+export function bandFor(bands, value) {
+  const b = bands.find((x) => value <= x.upTo);
+  return (b || bands[bands.length - 1]).key;
+}
+
 // Two sources within this distance are the same stop (a fountain next to a
 // hut must not produce a 30 m leg of its own).
 const MERGE_KM = 0.2;

@@ -44,13 +44,37 @@
     "stepAria": "Intervalle entre les repères"
   },
   "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "km-effort/h",
+    "unitVolume": "mL",
+    "intake": "Boisson",
+    "speed": "Allure",
+    "capacity": "Contenance portée",
+    "effortHelp": "1 km-effort = 1 km à plat = 100 m de D+ (ex. 10 km et 600 m D+ = 16 km-effort).",
+    "intakeBand": {
+      "low": "faible sudation",
+      "usual": "usuel",
+      "high": "forte sudation",
+      "veryHigh": "très forte sudation"
+    },
+    "paceBand": {
+      "stroll": "marche tranquille",
+      "hike": "randonnée",
+      "fastHike": "rando sportive",
+      "trail": "trail régulier",
+      "fastTrail": "trail rapide",
+      "race": "niveau course"
+    },
+    "capacityBand": {
+      "oneFlask": "une flasque",
+      "twoFlasks": "deux flasques",
+      "bladder": "poche à eau",
+      "big": "poche + flasques"
+    },
     "summary": "Hydratation & ravitaillement",
     "enable": "Afficher le plan sur le profil et le roadbook",
     "off": "Activez l'affichage pour estimer l'eau à emporter et repérer les portions sans point d'eau.",
     "noteRisk": "Faire le plein — {km} km sans point d'eau ensuite",
-    "intake": "Boisson (mL/h)",
-    "capacity": "Contenance portée (mL)",
-    "speed": "Allure (km-effort/h)",
     "heat": "Conditions",
     "heatHelp": "Boisson retenue : {intake} × {factor} = {rate} mL/h",
     "heatCool": "Frais (×0.8)",

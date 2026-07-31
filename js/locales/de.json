@@ -44,13 +44,37 @@
     "stepAria": "Abstand zwischen den Markierungen"
   },
   "hydration": {
+    "unitRate": "ml/h",
+    "unitSpeed": "Leistungs-km/h",
+    "unitVolume": "ml",
+    "intake": "Trinkmenge",
+    "speed": "Tempo",
+    "capacity": "Mitgeführte Menge",
+    "effortHelp": "1 Leistungs-km = 1 km in der Ebene = 100 Hm (z. B. 10 km mit 600 Hm = 16 Leistungs-km).",
+    "intakeBand": {
+      "low": "wenig Schweiß",
+      "usual": "üblich",
+      "high": "starkes Schwitzen",
+      "veryHigh": "sehr starkes Schwitzen"
+    },
+    "paceBand": {
+      "stroll": "gemütliches Gehen",
+      "hike": "Wandern",
+      "fastHike": "sportliches Wandern",
+      "trail": "ruhiger Trailrun",
+      "fastTrail": "schneller Trailrun",
+      "race": "Wettkampftempo"
+    },
+    "capacityBand": {
+      "oneFlask": "eine Flasche",
+      "twoFlasks": "zwei Flaschen",
+      "bladder": "Trinkblase",
+      "big": "Trinkblase + Flaschen"
+    },
     "summary": "Trinken & Verpflegung",
     "enable": "Plan im Höhenprofil und im Roadbook anzeigen",
     "off": "Anzeige einschalten, um den Wasserbedarf zu schätzen und Abschnitte ohne Wasserstelle zu erkennen.",
     "noteRisk": "Randvoll füllen — {km} km ohne Wasserstelle danach",
-    "intake": "Trinkmenge (ml/h)",
-    "capacity": "Mitgeführte Menge (ml)",
-    "speed": "Tempo (Leistungs-km/h)",
     "heat": "Bedingungen",
     "heatHelp": "Angesetzte Trinkmenge: {intake} × {factor} = {rate} ml/h",
     "heatCool": "Kühl (×0.8)",

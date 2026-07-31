@@ -171,18 +171,17 @@ body {
 
 /* ---------------- Hydration panel ---------------- */
 .hydration { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
-/* Two columns: the four numbers describing the runner, then the wide fields. */
-.hyd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
-.hyd-grid .field { margin: 10px 0 0; }
-.hyd-grid input[type=number], .field > select {
+.field > select {
   width: 100%; background: var(--panel-2); border: 1px solid var(--line);
   color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px;
+  cursor: pointer;
 }
-.field > select { cursor: pointer; }
 .hyd-enable { margin: 4px 0 2px; }
-/* Drink rate after the heat multiplier, right under the two fields it
-   multiplies together. */
-.hyd-rate { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
+/* Slider labels: the value in accent, its plain-language landmark next to
+   it ("500 mL/h — usuel"). */
+.hydration .field > span b { color: var(--accent-2); font-variant-numeric: tabular-nums; }
+.hyd-hint { font-style: normal; color: var(--muted); }
+.hyd-hint::before { content: "— "; }
 .hyd-empty { color: var(--muted); font-size: 12px; margin: 10px 0 0; }
 
 .hyd-plan { margin-top: 12px; }

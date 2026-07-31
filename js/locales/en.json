@@ -44,13 +44,37 @@
     "stepAria": "Interval between markers"
   },
   "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "effort-km/h",
+    "unitVolume": "mL",
+    "intake": "Drink",
+    "speed": "Pace",
+    "capacity": "Carried volume",
+    "effortHelp": "1 effort-km = 1 km on the flat = 100 m of climb (e.g. 10 km with 600 m of climb = 16 effort-km).",
+    "intakeBand": {
+      "low": "light sweating",
+      "usual": "usual",
+      "high": "heavy sweating",
+      "veryHigh": "very heavy sweating"
+    },
+    "paceBand": {
+      "stroll": "easy walk",
+      "hike": "hiking",
+      "fastHike": "fast hiking",
+      "trail": "steady trail run",
+      "fastTrail": "fast trail run",
+      "race": "race pace"
+    },
+    "capacityBand": {
+      "oneFlask": "one flask",
+      "twoFlasks": "two flasks",
+      "bladder": "hydration bladder",
+      "big": "bladder + flasks"
+    },
     "summary": "Hydration & resupply",
     "enable": "Show the plan on the profile and the roadbook",
     "off": "Turn the display on to estimate the water to carry and spot the stretches without a water point.",
     "noteRisk": "Fill right up — {km} km with no water point ahead",
-    "intake": "Drink (mL/h)",
-    "capacity": "Carried volume (mL)",
-    "speed": "Pace (effort-km/h)",
     "heat": "Conditions",
     "heatHelp": "Drink rate applied: {intake} × {factor} = {rate} mL/h",
     "heatCool": "Cool (×0.8)",

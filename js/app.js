@@ -757,6 +757,27 @@ function restoreHydrationPanel() {
   $('#hyd-heat').value = Hydration.HEAT_FACTORS[s.heat] ? s.heat : Hydration.DEFAULTS.heat;
   $('#hyd-sources').value = Hydration.SOURCE_SETS[s.sources] ? s.sources : Hydration.DEFAULTS.sources;
   $('#hyd-enable').checked = !!s.enabled;
+  renderHydrationSliders();
+}
+
+/*
+ * Value and plain-language landmark next to each slider. The band name is
+ * the whole point: a novice drags until it reads like the outing planned
+ * ("randonnée", "deux flasques") instead of guessing at mL/h.
+ */
+const SLIDERS = [
+  { sel: 'intake', bands: Hydration.INTAKE_BANDS, scale: 'intakeBand', unit: 'unitRate' },
+  { sel: 'speed', bands: Hydration.PACE_BANDS, scale: 'paceBand', unit: 'unitSpeed' },
+  { sel: 'capacity', bands: Hydration.CAPACITY_BANDS, scale: 'capacityBand', unit: 'unitVolume' },
+];
+
+function renderHydrationSliders() {
+  for (const s of SLIDERS) {
+    const v = parseFloat($('#hyd-' + s.sel).value);
+    $(`#hyd-${s.sel}-val`).textContent = v + ' ' + t('hydration.' + s.unit);
+    $(`#hyd-${s.sel}-band`).textContent =
+      t(`hydration.${s.scale}.${Hydration.bandFor(s.bands, v)}`);
+  }
 }
 
 function persistHydration() {
@@ -773,6 +794,7 @@ function updateHydration() {
   state.hydration = state.route && opts.enabled
     ? Hydration.buildPlan(state.route, state.pts, opts)
     : null;
+  renderHydrationSliders(); // also covers a language switch
   renderHeatHelp(opts);
   renderHydrationPanel();
   renderHydrationProfile();
@@ -1651,10 +1673,14 @@ function wire() {
     persistSelection();
     drawMilestones();
   });
-  // Hydration panel: every control feeds the same replan.
+  // Hydration panel: every control feeds the same replan, and the sliders
+  // update their landmark while being dragged (like #snap-dist).
   for (const sel of ['#hyd-enable', '#hyd-intake', '#hyd-capacity', '#hyd-speed',
     '#hyd-heat', '#hyd-sources']) {
     $(sel).addEventListener('change', onHydrationChanged);
+  }
+  for (const s of SLIDERS) {
+    $('#hyd-' + s.sel).addEventListener('input', renderHydrationSliders);
   }
 
   $('#sel-all-with').addEventListener('click', () => selectAll(true));
