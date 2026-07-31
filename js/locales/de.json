@@ -7,7 +7,7 @@
     "title": "Über Mountain GPX",
     "p1": "Mountain GPX ergänzt einen GPX-Track fürs Wandern, Trailrunning oder Mountainbiken automatisch um Wegpunkte: Gipfel, Pässe, Hütten und Unterstände, Quellen, Brunnen und Wasserstellen, Seen, Wasserfälle, Aussichtspunkte… Die POIs stammen aus OpenStreetMap und werden an Ihre Route angeheftet.",
     "p2": "Importieren Sie Ihren GPX-, FIT-, TCX- oder KML-Track (aus Strava, Komoot, Garmin Connect…), wählen Sie die POI-Typen und laden Sie den angereicherten Track als GPX oder TCX (Garmin-Strecke mit typisierten CoursePoints) für Ihre Uhr oder Ihr GPS herunter.",
-    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil.",
+    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil. Ein optionaler Trinkplan schätzt den Wasserbedarf und markiert Abschnitte ohne Wasserstelle.",
     "github": "Quellcode auf GitHub"
   },
   "lang": { "aria": "Sprache" },

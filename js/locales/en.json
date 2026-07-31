@@ -7,7 +7,7 @@
     "title": "About Mountain GPX",
     "p1": "Mountain GPX automatically adds waypoints to a hiking, trail running or mountain-bike GPX track: peaks, mountain passes, huts and shelters, springs, fountains and water points, lakes, waterfalls, viewpoints… Points of interest come from OpenStreetMap and are snapped onto your route.",
     "p2": "Import your GPX, FIT, TCX or KML track (exported from Strava, Komoot, Garmin Connect…), pick the point-of-interest types, then download the enriched track as GPX or TCX (a Garmin course with typed CoursePoints) for your watch or GPS.",
-    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile.",
+    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile. An optional hydration plan estimates the water to carry and flags the stretches without a water point.",
     "github": "Source code on GitHub"
   },
   "lang": { "aria": "Language" },

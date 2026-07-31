@@ -7,7 +7,7 @@
     "title": "Informazioni su Mountain GPX",
     "p1": "Mountain GPX aggiunge automaticamente waypoint a una traccia GPX di escursionismo, trail o MTB: cime, passi, rifugi, bivacchi, sorgenti, fontane e punti d'acqua, laghi, cascate, punti panoramici… I punti di interesse provengono da OpenStreetMap e vengono agganciati al tuo percorso.",
     "p2": "Importa la tua traccia GPX, FIT, TCX o KML (esportata da Strava, Komoot, Garmin Connect…), scegli i tipi di punti di interesse e scarica la traccia arricchita in GPX o TCX (percorso Garmin con CoursePoint tipizzati) per il tuo orologio o GPS.",
-    "p3": "Lo strumento è gratuito, senza registrazione, e funziona interamente nel browser: il tuo file non lascia mai il tuo dispositivo. Installabile come app (PWA), continua a funzionare offline in montagna, con roadbook stampabile e profilo altimetrico.",
+    "p3": "Lo strumento è gratuito, senza registrazione, e funziona interamente nel browser: il tuo file non lascia mai il tuo dispositivo. Installabile come app (PWA), continua a funzionare offline in montagna, con roadbook stampabile e profilo altimetrico. Un piano di idratazione opzionale stima l'acqua da portare e segnala i tratti senza punti d'acqua.",
     "github": "Codice sorgente su GitHub"
   },
   "lang": { "aria": "Lingua" },
