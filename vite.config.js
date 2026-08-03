@@ -104,6 +104,21 @@ export default defineConfig({
             },
           },
           {
+            // Tiles of the user's own layers: the host is unknown, so match on
+            // the /{z}/{x}/{y} path shape. Registered after the rules above, so
+            // the built-in layers keep their own caches.
+            urlPattern: ({ url }) => /\/\d+\/\d+\/\d+(\.\w+)?$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'custom-map-tiles',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Overpass API responses (overpass-api.de, kumi.systems, maps.mail.ru).
             urlPattern: ({ url }) => /\/overpass\/|\/interpreter$/.test(url.pathname),
             handler: 'NetworkFirst',
