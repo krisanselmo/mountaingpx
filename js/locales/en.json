@@ -14,7 +14,7 @@
     "title": "About Mountain GPX",
     "p1": "Mountain GPX automatically adds waypoints to a hiking, trail running or mountain-bike GPX track: peaks, mountain passes, huts and shelters, springs, fountains and water points, lakes, waterfalls, viewpoints… Points of interest come from OpenStreetMap and are snapped onto your route.",
     "p2": "Import your GPX, FIT, TCX or KML track (exported from Strava, Komoot, Garmin Connect…), pick the point-of-interest types, then download the enriched track as GPX or TCX (a Garmin course with typed CoursePoints) for your watch or GPS.",
-    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile.",
+    "p3": "The tool is free, requires no sign-up and runs entirely in your browser: your file never leaves your device. Installable as an app (PWA), it keeps working offline in the mountains, with a printable roadbook and an elevation profile. An optional hydration plan estimates the water to carry and flags the stretches without a water point.",
     "github": "Source code on GitHub"
   },
   "lang": { "aria": "Language" },
@@ -50,6 +50,58 @@
     "modeAria": "Marker type",
     "stepAria": "Interval between markers"
   },
+  "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "effort-km/h",
+    "unitVolume": "mL",
+    "intake": "Drink",
+    "speed": "Pace",
+    "capacity": "Carried volume",
+    "effortHelp": "1 effort-km = 1 km on the flat = 100 m of climb (e.g. 10 km with 600 m of climb = 16 effort-km).",
+    "intakeBand": {
+      "low": "light sweating",
+      "usual": "usual",
+      "high": "heavy sweating",
+      "veryHigh": "very heavy sweating"
+    },
+    "paceBand": {
+      "stroll": "easy walk",
+      "hike": "hiking",
+      "fastHike": "fast hiking",
+      "trail": "steady trail run",
+      "fastTrail": "fast trail run",
+      "race": "race pace"
+    },
+    "capacityBand": {
+      "oneFlask": "one flask",
+      "twoFlasks": "two flasks",
+      "bladder": "hydration bladder",
+      "big": "bladder + flasks"
+    },
+    "summary": "Hydration & resupply",
+    "enable": "Show the plan on the profile and the roadbook",
+    "off": "Turn the display on to estimate the water to carry and spot the stretches without a water point.",
+    "noteRisk": "Fill right up — {km} km with no water point ahead",
+    "heat": "Conditions",
+    "heatHelp": "Drink rate applied: {intake} × {factor} = {rate} mL/h",
+    "heatCool": "Cool (×0.8)",
+    "heatTemperate": "Temperate (×1)",
+    "heatHot": "Hot (×1.3)",
+    "heatScorching": "Heatwave (×1.6)",
+    "sources": "Water refill points",
+    "sourcesTap": "Drinking water only",
+    "sourcesHut": "Drinking water and staffed huts",
+    "sourcesAll": "Also natural sources (filter first)",
+    "sourcesHelp": "Taken from the track's waypoints: generate the water points first.",
+    "empty": "Load a track to estimate the water to carry.",
+    "sumWater": "water",
+    "sumTime": "time",
+    "sumEnergy": "energy",
+    "sourceCount": "{n} water point(s) on the route",
+    "alert": "{n} stretch(es) longer than your flasks allow. Worst one: {km} km / {time} between {from} and {to} — {missing} short.",
+    "okAll": "Every stretch fits in {v}.",
+    "bandTitle": "Stretch with no water point: more than your flasks hold"
+  },
   "addwpt": {
     "title": "Add a waypoint",
     "namePlaceholder": "Waypoint name",
@@ -58,7 +110,7 @@
   },
   "btn": { "generate": "Generate waypoints", "download": "⬇ Download GPX", "downloadTcx": "⬇ Download TCX" },
   "toolbar": { "noTrack": "No track" },
-  "stat": { "distance": "distance", "dplus": "D+", "altmax": "max alt.", "waypoints": "waypoints" },
+  "stat": { "distance": "distance", "dplus": "D+", "altmax": "max alt.", "waypoints": "waypoints" , "water": "est. water"},
   "profile": { "waypoints": "Waypoints", "noElevation": "No elevation data" },
   "roadbook": {
     "btn": "Roadbook",

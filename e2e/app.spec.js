@@ -325,3 +325,128 @@ test('a multi-track GPX warns that the tracks were concatenated', async ({ page 
   });
   await expect(page.locator('#toast')).toContainText('contains 2 tracks');
 });
+
+// ---- Hydration & resupply plan -------------------------------------------
+// The 1 km fixture is too short to be thirsty on: these tests run on a
+// 20 km / +1080 m track built on the fly, with the mocked water point of
+// OVERPASS_RESPONSE sitting in its first kilometre.
+function longTrackGpx() {
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+    '  <trk><name>Long</name><trkseg>\n';
+  for (let i = 0; i <= 180; i++) {
+    xml += `    <trkpt lat="${(45.9 + i * 0.001).toFixed(3)}" lon="6.870">` +
+      `<ele>${1000 + i * 6}</ele></trkpt>\n`;
+  }
+  return xml + '  </trkseg></trk>\n</gpx>\n';
+}
+
+/**
+ * Move one of the hydration sliders. `fill` refuses a range input, so the
+ * value is set directly and both events the app listens to are fired.
+ */
+async function setSlider(page, selector, value) {
+  await page.$eval(selector, (el, v) => {
+    el.value = v;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, String(value));
+}
+
+async function loadLongTrack(page) {
+  await page.setInputFiles('#file-input', {
+    name: 'long.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(longTrackGpx()),
+  });
+  await expect(page.locator('#stat-dist')).toHaveText('20.0 km');
+  await page.click('#hydration > summary');
+}
+
+test('the hydration plan stays off until it is switched on', async ({ page }) => {
+  await loadLongTrack(page);
+
+  // Nothing on the profile, in the panel or in the toolbar by default.
+  await expect(page.locator('#stat-water-wrap')).toBeHidden();
+  await expect(page.locator('#profile-hydration')).toHaveCount(0);
+  await expect(page.locator('.hyd-sum')).toHaveCount(0);
+
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+
+  // 20 km + 1080 m of climb = 30.8 km-effort, 6 h 10 at 5 km-effort/h,
+  // 500 mL/h -> ~3.1 L, none of which fits in a 1 L pack.
+  await expect(page.locator('#stat-water')).toHaveText('3.1 L');
+  await expect(page.locator('.hyd-sum b').nth(1)).toHaveText('6 h 10');
+  await expect(page.locator('.hyd-alert')).toBeVisible();
+  await expect(page.locator('.hyd-leg')).toHaveCount(1); // no source yet
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(1);
+  // The dry stretch is shaded on the profile.
+  await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(1);
+
+  // Switching it back off clears everything outside the panel.
+  await page.uncheck('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+  await expect(page.locator('#stat-water-wrap')).toBeHidden();
+  await expect(page.locator('#profile-hydration')).toHaveCount(0);
+});
+
+test('a water point on the track splits the plan in two legs', async ({ page }) => {
+  await loadLongTrack(page);
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+
+  // The mocked water point sits in the first kilometre: the short leg up to
+  // it is fine, everything after it is not.
+  await page.click('#btn-generate');
+  await expect(page.locator('.hyd-leg')).toHaveCount(2);
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(1);
+  await expect(page.locator('#profile-hydration .hyd-tick-dot')).toHaveCount(1);
+  // The roadbook warns on the row the dry stretch starts from — a risk,
+  // not a volume to pour: the flasks get filled to the brim anyway.
+  await page.click('#btn-roadbook');
+  const note = page.locator('#roadbook-body .rb-note');
+  await expect(note).toHaveCount(1);
+  await expect(note).toContainText('with no water point ahead');
+  await expect(note).not.toContainText(' L');
+
+  // A bigger pack covers the whole route: no risky leg left.
+  await setSlider(page, '#hyd-capacity', 4000);
+  await expect(page.locator('#hyd-capacity-band')).toHaveText('bladder + flasks');
+  await expect(page.locator('.hyd-leg.risky')).toHaveCount(0);
+  await expect(page.locator('.hyd-alert')).toHaveCount(0);
+  await expect(page.locator('.hyd-ok')).toBeVisible();
+  await expect(page.locator('#profile-hydration .hyd-band')).toHaveCount(0);
+  await expect(page.locator('#roadbook-body .rb-note')).toHaveCount(0);
+});
+
+test('the heat setting drives the amount, and the settings are remembered', async ({ page }) => {
+  await loadLongTrack(page);
+  await page.check('#hyd-enable');
+  await page.dispatchEvent('#hyd-enable', 'change');
+  await expect(page.locator('#stat-water')).toHaveText('3.1 L');
+
+  // Each slider spells out what its value means in plain language: that is
+  // the only landmark a first-time user has.
+  // Values shown must be the defaults themselves: a slider whose min is
+  // off its step would snap 1000 mL to 1050.
+  await expect(page.locator('#hyd-intake-val')).toHaveText('500 mL/h');
+  await expect(page.locator('#hyd-capacity-val')).toHaveText('1000 mL');
+  await expect(page.locator('#hyd-speed-val')).toHaveText('5 effort-km/h');
+  await expect(page.locator('#hyd-intake-band')).toHaveText('usual');
+  await expect(page.locator('#hyd-speed-band')).toHaveText('hiking');
+  await expect(page.locator('#hyd-capacity-band')).toHaveText('two flasks');
+
+  // The multiplier is on the option labels, and the help line spells out
+  // the rate the plan runs on.
+  await expect(page.locator('#hyd-heat option[value=hot]')).toHaveText('Hot (\u00d71.3)');
+  await expect(page.locator('#hyd-rate')).toHaveText('Drink rate applied: 500 \u00d7 1 = 500 mL/h');
+
+  await page.selectOption('#hyd-heat', 'scorching');
+  await expect(page.locator('#stat-water')).toHaveText('4.9 L'); // x1.6
+  await expect(page.locator('#hyd-rate')).toHaveText('Drink rate applied: 500 \u00d7 1.6 = 800 mL/h');
+
+  await page.reload();
+  await loadLongTrack(page);
+  await expect(page.locator('#hyd-enable')).toBeChecked();
+  await expect(page.locator('#hyd-heat')).toHaveValue('scorching');
+  await expect(page.locator('#stat-water')).toHaveText('4.9 L');
+});

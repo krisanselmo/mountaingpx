@@ -14,7 +14,7 @@
     "title": "Informazioni su Mountain GPX",
     "p1": "Mountain GPX aggiunge automaticamente waypoint a una traccia GPX di escursionismo, trail o MTB: cime, passi, rifugi, bivacchi, sorgenti, fontane e punti d'acqua, laghi, cascate, punti panoramici… I punti di interesse provengono da OpenStreetMap e vengono agganciati al tuo percorso.",
     "p2": "Importa la tua traccia GPX, FIT, TCX o KML (esportata da Strava, Komoot, Garmin Connect…), scegli i tipi di punti di interesse e scarica la traccia arricchita in GPX o TCX (percorso Garmin con CoursePoint tipizzati) per il tuo orologio o GPS.",
-    "p3": "Lo strumento è gratuito, senza registrazione, e funziona interamente nel browser: il tuo file non lascia mai il tuo dispositivo. Installabile come app (PWA), continua a funzionare offline in montagna, con roadbook stampabile e profilo altimetrico.",
+    "p3": "Lo strumento è gratuito, senza registrazione, e funziona interamente nel browser: il tuo file non lascia mai il tuo dispositivo. Installabile come app (PWA), continua a funzionare offline in montagna, con roadbook stampabile e profilo altimetrico. Un piano di idratazione opzionale stima l'acqua da portare e segnala i tratti senza punti d'acqua.",
     "github": "Codice sorgente su GitHub"
   },
   "lang": { "aria": "Lingua" },
@@ -50,6 +50,58 @@
     "modeAria": "Tipo di riferimenti",
     "stepAria": "Intervallo tra i riferimenti"
   },
+  "hydration": {
+    "unitRate": "mL/h",
+    "unitSpeed": "km-sforzo/h",
+    "unitVolume": "mL",
+    "intake": "Bevanda",
+    "speed": "Andatura",
+    "capacity": "Capacità trasportata",
+    "effortHelp": "1 km-sforzo = 1 km in piano = 100 m di dislivello (es. 10 km con 600 m = 16 km-sforzo).",
+    "intakeBand": {
+      "low": "poca sudorazione",
+      "usual": "consueto",
+      "high": "molta sudorazione",
+      "veryHigh": "sudorazione molto alta"
+    },
+    "paceBand": {
+      "stroll": "camminata tranquilla",
+      "hike": "escursionismo",
+      "fastHike": "escursionismo veloce",
+      "trail": "trail regolare",
+      "fastTrail": "trail veloce",
+      "race": "ritmo gara"
+    },
+    "capacityBand": {
+      "oneFlask": "una borraccia",
+      "twoFlasks": "due borracce",
+      "bladder": "sacca d'acqua",
+      "big": "sacca + borracce"
+    },
+    "summary": "Idratazione e rifornimento",
+    "enable": "Mostra il piano sul profilo e sul roadbook",
+    "off": "Attiva la visualizzazione per stimare l'acqua da portare e individuare i tratti senza punti d'acqua.",
+    "noteRisk": "Riempire fino all'orlo — {km} km senza punti d'acqua dopo",
+    "heat": "Condizioni",
+    "heatHelp": "Bevanda applicata: {intake} × {factor} = {rate} mL/h",
+    "heatCool": "Fresco (×0.8)",
+    "heatTemperate": "Temperato (×1)",
+    "heatHot": "Caldo (×1.3)",
+    "heatScorching": "Canicola (×1.6)",
+    "sources": "Punti di rifornimento d'acqua",
+    "sourcesTap": "Solo acqua potabile",
+    "sourcesHut": "Acqua potabile e rifugi custoditi",
+    "sourcesAll": "Anche sorgenti naturali (da filtrare)",
+    "sourcesHelp": "Presi dai waypoint della traccia: genera prima i punti d'acqua.",
+    "empty": "Carica una traccia per stimare l'acqua da portare.",
+    "sumWater": "acqua",
+    "sumTime": "durata",
+    "sumEnergy": "energia",
+    "sourceCount": "{n} punto/i d'acqua sul percorso",
+    "alert": "{n} tratto/i più lungo/ghi di quanto consentano le borracce. Il peggiore: {km} km / {time} tra {from} e {to} — mancano {missing}.",
+    "okAll": "Tutti i tratti rientrano in {v}.",
+    "bandTitle": "Tratto senza punti d'acqua: più di quanto contengano le borracce"
+  },
   "addwpt": {
     "title": "Aggiungi un waypoint",
     "namePlaceholder": "Nome del waypoint",
@@ -58,7 +110,7 @@
   },
   "btn": { "generate": "Genera i waypoint", "download": "⬇ Scarica il GPX", "downloadTcx": "⬇ Scarica il TCX" },
   "toolbar": { "noTrack": "Nessuna traccia" },
-  "stat": { "distance": "distanza", "dplus": "dislivello", "altmax": "alt. max", "waypoints": "waypoint" },
+  "stat": { "distance": "distanza", "dplus": "dislivello", "altmax": "alt. max", "waypoints": "waypoint" , "water": "acqua stimata"},
   "profile": { "waypoints": "Waypoint", "noElevation": "Nessun dato di altitudine" },
   "roadbook": {
     "btn": "Roadbook",

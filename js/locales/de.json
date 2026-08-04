@@ -14,7 +14,7 @@
     "title": "Über Mountain GPX",
     "p1": "Mountain GPX ergänzt einen GPX-Track fürs Wandern, Trailrunning oder Mountainbiken automatisch um Wegpunkte: Gipfel, Pässe, Hütten und Unterstände, Quellen, Brunnen und Wasserstellen, Seen, Wasserfälle, Aussichtspunkte… Die POIs stammen aus OpenStreetMap und werden an Ihre Route angeheftet.",
     "p2": "Importieren Sie Ihren GPX-, FIT-, TCX- oder KML-Track (aus Strava, Komoot, Garmin Connect…), wählen Sie die POI-Typen und laden Sie den angereicherten Track als GPX oder TCX (Garmin-Strecke mit typisierten CoursePoints) für Ihre Uhr oder Ihr GPS herunter.",
-    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil.",
+    "p3": "Das Tool ist kostenlos, ohne Anmeldung und läuft vollständig im Browser: Ihre Datei verlässt nie Ihr Gerät. Als App (PWA) installierbar, funktioniert es auch offline in den Bergen – mit druckbarem Roadbook und Höhenprofil. Ein optionaler Trinkplan schätzt den Wasserbedarf und markiert Abschnitte ohne Wasserstelle.",
     "github": "Quellcode auf GitHub"
   },
   "lang": { "aria": "Sprache" },
@@ -50,6 +50,58 @@
     "modeAria": "Markierungstyp",
     "stepAria": "Abstand zwischen den Markierungen"
   },
+  "hydration": {
+    "unitRate": "ml/h",
+    "unitSpeed": "Leistungs-km/h",
+    "unitVolume": "ml",
+    "intake": "Trinkmenge",
+    "speed": "Tempo",
+    "capacity": "Mitgeführte Menge",
+    "effortHelp": "1 Leistungs-km = 1 km in der Ebene = 100 Hm (z. B. 10 km mit 600 Hm = 16 Leistungs-km).",
+    "intakeBand": {
+      "low": "wenig Schweiß",
+      "usual": "üblich",
+      "high": "starkes Schwitzen",
+      "veryHigh": "sehr starkes Schwitzen"
+    },
+    "paceBand": {
+      "stroll": "gemütliches Gehen",
+      "hike": "Wandern",
+      "fastHike": "sportliches Wandern",
+      "trail": "ruhiger Trailrun",
+      "fastTrail": "schneller Trailrun",
+      "race": "Wettkampftempo"
+    },
+    "capacityBand": {
+      "oneFlask": "eine Flasche",
+      "twoFlasks": "zwei Flaschen",
+      "bladder": "Trinkblase",
+      "big": "Trinkblase + Flaschen"
+    },
+    "summary": "Trinken & Verpflegung",
+    "enable": "Plan im Höhenprofil und im Roadbook anzeigen",
+    "off": "Anzeige einschalten, um den Wasserbedarf zu schätzen und Abschnitte ohne Wasserstelle zu erkennen.",
+    "noteRisk": "Randvoll füllen — {km} km ohne Wasserstelle danach",
+    "heat": "Bedingungen",
+    "heatHelp": "Angesetzte Trinkmenge: {intake} × {factor} = {rate} ml/h",
+    "heatCool": "Kühl (×0.8)",
+    "heatTemperate": "Gemäßigt (×1)",
+    "heatHot": "Warm (×1.3)",
+    "heatScorching": "Hitzewelle (×1.6)",
+    "sources": "Auffüllstellen",
+    "sourcesTap": "Nur Trinkwasser",
+    "sourcesHut": "Trinkwasser und bewirtschaftete Hütten",
+    "sourcesAll": "Auch natürliche Quellen (filtern)",
+    "sourcesHelp": "Aus den Wegpunkten der Strecke: zuerst die Wasserstellen erzeugen.",
+    "empty": "Lade eine Strecke, um den Wasserbedarf zu schätzen.",
+    "sumWater": "Wasser",
+    "sumTime": "Dauer",
+    "sumEnergy": "Energie",
+    "sourceCount": "{n} Wasserstelle(n) auf der Strecke",
+    "alert": "{n} Abschnitt(e) länger, als deine Flaschen reichen. Der kritischste: {km} km / {time} zwischen {from} und {to} — es fehlen {missing}.",
+    "okAll": "Alle Abschnitte passen in {v}.",
+    "bandTitle": "Abschnitt ohne Wasserstelle: mehr, als deine Flaschen fassen"
+  },
   "addwpt": {
     "title": "Wegpunkt hinzufügen",
     "namePlaceholder": "Wegpunktname",
@@ -58,7 +110,7 @@
   },
   "btn": { "generate": "Wegpunkte erzeugen", "download": "⬇ GPX herunterladen", "downloadTcx": "⬇ TCX herunterladen" },
   "toolbar": { "noTrack": "Kein Track" },
-  "stat": { "distance": "Distanz", "dplus": "Aufstieg", "altmax": "max. Höhe", "waypoints": "Wegpunkte" },
+  "stat": { "distance": "Distanz", "dplus": "Aufstieg", "altmax": "max. Höhe", "waypoints": "Wegpunkte" , "water": "Wasserbedarf"},
   "profile": { "waypoints": "Wegpunkte", "noElevation": "Keine Höhendaten" },
   "roadbook": {
     "btn": "Roadbook",

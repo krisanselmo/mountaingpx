@@ -45,6 +45,7 @@
       "Accrochage des points d'intérêt sur la trace GPX",
       "Export GPX enrichi et TCX (parcours Garmin avec CoursePoints)",
       "Roadbook imprimable et profil altimétrique",
+      "Plan hydratation : eau à emporter estimée et portions sans point d'eau",
       "Application 100 % hors-ligne (PWA), aucun envoi de fichier"
     ]
   }
@@ -124,12 +125,58 @@
         </div>
       </details>
 
+      <details id="hydration" class="poi-group hydration">
+        <summary data-i18n="hydration.summary">Hydratation & ravitaillement</summary>
+        <label class="check hyd-enable">
+          <input type="checkbox" id="hyd-enable"> <span data-i18n="hydration.enable">Afficher le plan sur le profil et le roadbook</span>
+        </label>
+        <!-- Sliders rather than raw numbers: the value carries a
+             plain-language landmark ("500 mL/h — usuel") so it can be set
+             without knowing the units beforehand. Labels come from app.js. -->
+        <label class="field">
+          <span><span data-i18n="hydration.intake">Boisson</span> <b id="hyd-intake-val"></b> <i id="hyd-intake-band" class="hyd-hint"></i></span>
+          <input type="range" id="hyd-intake" min="200" max="1200" step="50" value="500">
+        </label>
+        <label class="field">
+          <span><span data-i18n="hydration.speed">Allure</span> <b id="hyd-speed-val"></b> <i id="hyd-speed-band" class="hyd-hint"></i></span>
+          <input type="range" id="hyd-speed" min="2" max="14" step="0.5" value="5">
+          <small data-i18n="hydration.effortHelp">1 km-effort = 1 km à plat = 100 m de D+ (ex. 10 km et 600 m D+ = 16 km-effort).</small>
+        </label>
+        <label class="field">
+          <span><span data-i18n="hydration.capacity">Contenance portée</span> <b id="hyd-capacity-val"></b> <i id="hyd-capacity-band" class="hyd-hint"></i></span>
+          <!-- min aligned on the step so round volumes (500, 1000, 1500…)
+               are reachable. -->
+          <input type="range" id="hyd-capacity" min="200" max="4000" step="100" value="1000">
+        </label>
+        <label class="field">
+          <span data-i18n="hydration.heat">Conditions</span>
+          <select id="hyd-heat">
+            <option value="cool" data-i18n="hydration.heatCool">Frais (×0.8)</option>
+            <option value="temperate" data-i18n="hydration.heatTemperate">Tempéré (×1)</option>
+            <option value="hot" data-i18n="hydration.heatHot">Chaud (×1.3)</option>
+            <option value="scorching" data-i18n="hydration.heatScorching">Canicule (×1.6)</option>
+          </select>
+          <!-- Filled by app.js: the drink rate actually applied to the plan. -->
+          <small id="hyd-rate"></small>
+        </label>
+        <label class="field">
+          <span data-i18n="hydration.sources">Points de ravitaillement en eau</span>
+          <select id="hyd-sources">
+            <option value="tap" data-i18n="hydration.sourcesTap">Eau potable seulement</option>
+            <option value="hut" data-i18n="hydration.sourcesHut">Eau potable et refuges gardés</option>
+            <option value="all" data-i18n="hydration.sourcesAll">Aussi les sources naturelles (à filtrer)</option>
+          </select>
+          <small data-i18n="hydration.sourcesHelp">Parmi les waypoints de la trace : générez d'abord les points d'eau.</small>
+        </label>
+        <div id="hyd-plan" class="hyd-plan"></div>
+      </details>
+
       <details class="poi-group about">
         <summary data-i18n="about.title">À propos de Mountain GPX</summary>
         <div class="about-body">
           <p data-i18n="about.p1">Mountain GPX ajoute automatiquement des waypoints à une trace GPX de randonnée, de trail ou de VTT : sommets, cols, refuges, cabanes, sources, fontaines et points d'eau, lacs, cascades, points de vue… Les points d'intérêt proviennent d'OpenStreetMap et sont accrochés au plus près de votre parcours.</p>
           <p data-i18n="about.p2">Importez votre fichier GPX (exporté de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.</p>
-          <p data-i18n="about.p3">L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique.</p>
+          <p data-i18n="about.p3">L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique. Un plan hydratation optionnel estime l'eau à emporter et repère les portions sans point d'eau.</p>
           <p class="about-github" hidden>
             <a id="github-link" target="_blank" rel="noopener">
               <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -159,6 +206,7 @@
         <span class="stat"><b id="stat-dplus">—</b><small data-i18n="stat.dplus">D+</small></span>
         <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. max</small></span>
         <span class="stat"><b id="stat-wpt">0</b><small data-i18n="stat.waypoints">waypoints</small></span>
+        <span class="stat" id="stat-water-wrap" hidden><b id="stat-water">—</b><small data-i18n="stat.water">eau estimée</small></span>
       </div>
       <div class="toolbar-btns">
         <button id="btn-roadbook" class="rb-btn" type="button" hidden aria-controls="roadbook" aria-expanded="false" data-i18n-aria-label="roadbook.btn">

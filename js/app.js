@@ -19,6 +19,7 @@ import * as Overpass from './overpass.js';
 import * as Profile from './profile.js';
 import * as Roadbook from './roadbook.js';
 import * as Water from './water.js';
+import * as Hydration from './hydration.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME, GENERIC_TYPE, poiTypeFrom } from './poi.js';
 import {
   t, translateDom, detectLang, getLang, setLang, saveLang,
@@ -36,6 +37,7 @@ const state = {
   pts: [],
   fileWpts: [], // waypoints carried by the opened file itself
   userWpts: [], // waypoints added by hand on the map
+  hydration: null, // current hydration plan (see hydration.js)
   userSeq: 0,   // id sequence for user waypoints (override keys)
   map: null,
   milestoneLayer: null, // distance / D+ markers along the track
@@ -179,6 +181,7 @@ function persistSelection() {
   const mstMode = $('#milestone-mode').value;
   const step = parseFloat($('#milestone-step').value);
   saveSettings({
+    ...prev, // keep the settings owned by the other panels (hydration…)
     withName: [...sel.withName],
     noName: [...sel.noName],
     custom: sel.custom,
@@ -588,6 +591,17 @@ function allPts(genPts) {
   return applyOverrides([...state.fileWpts, ...state.userWpts, ...(genPts || [])]);
 }
 
+/**
+ * Rebuild state.pts after a change to the non-generated waypoints: re-snap
+ * from the elements in memory when there are some (they would be lost
+ * otherwise), else just recompose the list.
+ */
+function resyncPts() {
+  if (refreshFromMemory()) return;
+  state.pts = allPts();
+  syncWaypointUI();
+}
+
 // ---- Manual waypoints (added from the map) -------------------------------
 /** Popup form: name, type from the POI catalog, add button. */
 function addWptPopupHtml() {
@@ -647,15 +661,14 @@ function addUserWpt(latlng, rawName, type) {
     description: '',
     descText: '',
   });
-  if (!refreshFromMemory()) {
-    state.pts = allPts();
-    syncWaypointUI();
-  }
+  resyncPts();
   toast(t('toast.wptAdded', { name }), 'ok');
 }
 
 /** Redraw everything that depends on state.pts. */
 function syncWaypointUI() {
+  // Replan first: the roadbook badges and the profile bands read the plan.
+  updateHydration();
   drawWaypoints();
   renderProfileWaypoints();
   renderRoadbook();
@@ -694,6 +707,7 @@ function renderRoadbook() {
       (POI[p.queryName] || p.queryName === GENERIC_TYPE ? t('poi.' + p.queryName) : ''),
     startLabel: t('map.start'),
     endLabel: t('map.end'),
+    noteFor: hydrationNote,
     onFocus: focusWpt,
     onHover: setWptHighlight,
     onEndpoint: (idx) => {
@@ -710,6 +724,196 @@ function renderRoadbook() {
   $('#rb-stats').textContent =
     `${$('#stat-dist').textContent} · D${$('#stat-dplus').textContent} · ` +
     `${state.pts.length} wpt`;
+}
+
+// ---- Hydration & resupply ----------------------------------------------
+// The model lives in hydration.js; this reads the panel, keeps the plan in
+// sync with the waypoints, and renders it in the sidebar, the toolbar, the
+// elevation profile and the roadbook.
+
+/** Current hydration settings, read from the panel. */
+function hydrationSettings() {
+  const num = (sel, def) => {
+    const v = parseFloat($(sel).value);
+    return v > 0 ? v : def;
+  };
+  const D = Hydration.DEFAULTS;
+  return {
+    intake: num('#hyd-intake', D.intake),
+    capacity: num('#hyd-capacity', D.capacity),
+    speed: num('#hyd-speed', D.speed),
+    heat: $('#hyd-heat').value,
+    sources: $('#hyd-sources').value,
+    enabled: $('#hyd-enable').checked,
+  };
+}
+
+/** Fill the hydration panel from the saved settings (or the defaults). */
+function restoreHydrationPanel() {
+  const s = { ...Hydration.DEFAULTS, ...(loadSettings().hyd || {}) };
+  $('#hyd-intake').value = s.intake;
+  $('#hyd-capacity').value = s.capacity;
+  $('#hyd-speed').value = s.speed;
+  $('#hyd-heat').value = Hydration.HEAT_FACTORS[s.heat] ? s.heat : Hydration.DEFAULTS.heat;
+  $('#hyd-sources').value = Hydration.SOURCE_SETS[s.sources] ? s.sources : Hydration.DEFAULTS.sources;
+  $('#hyd-enable').checked = !!s.enabled;
+  renderHydrationSliders();
+}
+
+/*
+ * Value and plain-language landmark next to each slider. The band name is
+ * the whole point: a novice drags until it reads like the outing planned
+ * ("randonnée", "deux flasques") instead of guessing at mL/h.
+ */
+const SLIDERS = [
+  { sel: 'intake', bands: Hydration.INTAKE_BANDS, scale: 'intakeBand', unit: 'unitRate' },
+  { sel: 'speed', bands: Hydration.PACE_BANDS, scale: 'paceBand', unit: 'unitSpeed' },
+  { sel: 'capacity', bands: Hydration.CAPACITY_BANDS, scale: 'capacityBand', unit: 'unitVolume' },
+];
+
+function renderHydrationSliders() {
+  for (const s of SLIDERS) {
+    const v = parseFloat($('#hyd-' + s.sel).value);
+    $(`#hyd-${s.sel}-val`).textContent = v + ' ' + t('hydration.' + s.unit);
+    $(`#hyd-${s.sel}-band`).textContent =
+      t(`hydration.${s.scale}.${Hydration.bandFor(s.bands, v)}`);
+  }
+}
+
+function persistHydration() {
+  saveSettings({ ...loadSettings(), hyd: hydrationSettings() });
+}
+
+/**
+ * Recompute the plan from the current track, waypoints and settings.
+ * `state.hydration` stays null while the display is off: the profile bands,
+ * the roadbook warnings and the toolbar stat all key off it.
+ */
+function updateHydration() {
+  const opts = hydrationSettings();
+  state.hydration = state.route && opts.enabled
+    ? Hydration.buildPlan(state.route, state.pts, opts)
+    : null;
+  renderHydrationSliders(); // also covers a language switch
+  renderHeatHelp(opts);
+  renderHydrationPanel();
+  renderHydrationProfile();
+}
+
+/**
+ * Spell out what the conditions do to the drink rate. The multiplier is on
+ * the option labels; this line shows the product, which is the number the
+ * plan actually runs on.
+ */
+function renderHeatHelp(opts) {
+  const factor = Hydration.HEAT_FACTORS[opts.heat] || 1;
+  $('#hyd-rate').textContent = t('hydration.heatHelp', {
+    intake: opts.intake,
+    factor,
+    rate: Math.round(opts.intake * factor),
+  });
+}
+
+/** Shade the stretches without enough water on the elevation profile. */
+function renderHydrationProfile() {
+  Profile.renderHydration($('#profile'), state.profile, state.hydration, {
+    warnLabel: t('hydration.bandTitle'),
+  });
+}
+
+/** Display name of a plan stop (the flags for the endpoints). */
+function stopName(stop) {
+  if (stop.kind === 'start') return t('map.start');
+  if (stop.kind === 'end') return t('map.end');
+  return stop.p.name;
+}
+
+/**
+ * Roadbook badge for a row. Flasks are filled to the brim at every stop
+ * anyway, so the only thing worth printing is the warning: the stretch
+ * starting here asks for more water than they hold.
+ */
+function hydrationNote(subject) {
+  const plan = state.hydration;
+  if (!plan) return null;
+  const key = subject === 'start' || subject === 'end'
+    ? subject
+    : subject.osmType + subject.id;
+  const leg = plan.legFrom.get(key);
+  if (!leg || leg.ok) return null;
+  return {
+    text: t('hydration.noteRisk', { km: leg.km.toFixed(1) }),
+    kind: 'warn',
+  };
+}
+
+/** Sidebar summary + leg-by-leg breakdown, and the toolbar water stat. */
+function renderHydrationPanel() {
+  const box = $('#hyd-plan');
+  const plan = state.hydration;
+  $('#stat-water-wrap').hidden = !plan;
+  if (!plan) {
+    // Two ways to have no plan: the display is off, or there is no track.
+    const why = $('#hyd-enable').checked ? 'hydration.empty' : 'hydration.off';
+    box.innerHTML = `<p class="hyd-empty">${escapeHtml(t(why))}</p>`;
+    return;
+  }
+  $('#stat-water').textContent = Hydration.formatLiters(plan.needMl);
+
+  const cell = (value, label) =>
+    `<li><b>${escapeHtml(value)}</b><small>${escapeHtml(label)}</small></li>`;
+  let html = '<ul class="hyd-sum">' +
+    cell(Hydration.formatLiters(plan.needMl), t('hydration.sumWater')) +
+    cell(Hydration.formatDuration(plan.hours), t('hydration.sumTime')) +
+    cell(plan.kcal + ' kcal', t('hydration.sumEnergy')) +
+    '</ul>';
+
+  html += `<p class="hyd-advice">${escapeHtml(
+    t('hydration.sourceCount', { n: plan.sourceCount })
+  )}</p>`;
+
+  // The point of the whole panel: the stretch you can't carry enough for.
+  if (plan.riskyLegs.length) {
+    const l = plan.driest;
+    html += `<p class="hyd-alert">${escapeHtml(t('hydration.alert', {
+      n: plan.riskyLegs.length,
+      km: l.km.toFixed(1),
+      time: Hydration.formatDuration(l.hours),
+      from: stopName(l.from),
+      to: stopName(l.to),
+      missing: Hydration.formatLiters(l.shortMl),
+    }))}</p>`;
+  } else if (plan.sourceCount) {
+    html += `<p class="hyd-ok">${escapeHtml(t('hydration.okAll', {
+      v: Hydration.formatLiters(plan.capacity),
+    }))}</p>`;
+  }
+
+  html += '<div class="hyd-legs">';
+  plan.legs.forEach((l, i) => {
+    html += `<button type="button" class="hyd-leg${l.ok ? '' : ' risky'}" data-leg="${i}">` +
+      `<span class="hyd-leg-run">${escapeHtml(stopName(l.from))} → ${escapeHtml(stopName(l.to))}</span>` +
+      `<span class="hyd-leg-geo">${l.km.toFixed(1)} km · +${Math.round(l.dplus)} m · ${escapeHtml(Hydration.formatDuration(l.hours))}</span>` +
+      `<span class="hyd-leg-ml">${escapeHtml(Hydration.formatLiters(l.needMl))}</span>` +
+      '</button>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+
+  // A leg row points at the water source that closes it.
+  box.querySelectorAll('.hyd-leg').forEach((btn) => {
+    const leg = plan.legs[parseInt(btn.dataset.leg, 10)];
+    if (!leg || !leg.to.p) return;
+    btn.classList.add('clickable');
+    btn.addEventListener('click', () => focusWpt(leg.to.p));
+  });
+}
+
+/** A hydration control changed: persist and replan. */
+function onHydrationChanged() {
+  persistHydration();
+  updateHydration();
+  renderRoadbook(); // the warnings live on its rows
 }
 
 /**
@@ -773,6 +977,9 @@ function drawProfile() {
   $('#stat-alt').textContent = Math.round(p.maxE) + ' m';
 
   renderProfileWaypoints();
+  // The SVG was rebuilt: put the hydration bands back (a resize redraws the
+  // profile without touching the plan).
+  renderHydrationProfile();
 }
 
 /** Draw the snapped waypoints as colored dots on the elevation curve. */
@@ -1444,10 +1651,7 @@ function wire() {
       }
       drawRoute();
       drawProfile();
-      if (!refreshFromMemory()) {
-        state.pts = allPts();
-        syncWaypointUI();
-      }
+      resyncPts();
       updatePoiCounts();
     }
   });
@@ -1469,6 +1673,16 @@ function wire() {
     persistSelection();
     drawMilestones();
   });
+  // Hydration panel: every control feeds the same replan, and the sliders
+  // update their landmark while being dragged (like #snap-dist).
+  for (const sel of ['#hyd-enable', '#hyd-intake', '#hyd-capacity', '#hyd-speed',
+    '#hyd-heat', '#hyd-sources']) {
+    $(sel).addEventListener('change', onHydrationChanged);
+  }
+  for (const s of SLIDERS) {
+    $('#hyd-' + s.sel).addEventListener('input', renderHydrationSliders);
+  }
+
   $('#sel-all-with').addEventListener('click', () => selectAll(true));
   $('#sel-none-with').addEventListener('click', () => selectAll(false));
   $('#btn-defaults').addEventListener('click', resetDefaults);
@@ -1545,6 +1759,8 @@ function setLanguage(lang) {
     drawRoute(false); // refresh start/end labels without moving the view
     drawProfile();
     syncWaypointUI();
+  } else {
+    updateHydration(); // empty-state text of the hydration panel
   }
   updatePoiCounts();
 }
@@ -1555,6 +1771,8 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLanguage();
   initMap();
   buildPoiPanel();
+  restoreHydrationPanel();
+  updateHydration(); // empty state until a track is loaded
   wire();
 
   // "À propos": repository link derived from the GitHub Pages host — the
