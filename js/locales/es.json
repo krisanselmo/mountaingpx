@@ -1,7 +1,14 @@
 {
   "meta": {
     "title": "Mountain GPX — Waypoints automáticos en tu track GPX",
-    "description": "Añade automáticamente waypoints (cimas, collados, refugios, fuentes…) a tu track GPX de senderismo o trail, con datos de OpenStreetMap. Exporta GPX enriquecido y TCX para Garmin. Gratis, 100 % en tu navegador."
+    "description": "Añade automáticamente waypoints (cimas, collados, refugios, fuentes…) a tu track GPX de senderismo o trail, con datos de OpenStreetMap. Exporta GPX enriquecido y TCX para Garmin. Gratis, 100 % en tu navegador.",
+    "features": [
+      "Waypoints automáticos desde OpenStreetMap (cimas, collados, refugios, manantiales, fuentes, lagos, cascadas, miradores)",
+      "Puntos de interés anclados al track GPX",
+      "Exportación de GPX enriquecido y TCX (recorrido Garmin con CoursePoints)",
+      "Roadbook imprimible y perfil de altitud",
+      "Aplicación 100 % sin conexión (PWA), sin subir ningún archivo"
+    ]
   },
   "about": {
     "title": "Acerca de Mountain GPX",

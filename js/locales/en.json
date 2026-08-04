@@ -1,7 +1,14 @@
 {
   "meta": {
     "title": "Mountain GPX — Automatic waypoints on your GPX track",
-    "description": "Automatically add waypoints (peaks, passes, mountain huts, water points…) to your hiking or trail running GPX track, from OpenStreetMap data. Enriched GPX and Garmin TCX export. Free, runs 100% in your browser."
+    "description": "Automatically add waypoints (peaks, passes, mountain huts, water points…) to your hiking or trail running GPX track, from OpenStreetMap data. Enriched GPX and Garmin TCX export. Free, runs 100% in your browser.",
+    "features": [
+      "Automatic waypoints from OpenStreetMap (peaks, passes, huts, springs, fountains, lakes, waterfalls, viewpoints)",
+      "Points of interest snapped onto the GPX track",
+      "Enriched GPX and TCX export (Garmin course with CoursePoints)",
+      "Printable roadbook and elevation profile",
+      "Fully offline app (PWA), no file upload"
+    ]
   },
   "about": {
     "title": "About Mountain GPX",

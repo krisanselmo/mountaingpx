@@ -1,7 +1,14 @@
 {
   "meta": {
     "title": "Mountain GPX — Waypoints automatiques sur votre trace GPX",
-    "description": "Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur."
+    "description": "Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.",
+    "features": [
+      "Waypoints automatiques depuis OpenStreetMap (sommets, cols, refuges, sources, fontaines, lacs, cascades, points de vue)",
+      "Accrochage des points d'intérêt sur la trace GPX",
+      "Export GPX enrichi et TCX (parcours Garmin avec CoursePoints)",
+      "Roadbook imprimable et profil altimétrique",
+      "Application 100 % hors-ligne (PWA), aucun envoi de fichier"
+    ]
   },
   "about": {
     "title": "À propos de Mountain GPX",
