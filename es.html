@@ -20,32 +20,44 @@
   <meta property="og:image" content="https://krisanselmo.github.io/mountaingpx/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Mountain GPX — Waypoints automáticos en tu track GPX">
   <meta property="og:locale" content="es_ES">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Mountain GPX — Waypoints automáticos en tu track GPX">
   <meta name="twitter:description" content="Añade automáticamente waypoints (cimas, collados, refugios, fuentes…) a tu track GPX de senderismo o trail, con datos de OpenStreetMap. Exporta GPX enriquecido y TCX para Garmin. Gratis, 100 % en tu navegador.">
   <meta name="twitter:image" content="https://krisanselmo.github.io/mountaingpx/og-image.png">
+  <meta name="twitter:image:alt" content="Mountain GPX — Waypoints automáticos en tu track GPX">
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Mountain GPX",
-    "url": "https://krisanselmo.github.io/mountaingpx/",
-    "description": "Ajoutez automatiquement des waypoints (sommets, cols, refuges, points d'eau…) à votre trace GPX de randonnée ou de trail, depuis OpenStreetMap. Export GPX et TCX Garmin. Gratuit, 100 % dans le navigateur.",
-    "applicationCategory": "SportsApplication",
-    "operatingSystem": "Any",
-    "browserRequirements": "Requires JavaScript",
-    "inLanguage": ["fr", "en", "de", "es", "it"],
-    "isAccessibleForFree": true,
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-    "featureList": [
-      "Waypoints automatiques depuis OpenStreetMap (sommets, cols, refuges, sources, fontaines, lacs, cascades, points de vue)",
-      "Accrochage des points d'intérêt sur la trace GPX",
-      "Export GPX enrichi et TCX (parcours Garmin avec CoursePoints)",
-      "Roadbook imprimable et profil altimétrique",
-      "Application 100 % hors-ligne (PWA), aucun envoi de fichier"
-    ]
-  }
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Mountain GPX",
+  "url": "https://krisanselmo.github.io/mountaingpx/es.html",
+  "description": "Añade automáticamente waypoints (cimas, collados, refugios, fuentes…) a tu track GPX de senderismo o trail, con datos de OpenStreetMap. Exporta GPX enriquecido y TCX para Garmin. Gratis, 100 % en tu navegador.",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": [
+    "fr",
+    "en",
+    "de",
+    "es",
+    "it"
+  ],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  },
+  "featureList": [
+    "Waypoints automáticos desde OpenStreetMap (cimas, collados, refugios, manantiales, fuentes, lagos, cascadas, miradores)",
+    "Puntos de interés anclados al track GPX",
+    "Exportación de GPX enriquecido y TCX (recorrido Garmin con CoursePoints)",
+    "Roadbook imprimible y perfil de altitud",
+    "Aplicación 100 % sin conexión (PWA), sin subir ningún archivo"
+  ]
+}
   </script>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <meta name="theme-color" content="#0f1720">
@@ -54,7 +66,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mountain GPX">
-  <script type="module" crossorigin src="./assets/index-DqN-uH0Q.js"></script>
+  <script type="module" crossorigin src="./assets/index-DguSDXdK.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-Du7mKQwG.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -68,7 +80,7 @@
       <img class="logo" src="icon.svg" alt="" width="34" height="34">
       <div>
         <h1>Mountain GPX</h1>
-        <p class="tagline" data-i18n="brand.tagline">Waypoints automatiques</p>
+        <p class="tagline" data-i18n="brand.tagline">Waypoints automáticos</p>
       </div>
       <select id="lang-select" class="lang-select" data-i18n-aria-label="lang.aria"></select>
       <button id="menu-close" class="menu-close" type="button" data-i18n-aria-label="menu.close">
@@ -80,43 +92,43 @@
       <div id="dropzone" class="dropzone">
         <input type="file" id="file-input" accept=".gpx,.fit,.tcx,.kml" hidden>
         <p class="dz-icon">📂</p>
-        <p><strong data-i18n="dropzone.drop">Glissez votre trace GPX, FIT, TCX ou KML</strong><br><span data-i18n="dropzone.or">ou</span></p>
-        <button id="btn-open" class="btn btn-ghost" type="button" data-i18n="dropzone.openBtn" data-i18n-title="dropzone.openTitle">Choisir un fichier</button>
+        <p><strong data-i18n="dropzone.drop">Arrastra tu track GPX, FIT, TCX o KML</strong><br><span data-i18n="dropzone.or">o</span></p>
+        <button id="btn-open" class="btn btn-ghost" type="button" data-i18n="dropzone.openBtn" data-i18n-title="dropzone.openTitle">Elegir un archivo</button>
       </div>
     </section>
 
     <section class="panel scroll">
       <div class="panel-head">
-        <h2 data-i18n="panel.poiHeading">Points d'intérêt</h2>
+        <h2 data-i18n="panel.poiHeading">Puntos de interés</h2>
         <div class="bulk">
-          <button id="sel-all-with" class="link" type="button" data-i18n="bulk.all">Tout</button>
-          <button id="sel-none-with" class="link" type="button" data-i18n="bulk.none">Rien</button>
-          <button id="btn-defaults" class="link" type="button" data-i18n="bulk.default">Défaut</button>
+          <button id="sel-all-with" class="link" type="button" data-i18n="bulk.all">Todo</button>
+          <button id="sel-none-with" class="link" type="button" data-i18n="bulk.none">Nada</button>
+          <button id="btn-defaults" class="link" type="button" data-i18n="bulk.default">Por defecto</button>
         </div>
       </div>
       <div id="poi-list"></div>
 
       <details class="poi-group advanced">
-        <summary data-i18n="advanced.summary">Options avancées</summary>
+        <summary data-i18n="advanced.summary">Opciones avanzadas</summary>
         <label class="field">
-          <span data-i18n="advanced.customLabel">Requête Overpass personnalisée</span>
+          <span data-i18n="advanced.customLabel">Consulta Overpass personalizada</span>
           <input type="text" id="overpass-custom" data-i18n-placeholder="advanced.customPlaceholder" placeholder='ex : way["leisure"="park"]'>
-          <small data-i18n-html="advanced.customHelp">Un seul élément, en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide" target="_blank" rel="noopener">Overpass QL</a>.</small>
+          <small data-i18n-html="advanced.customHelp">Un solo elemento, en <a href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide" target="_blank" rel="noopener">Overpass QL</a>.</small>
         </label>
         <label class="field">
-          <span><span data-i18n="advanced.snapLabel">Distance max d'accrochage :</span> <b id="snap-dist-val">50 m</b></span>
+          <span><span data-i18n="advanced.snapLabel">Distancia máx. de enganche:</span> <b id="snap-dist-val">50 m</b></span>
           <input type="range" id="snap-dist" min="10" max="500" step="10" value="50">
         </label>
         <label class="check">
-          <input type="checkbox" id="reverse"> <span data-i18n="advanced.reverse">Inverser le sens de la trace</span>
+          <input type="checkbox" id="reverse"> <span data-i18n="advanced.reverse">Invertir el sentido del track</span>
         </label>
         <div class="field">
-          <span data-i18n="advanced.milestones">Repères sur la trace</span>
+          <span data-i18n="advanced.milestones">Marcas sobre el track</span>
           <div class="milestone-row">
             <select id="milestone-mode" data-i18n-aria-label="milestones.modeAria">
-              <option value="none" data-i18n="milestones.none">Aucun</option>
-              <option value="dist" data-i18n="milestones.dist">Distance (km)</option>
-              <option value="ele" data-i18n="milestones.ele">Dénivelé D+ (m)</option>
+              <option value="none" data-i18n="milestones.none">Ninguna</option>
+              <option value="dist" data-i18n="milestones.dist">Distancia (km)</option>
+              <option value="ele" data-i18n="milestones.ele">Desnivel D+ (m)</option>
             </select>
             <input type="number" id="milestone-step" min="1" step="1" value="5" data-i18n-aria-label="milestones.stepAria" disabled>
           </div>
@@ -124,15 +136,15 @@
       </details>
 
       <details class="poi-group about">
-        <summary data-i18n="about.title">À propos de Mountain GPX</summary>
+        <summary data-i18n="about.title">Acerca de Mountain GPX</summary>
         <div class="about-body">
-          <p data-i18n="about.p1">Mountain GPX ajoute automatiquement des waypoints à une trace GPX de randonnée, de trail ou de VTT : sommets, cols, refuges, cabanes, sources, fontaines et points d'eau, lacs, cascades, points de vue… Les points d'intérêt proviennent d'OpenStreetMap et sont accrochés au plus près de votre parcours.</p>
-          <p data-i18n="about.p2">Importez votre fichier GPX (exporté de Strava, Komoot, Garmin Connect, VisuGPX, OpenRunner…), choisissez les types de points d'intérêt, puis téléchargez la trace enrichie en GPX ou en TCX (parcours Garmin avec CoursePoints typés) pour votre montre ou votre GPS.</p>
-          <p data-i18n="about.p3">L'outil est gratuit, sans inscription, et fonctionne entièrement dans le navigateur : votre fichier ne quitte jamais votre appareil. Installable comme application (PWA), il reste utilisable hors-ligne en montagne, avec un roadbook imprimable et un profil altimétrique.</p>
+          <p data-i18n="about.p1">Mountain GPX añade automáticamente waypoints a un track GPX de senderismo, trail o BTT: cimas, collados, refugios, cabañas, manantiales, fuentes y puntos de agua, lagos, cascadas, miradores… Los puntos de interés provienen de OpenStreetMap y se anclan a tu recorrido.</p>
+          <p data-i18n="about.p2">Importa tu track GPX, FIT, TCX o KML (exportado de Strava, Komoot, Garmin Connect…), elige los tipos de puntos de interés y descarga el track enriquecido en GPX o TCX (recorrido Garmin con CoursePoints tipados) para tu reloj o GPS.</p>
+          <p data-i18n="about.p3">La herramienta es gratuita, sin registro, y funciona íntegramente en el navegador: tu archivo nunca sale de tu dispositivo. Instalable como aplicación (PWA), sigue funcionando sin conexión en la montaña, con un roadbook imprimible y un perfil de altitud.</p>
           <p class="about-github" hidden>
             <a id="github-link" target="_blank" rel="noopener">
               <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-              <span data-i18n="about.github">Code source sur GitHub</span>
+              <span data-i18n="about.github">Código fuente en GitHub</span>
             </a>
           </p>
         </div>
@@ -141,22 +153,22 @@
 
     <footer class="actions">
       <button id="btn-generate" class="btn btn-primary" type="button">
-        <span class="spinner"></span> <span data-i18n="btn.generate">Générer les waypoints</span>
+        <span class="spinner"></span> <span data-i18n="btn.generate">Generar waypoints</span>
       </button>
       <div class="actions-row">
-        <button id="btn-download" class="btn btn-ok" type="button" data-i18n="btn.download" disabled>⬇ Télécharger le GPX</button>
-        <button id="btn-download-tcx" class="btn btn-ok" type="button" data-i18n="btn.downloadTcx" disabled>⬇ Télécharger le TCX</button>
+        <button id="btn-download" class="btn btn-ok" type="button" data-i18n="btn.download" disabled>⬇ Descargar el GPX</button>
+        <button id="btn-download-tcx" class="btn btn-ok" type="button" data-i18n="btn.downloadTcx" disabled>⬇ Descargar el TCX</button>
       </div>
     </footer>
   </aside>
 
   <main id="main">
     <div id="toolbar" class="toolbar">
-      <span id="track-name" class="track-name" data-i18n="toolbar.noTrack">Aucune trace</span>
+      <span id="track-name" class="track-name" data-i18n="toolbar.noTrack">Sin track</span>
       <div class="stats">
-        <span class="stat"><b id="stat-dist">—</b><small data-i18n="stat.distance">distance</small></span>
+        <span class="stat"><b id="stat-dist">—</b><small data-i18n="stat.distance">distancia</small></span>
         <span class="stat"><b id="stat-dplus">—</b><small data-i18n="stat.dplus">D+</small></span>
-        <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. max</small></span>
+        <span class="stat"><b id="stat-alt">—</b><small data-i18n="stat.altmax">alt. máx.</small></span>
         <span class="stat"><b id="stat-wpt">0</b><small data-i18n="stat.waypoints">waypoints</small></span>
       </div>
       <div class="toolbar-btns">
@@ -166,7 +178,7 @@
         </button>
         <button id="btn-share" class="rb-btn" type="button" hidden data-i18n-aria-label="share.btn" data-i18n-title="share.title">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.7" x2="15.4" y2="6.3"/><line x1="8.6" y1="13.3" x2="15.4" y2="17.7"/></svg>
-          <span data-i18n="share.btn">Partager</span>
+          <span data-i18n="share.btn">Compartir</span>
         </button>
       </div>
     </div>
@@ -178,7 +190,7 @@
         <header class="rb-head">
           <h2 data-i18n="roadbook.title">Roadbook</h2>
           <div class="rb-actions">
-            <button id="rb-print" class="link" type="button" data-i18n="roadbook.print">Imprimer</button>
+            <button id="rb-print" class="link" type="button" data-i18n="roadbook.print">Imprimir</button>
             <button id="rb-close" class="rb-close" type="button" data-i18n-aria-label="roadbook.close">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
             </button>
@@ -201,14 +213,14 @@
 
     <div id="overlay" class="overlay">
       <div class="loader"></div>
-      <p id="overlay-msg" data-i18n="overlay.querying">Interrogation d'OpenStreetMap…</p>
+      <p id="overlay-msg" data-i18n="overlay.querying">Consultando OpenStreetMap…</p>
     </div>
   </main>
 
   <div id="share-modal" class="modal-backdrop" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
       <header class="modal-head">
-        <h2 id="share-modal-title" data-i18n="share.modalTitle">Partager la trace</h2>
+        <h2 id="share-modal-title" data-i18n="share.modalTitle">Compartir el track</h2>
         <button id="share-close" class="modal-close" type="button" data-i18n-aria-label="share.close">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
         </button>
@@ -217,15 +229,15 @@
         <button id="share-link" class="share-option" type="button">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           <span class="share-option-text">
-            <b data-i18n="share.linkBtn">Copier le lien</b>
-            <small data-i18n="share.linkHelp">La trace et ses waypoints voyagent dans le lien — rien n'est envoyé sur un serveur.</small>
+            <b data-i18n="share.linkBtn">Copiar el enlace</b>
+            <small data-i18n="share.linkHelp">El track y sus waypoints viajan en el enlace — no se envía nada a un servidor.</small>
           </span>
         </button>
         <button id="share-file" class="share-option" type="button" hidden>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M19 8v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7z"/><path d="M12 17v-6"/><path d="M9.5 13.5 12 11l2.5 2.5"/></svg>
           <span class="share-option-text">
-            <b data-i18n="share.fileBtn">Envoyer le fichier GPX</b>
-            <small data-i18n="share.fileHelp">Partage le fichier complet — sans simplification — via le menu de partage de l'appareil.</small>
+            <b data-i18n="share.fileBtn">Enviar el archivo GPX</b>
+            <small data-i18n="share.fileHelp">Comparte el archivo completo — sin simplificación — mediante el menú de compartir del dispositivo.</small>
           </span>
         </button>
       </div>

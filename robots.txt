@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /pr-preview/
+
+Sitemap: https://krisanselmo.github.io/mountaingpx/sitemap.xml
