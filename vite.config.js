@@ -85,6 +85,25 @@ export default defineConfig({
             },
           },
           {
+            // Weather tiles (RainViewer radar): each frame URL is immutable,
+            // so caching them makes panning cheap, but the cache is kept small
+            // and short-lived — an hour-old radar image must never be shown as
+            // live. Add the host of any other weather provider wired in
+            // js/weather.js here. Only the tile images are matched: the frame
+            // index served from the same domain must always come fresh.
+            urlPattern: ({ url, request }) =>
+              /(^|\.)rainviewer\.com$/.test(url.hostname) && request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'weather-tiles',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Overpass API responses (overpass-api.de, kumi.systems, maps.mail.ru).
             urlPattern: ({ url }) => /\/overpass\/|\/interpreter$/.test(url.pathname),
             handler: 'NetworkFirst',
