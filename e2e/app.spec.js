@@ -371,11 +371,13 @@ test('the radar overlay paints the latest observed frame and credits RainViewer'
 
   await toggleOverlay(page, 'Rain radar', true);
 
-  // Tiles of the most recent *observed* frame, not the nowcast one.
+  // Tiles of the most recent *observed* frame, not the nowcast one, and never
+  // past zoom 7: the free radar serves a placeholder image beyond that, so
+  // Leaflet must upscale the z7 tiles instead (the default view is at z12).
   await expect.poll(() => tiles.length).toBeGreaterThan(0);
   for (const url of tiles) {
     expect(url).toMatch(
-      /^https:\/\/tilecache\.rainviewer\.com\/v2\/radar\/1700000600\/256\/\d+\/\d+\/\d+\/2\/1_1\.png$/
+      /^https:\/\/tilecache\.rainviewer\.com\/v2\/radar\/1700000600\/256\/7\/\d+\/\d+\/2\/1_1\.png$/
     );
   }
 

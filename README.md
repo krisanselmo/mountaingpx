@@ -127,6 +127,9 @@ sur n'importe quel hébergeur statique.
 - Marqueurs en `L.divIcon` SVG générés par `js/icons.js` — aucun asset image.
 - L'API publique RainViewer est gratuite et sans clé, en usage non commercial,
   avec attribution obligatoire (affichée dans les crédits de la carte). Ses
+  tuiles radar s'arrêtent au zoom 7 (au-delà, le service renvoie une image de
+  remplacement) : l'overlay plafonne donc son `maxNativeZoom` et laisse Leaflet
+  agrandir les dernières tuiles réelles, plutôt que d'en demander d'autres. Ses
   tuiles sont horodatées donc immuables : le service worker les garde une
   heure au maximum, pour qu'un radar périmé ne passe jamais pour du direct.
   L'index des images, lui, n'est jamais mis en cache.

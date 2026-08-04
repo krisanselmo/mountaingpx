@@ -31,6 +31,11 @@ const RAINVIEWER_HOST = /(^|\.)rainviewer\.com$/;
 // (`1_1`), which paints snow apart from rain — handy in the mountains.
 const RAINVIEWER_TILE = { size: 256, color: 2, options: '1_1' };
 
+// A missing tile has to stay invisible: Leaflet's default broken-image icon
+// scattered over the map reads as a bug.
+const BLANK_TILE =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=';
+
 export const RAINVIEWER = {
   id: 'rainviewer',
   indexUrl: 'https://api.rainviewer.com/public/weather-maps.json',
@@ -38,10 +43,14 @@ export const RAINVIEWER = {
     'Radar © <a href="https://www.rainviewer.com" target="_blank" rel="noopener">RainViewer</a>',
   tile: {
     opacity: 0.6,
-    // Radar resolution is ~1 km: past z12 Leaflet upscales the last real
-    // tiles instead of fetching a flood of identical-looking ones.
-    maxNativeZoom: 12,
+    // The free radar tiles stop at zoom 7: past that the service answers with
+    // a placeholder image instead of radar. Leaflet upscales the last real
+    // tiles rather than asking for any, so the overlay stays visible (blurrier
+    // as you zoom in) all the way to the base map's own limit. Radar data is
+    // ~1 km per pixel anyway, so there is little detail to lose.
+    maxNativeZoom: 7,
     maxZoom: 19,
+    errorTileUrl: BLANK_TILE,
     // Above the base map and the other tile overlays, below the markers.
     zIndex: 400,
   },
