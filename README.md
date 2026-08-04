@@ -118,7 +118,10 @@ sur n'importe quel hébergeur statique.
   relancée sur une autre instance après 8 s sans réponse.
 - Marqueurs en `L.divIcon` SVG générés par `js/icons.js` — aucun asset image.
 - `scripts/build-lang-pages.mjs` génère une page d'entrée par langue
-  (`en.html`, `de.html`…) avec les meta traduites, plus `sitemap.xml`.
+  (`en.html`, `de.html`…) — meta, JSON-LD et texte statique traduits depuis
+  `js/locales/<lang>.json`, donc indexable sans exécuter le JS — plus
+  `sitemap.xml` et `robots.txt` (qui déclare le sitemap et exclut
+  `pr-preview/` ; sur une build de préview, il interdit tout).
 - L'URL publique n'est pas écrite en dur : `scripts/site-url.mjs` la résout
   via `SITE_URL`, sinon le dépôt courant, sinon le champ `homepage` de
   `package.json`.

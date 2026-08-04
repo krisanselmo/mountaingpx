@@ -1,7 +1,14 @@
 {
   "meta": {
     "title": "Mountain GPX — Automatische Wegpunkte auf Ihrem GPX-Track",
-    "description": "Fügen Sie Ihrem GPX-Track für Wandern oder Trailrunning automatisch Wegpunkte hinzu (Gipfel, Pässe, Hütten, Wasserstellen…) – auf Basis von OpenStreetMap. Export als GPX und Garmin-TCX. Kostenlos, läuft komplett im Browser."
+    "description": "Fügen Sie Ihrem GPX-Track für Wandern oder Trailrunning automatisch Wegpunkte hinzu (Gipfel, Pässe, Hütten, Wasserstellen…) – auf Basis von OpenStreetMap. Export als GPX und Garmin-TCX. Kostenlos, läuft komplett im Browser.",
+    "features": [
+      "Automatische Wegpunkte aus OpenStreetMap (Gipfel, Pässe, Hütten, Quellen, Brunnen, Seen, Wasserfälle, Aussichtspunkte)",
+      "POIs werden an den GPX-Track angeheftet",
+      "Export als angereichertes GPX und TCX (Garmin-Strecke mit CoursePoints)",
+      "Druckbares Roadbook und Höhenprofil",
+      "Vollständig offline nutzbare App (PWA), kein Datei-Upload"
+    ]
   },
   "about": {
     "title": "Über Mountain GPX",
