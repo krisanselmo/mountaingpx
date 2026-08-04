@@ -124,6 +124,52 @@
         </div>
       </details>
 
+      <details class="poi-group custom-layers" id="custom-layers">
+        <summary data-i18n="customLayers.summary">Calques personnalisés</summary>
+        <p class="cl-help" data-i18n="customLayers.help">Ajoutez vos propres fonds de carte ou calques de tuiles (IGN, cadastre, pentes…). Ils sont mémorisés sur cet appareil et apparaissent dans le sélecteur de calques de la carte.</p>
+        <ul id="cl-list" class="cl-list"></ul>
+        <p id="cl-empty" class="cl-empty" data-i18n="customLayers.empty">Aucun calque personnalisé.</p>
+        <label class="field">
+          <span data-i18n="customLayers.nameLabel">Nom</span>
+          <input type="text" id="cl-name" data-i18n-placeholder="customLayers.namePlaceholder" placeholder="ex : IGN Plan">
+        </label>
+        <label class="field">
+          <span data-i18n="customLayers.urlLabel">URL des tuiles</span>
+          <input type="text" id="cl-url" data-i18n-placeholder="customLayers.urlPlaceholder" placeholder="https://…/{z}/{x}/{y}.png">
+          <small data-i18n="customLayers.urlHelp">Modèle XYZ en https, avec {z}/{x}/{y} ({s} pour les sous-domaines, {-y} pour l'axe inversé).</small>
+        </label>
+        <details class="cl-adv">
+          <summary data-i18n="customLayers.advanced">Zoom et opacité</summary>
+          <div class="cl-grid">
+            <label>
+              <span data-i18n="customLayers.minZoom">Zoom min</span>
+              <input type="number" id="cl-minzoom" min="0" max="24" step="1" placeholder="0">
+            </label>
+            <label>
+              <span data-i18n="customLayers.maxZoom">Zoom max</span>
+              <input type="number" id="cl-maxzoom" min="0" max="24" step="1" placeholder="19">
+            </label>
+            <label>
+              <span data-i18n="customLayers.maxNativeZoom">Zoom natif max</span>
+              <input type="number" id="cl-nativezoom" min="0" max="24" step="1" data-i18n-placeholder="customLayers.auto" placeholder="auto">
+            </label>
+            <label>
+              <span data-i18n="customLayers.opacity">Opacité</span>
+              <input type="number" id="cl-opacity" min="0.1" max="1" step="0.1" data-i18n-placeholder="customLayers.auto" placeholder="auto">
+            </label>
+          </div>
+          <small data-i18n="customLayers.zoomHelp">Le zoom natif max est le dernier niveau réellement servi par la source : au-delà, les tuiles sont agrandies au lieu de disparaître.</small>
+        </details>
+        <div class="cl-row">
+          <select id="cl-type" data-i18n-aria-label="customLayers.typeAria">
+            <option value="overlay" data-i18n="customLayers.typeOverlay">Calque</option>
+            <option value="base" data-i18n="customLayers.typeBase">Fond de carte</option>
+          </select>
+          <button id="cl-cancel" class="btn btn-ghost" type="button" hidden data-i18n="customLayers.cancel">Annuler</button>
+          <button id="cl-add" class="btn btn-ghost" type="button" data-i18n="customLayers.add">Ajouter</button>
+        </div>
+      </details>
+
       <details class="poi-group about">
         <summary data-i18n="about.title">À propos de Mountain GPX</summary>
         <div class="about-body">

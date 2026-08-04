@@ -169,6 +169,55 @@ body {
 .field small a { color: var(--accent-2); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; }
 
+/* ---------------- Custom layers ---------------- */
+.custom-layers { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.cl-help, .cl-empty { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 8px 0; }
+.cl-empty[hidden] { display: none; }
+.cl-list { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cl-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 8px; font-size: 13px;
+}
+.cl-item-text { min-width: 0; flex: 1; }
+.cl-item b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-item small { color: var(--muted); font-size: 11px; }
+.cl-item.editing { border-color: var(--accent-2); }
+.cl-edit, .cl-del {
+  flex: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+  background: none; border: 1px solid var(--line); color: var(--muted);
+  line-height: 1; font-size: 13px;
+}
+.cl-edit:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.cl-del:hover { border-color: var(--accent); color: var(--accent); }
+.cl-adv > summary {
+  cursor: pointer; list-style: none; color: var(--accent-2); font-size: 12px; padding: 2px 0;
+}
+.cl-adv > summary::-webkit-details-marker { display: none; }
+.cl-adv > summary::before { content: "▸ "; }
+.cl-adv[open] > summary::before { content: "▾ "; }
+.cl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.cl-grid label { font-size: 12px; }
+.cl-grid span { display: block; margin-bottom: 4px; color: var(--muted); }
+.cl-grid input {
+  width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 6px 8px; font-size: 13px;
+}
+.cl-adv small { color: var(--muted); font-size: 11px; }
+.cl-row { display: flex; gap: 8px; align-items: stretch; margin-top: 10px; }
+.cl-row select {
+  flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; cursor: pointer;
+}
+/* Entry point inside Leaflet's layers control, which sits on the map while
+   the editor lives in the sidebar. */
+.leaflet-control-layers .cl-open {
+  display: block; width: 100%; margin-top: 6px; padding-top: 6px;
+  border: none; border-top: 1px solid #ddd; background: none;
+  color: #0a6ebd; font-size: 11px; text-align: left; cursor: pointer;
+}
+.leaflet-control-layers .cl-open:hover { text-decoration: underline; }
+
 /* ---------------- "About" panel ---------------- */
 .about { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
 .about-body p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 8px 0; }
@@ -188,6 +237,8 @@ body {
   cursor: pointer; transition: filter .15s, transform .05s; color: #fff;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
+/* The display above would otherwise beat the UA's [hidden] rule. */
+.btn[hidden] { display: none; }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }

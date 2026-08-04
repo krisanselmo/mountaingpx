@@ -6,6 +6,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+import * as CustomLayers from './customlayers.js';
 import * as GPX from './gpx.js';
 import { repoUrlFrom } from './github.js';
 import * as TCX from './tcx.js';
@@ -50,6 +51,7 @@ const state = {
   shareCode: null, // encoded track kept in the URL hash (#track=…)
   gpxUrl: null, // source URL of a track loaded from the hash (#gpx=…)
   showProfileWpts: true,
+  editLayerKey: null, // custom layer currently loaded in the editor form
   genElements: null, // raw OSM elements of the last generation (all types)
   genCustom: '',     // custom query used by the last generation
   wptMarkers: new Map(), // waypoint object -> Leaflet marker (roadbook focus)
@@ -266,6 +268,12 @@ function initMap() {
 
   state.map = map;
 
+  // User-defined layers join the catalog before the saved selection is
+  // applied, so a custom base map can be the one restored.
+  for (const def of CustomLayers.load(localStorage, takenLayerNames())) {
+    registerCustomLayer(def);
+  }
+
   // Restore the base map and overlays chosen in the previous session.
   const savedLayers = loadLayers();
   const baseDef = (savedLayers && state.baseLayers.find((d) => d.key === savedLayers.base))
@@ -273,6 +281,7 @@ function initMap() {
   baseDef.layer.addTo(map);
 
   buildLayersControl();
+  renderCustomLayers();
 
   // Add restored overlays after the control exists, firing `overlayadd` so
   // dependent layers (e.g. the on-demand water points) load their data.
@@ -280,7 +289,7 @@ function initMap() {
     for (const def of state.overlayLayers) {
       if (savedLayers.overlays.includes(def.key) && !map.hasLayer(def.layer)) {
         def.layer.addTo(map);
-        map.fire('overlayadd', { layer: def.layer, name: t(def.i18n) });
+        map.fire('overlayadd', { layer: def.layer, name: layerLabel(def) });
       }
     }
   }
@@ -365,14 +374,28 @@ function updateHash() {
   );
 }
 
+/** Display name of a layer: an i18n label, or the user's own for a custom one. */
+function layerLabel(def) {
+  return def.custom ? def.name : t(def.i18n);
+}
+
 /** (Re)build the Leaflet layers control with the current-language labels. */
 function buildLayersControl() {
   if (state.layersControl) state.map.removeControl(state.layersControl);
   const bases = {};
-  for (const d of state.baseLayers) bases[t(d.i18n)] = d.layer;
+  for (const d of state.baseLayers) bases[layerLabel(d)] = d.layer;
   const overs = {};
-  for (const d of state.overlayLayers) overs[t(d.i18n)] = d.layer;
+  for (const d of state.overlayLayers) overs[layerLabel(d)] = d.layer;
   state.layersControl = L.control.layers(bases, overs).addTo(state.map);
+
+  // The control is on the map, its editor in the sidebar: link the two.
+  const list = state.layersControl.getContainer()
+    .querySelector('.leaflet-control-layers-list');
+  const open = el('button', 'cl-open');
+  open.type = 'button';
+  open.textContent = t('customLayers.open');
+  open.addEventListener('click', openCustomLayersPanel);
+  list.appendChild(open);
 }
 
 /** Persist the active base map / overlays (by stable key) after any change. */
@@ -383,6 +406,254 @@ function persistLayers() {
     .filter((d) => state.map.hasLayer(d.layer))
     .map((d) => d.key);
   saveLayers(baseKey, on);
+}
+
+// ---- Custom layers ------------------------------------------------------
+// User-defined XYZ tile layers, validated and stored by customlayers.js and
+// mixed into the same catalog as the built-in ones (so they take part in the
+// selection persistence and the language rebuilds).
+
+/** The custom entries, base maps first — the order they are stored in. */
+function customLayerEntries() {
+  return [...state.baseLayers, ...state.overlayLayers].filter((d) => d.custom);
+}
+
+/**
+ * Layer names already in use: a custom one must not shadow another entry.
+ * `exceptKey` frees the name of the entry being edited.
+ */
+function takenLayerNames(exceptKey) {
+  return [...state.baseLayers, ...state.overlayLayers]
+    .filter((d) => d.key !== exceptKey)
+    .map(layerLabel);
+}
+
+/** Leaflet options of a definition; an unset field falls back to the default. */
+function customLayerOptions(def) {
+  const { minZoom, maxZoom, baseOpacity, overlayOpacity } = CustomLayers.DEFAULTS;
+  const opts = {
+    minZoom: def.minZoom ?? minZoom,
+    maxZoom: def.maxZoom ?? maxZoom,
+    // Overlays are drawn over the base map, hence translucent by default.
+    opacity: def.opacity ?? (def.overlay ? overlayOpacity : baseOpacity),
+  };
+  // Without it Leaflet stops at maxZoom instead of upscaling the last tiles.
+  if (def.maxNativeZoom != null) opts.maxNativeZoom = def.maxNativeZoom;
+  return opts;
+}
+
+/**
+ * Build the tile layer for a definition and add it to the catalog, at `index`
+ * when given (an edit keeps its place in the list).
+ */
+function registerCustomLayer(def, index) {
+  const entry = {
+    ...def,
+    key: CustomLayers.keyFor(def.name),
+    overlay: !!def.overlay,
+    custom: true,
+    layer: L.tileLayer(def.url, customLayerOptions(def)),
+  };
+  const arr = entry.overlay ? state.overlayLayers : state.baseLayers;
+  if (index != null && index <= arr.length) arr.splice(index, 0, entry);
+  else arr.push(entry);
+  return entry;
+}
+
+/**
+ * Take a custom layer out of the catalog and off the map. Returns its former
+ * position and whether it was visible, or null when the key is unknown.
+ */
+function dropCustomLayer(key) {
+  for (const arr of [state.baseLayers, state.overlayLayers]) {
+    const index = arr.findIndex((d) => d.custom && d.key === key);
+    if (index < 0) continue;
+    const [entry] = arr.splice(index, 1);
+    const visible = state.map.hasLayer(entry.layer);
+    state.map.removeLayer(entry.layer);
+    return { entry, index, visible };
+  }
+  return null;
+}
+
+function persistCustomLayers() {
+  CustomLayers.save(localStorage, customLayerEntries());
+}
+
+/** Show only `entry` as the base map (adding one on top would stack them). */
+function setBaseLayer(entry) {
+  for (const d of state.baseLayers) {
+    if (d !== entry && state.map.hasLayer(d.layer)) state.map.removeLayer(d.layer);
+  }
+  if (!state.map.hasLayer(entry.layer)) entry.layer.addTo(state.map);
+  persistLayers();
+}
+
+/** Put a custom layer on the map, as a base map or as an overlay. */
+function showCustomLayer(entry) {
+  if (!entry.overlay) {
+    setBaseLayer(entry);
+    return;
+  }
+  entry.layer.addTo(state.map);
+  state.map.fire('overlayadd', { layer: entry.layer, name: entry.name });
+}
+
+/** Removing the active base map would leave the map blank. */
+function ensureBaseLayer() {
+  if (!state.baseLayers.some((d) => state.map.hasLayer(d.layer))) {
+    state.baseLayers[0].layer.addTo(state.map);
+  }
+}
+
+/** One-line recap of the non-default options, e.g. "Calque · z1–19 (15) · 70 %". */
+function customLayerSummary(entry) {
+  const parts = [t(entry.overlay ? 'customLayers.typeOverlay' : 'customLayers.typeBase')];
+  if (entry.minZoom != null || entry.maxZoom != null || entry.maxNativeZoom != null) {
+    const { minZoom, maxZoom } = CustomLayers.DEFAULTS;
+    const native = entry.maxNativeZoom != null ? ` (${entry.maxNativeZoom})` : '';
+    parts.push(`z${entry.minZoom ?? minZoom}–${entry.maxZoom ?? maxZoom}${native}`);
+  }
+  if (entry.opacity != null) parts.push(Math.round(entry.opacity * 100) + ' %');
+  return parts.join(' · ');
+}
+
+/** Fill the sidebar list of custom layers (name, options, edit, remove). */
+function renderCustomLayers() {
+  const list = $('#cl-list');
+  list.innerHTML = '';
+  const entries = customLayerEntries();
+  $('#cl-empty').hidden = entries.length > 0;
+
+  for (const entry of entries) {
+    const li = el('li', 'cl-item' + (entry.key === state.editLayerKey ? ' editing' : ''));
+    const text = el('div', 'cl-item-text');
+    const name = el('b');
+    name.textContent = entry.name;
+    const kind = el('small');
+    kind.textContent = customLayerSummary(entry);
+    text.append(name, kind);
+    li.appendChild(text);
+
+    for (const [cls, glyph, i18n, fn] of [
+      ['cl-edit', '✎', 'customLayers.edit', () => editCustomLayer(entry.key)],
+      ['cl-del', '✕', 'customLayers.remove', () => removeCustomLayer(entry.key)],
+    ]) {
+      const btn = el('button', cls);
+      btn.type = 'button';
+      btn.textContent = glyph;
+      btn.title = t(i18n);
+      btn.setAttribute('aria-label', `${t(i18n)} — ${entry.name}`);
+      btn.addEventListener('click', fn);
+      li.appendChild(btn);
+    }
+
+    li.title = entry.url;
+    list.appendChild(li);
+  }
+}
+
+function readCustomLayerForm() {
+  return {
+    name: $('#cl-name').value,
+    url: $('#cl-url').value,
+    overlay: $('#cl-type').value !== 'base',
+    minZoom: $('#cl-minzoom').value,
+    maxZoom: $('#cl-maxzoom').value,
+    maxNativeZoom: $('#cl-nativezoom').value,
+    opacity: $('#cl-opacity').value,
+  };
+}
+
+/** Label the submit button after the mode the form is in (add / save). */
+function syncCustomLayerForm() {
+  const editing = !!state.editLayerKey;
+  $('#cl-add').textContent = t(editing ? 'customLayers.save' : 'customLayers.add');
+  $('#cl-cancel').hidden = !editing;
+}
+
+function resetCustomLayerForm() {
+  state.editLayerKey = null;
+  for (const sel of ['#cl-name', '#cl-url', '#cl-minzoom', '#cl-maxzoom',
+    '#cl-nativezoom', '#cl-opacity']) {
+    $(sel).value = '';
+  }
+  $('#cl-type').value = 'overlay';
+  syncCustomLayerForm();
+  renderCustomLayers(); // drops the "being edited" highlight
+}
+
+/** Load a layer into the form; submitting then replaces it. */
+function editCustomLayer(key) {
+  const entry = customLayerEntries().find((d) => d.key === key);
+  if (!entry) return;
+  state.editLayerKey = key;
+  $('#cl-name').value = entry.name;
+  $('#cl-url').value = entry.url;
+  $('#cl-type').value = entry.overlay ? 'overlay' : 'base';
+  $('#cl-minzoom').value = entry.minZoom ?? '';
+  $('#cl-maxzoom').value = entry.maxZoom ?? '';
+  $('#cl-nativezoom').value = entry.maxNativeZoom ?? '';
+  $('#cl-opacity').value = entry.opacity ?? '';
+  // Reveal the zoom/opacity fields when this layer sets any of them.
+  if (entry.minZoom != null || entry.maxZoom != null
+    || entry.maxNativeZoom != null || entry.opacity != null) {
+    $('.cl-adv').open = true;
+  }
+  syncCustomLayerForm();
+  renderCustomLayers();
+  $('#cl-name').focus();
+}
+
+/** Add the form's layer, or save the one being edited. */
+function submitCustomLayer() {
+  const editKey = state.editLayerKey;
+  const { def, error } = CustomLayers.validate(readCustomLayerForm(), takenLayerNames(editKey));
+  if (error) {
+    toast(t(error), 'error');
+    return;
+  }
+  if (!editKey && customLayerEntries().length >= CustomLayers.MAX_LAYERS) {
+    toast(t('error.layerLimit', { n: CustomLayers.MAX_LAYERS }), 'error');
+    return;
+  }
+
+  // An edit rebuilds the layer (its URL and options are immutable in Leaflet)
+  // in place, and gets its visibility back. A new layer is shown right away:
+  // that is why it was added.
+  const old = editKey ? dropCustomLayer(editKey) : null;
+  const keepIndex = old && old.entry.overlay === def.overlay ? old.index : undefined;
+  const entry = registerCustomLayer(def, keepIndex);
+  if (!old || old.visible) showCustomLayer(entry);
+  ensureBaseLayer();
+  buildLayersControl();
+  persistCustomLayers();
+  persistLayers();
+  resetCustomLayerForm();
+  toast(t(editKey ? 'toast.layerUpdated' : 'toast.layerAdded', { name: entry.name }), 'ok');
+}
+
+function removeCustomLayer(key) {
+  const dropped = dropCustomLayer(key);
+  if (!dropped) return;
+  if (dropped.entry.key === state.editLayerKey) state.editLayerKey = null;
+  ensureBaseLayer();
+  buildLayersControl();
+  renderCustomLayers();
+  syncCustomLayerForm();
+  persistCustomLayers();
+  persistLayers(); // the saved selection may have pointed at this layer
+  toast(t('toast.layerRemoved', { name: dropped.entry.name }), 'ok');
+}
+
+/** Reveal the editor from the map's layers control. */
+function openCustomLayersPanel() {
+  // Below the responsive breakpoint the sidebar is a drawer: open it first.
+  if (window.matchMedia('(max-width: 820px)').matches) setMenu(true);
+  const panel = $('#custom-layers');
+  panel.open = true;
+  panel.scrollIntoView({ block: 'nearest' });
+  $('#cl-name').focus();
 }
 
 // ---- "Points d'eau" overlay --------------------------------------------
@@ -1513,6 +1784,16 @@ function wire() {
     persistSelection();
     drawMilestones();
   });
+  // Custom layers: Enter in any field submits, like the button.
+  $('#cl-add').addEventListener('click', submitCustomLayer);
+  $('#cl-cancel').addEventListener('click', resetCustomLayerForm);
+  for (const sel of ['#cl-name', '#cl-url', '#cl-minzoom', '#cl-maxzoom',
+    '#cl-nativezoom', '#cl-opacity']) {
+    $(sel).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitCustomLayer();
+    });
+  }
+
   $('#sel-all-with').addEventListener('click', () => selectAll(true));
   $('#sel-none-with').addEventListener('click', () => selectAll(false));
   $('#btn-defaults').addEventListener('click', resetDefaults);
@@ -1586,6 +1867,8 @@ function setLanguage(lang) {
   buildPoiPanel();
   buildLayersControl();
   if (state.weather) state.weather.redraw(); // localized frame time
+  renderCustomLayers();
+  syncCustomLayerForm(); // translateDom reset the submit button's label
   if (state.route) {
     drawRoute(false); // refresh start/end labels without moving the view
     drawProfile();

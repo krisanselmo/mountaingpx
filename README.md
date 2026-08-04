@@ -46,6 +46,13 @@ est indiquée dans les crédits de la carte. La source est décrite par un
 *provider* dans `js/weather.js` : en changer (DWD, MétéoSuisse,
 OpenWeatherMap…) tient en un descripteur.
 
+**Calques personnalisés** — fonds de carte et overlays de tuiles ajoutés par
+l'utilisateur (modèle XYZ `https://…/{z}/{x}/{y}.png`, `{s}` et `{-y}`
+acceptés, `http://` toléré depuis `localhost` pour un serveur de tuiles local),
+avec zoom min/max, zoom natif max (tuiles agrandies au-delà) et opacité.
+Modifiables et supprimables, listés dans le sélecteur de calques et mémorisés
+dans `localStorage`.
+
 **Waypoints manuels** — clic droit (appui long sur mobile) pour ajouter un
 waypoint nommé et typé (ravitaillement, rendez-vous…).
 
@@ -69,8 +76,9 @@ interpolés sur les points insérés) et TCX (parcours Garmin, `CoursePoint`
 typés) importable dans Garmin Connect.
 
 **PWA installable** — écran d'accueil ou app de bureau, fonctionne
-hors-ligne (app, tuiles carto déjà consultées, réponses Overpass ; le radar,
-lui, a besoin du réseau).
+hors-ligne (app, tuiles carto déjà consultées — y compris celles des calques
+personnalisés en `/{z}/{x}/{y}` —, réponses Overpass ; le radar, lui, a besoin
+du réseau).
 
 Préférences mémorisées dans `localStorage`.
 
@@ -116,6 +124,7 @@ sur n'importe quel hébergeur statique.
     ├── roadbook.js     # lignes du roadbook (liste des waypoints au km)
     ├── water.js        # overlay « points d'eau » à la demande
     ├── weather.js      # overlay météo (tuiles radar), sources interchangeables
+    ├── customlayers.js # calques personnalisés (validation, localStorage)
     └── app.js          # carte Leaflet, UI, orchestration
 ```
 

@@ -158,6 +158,157 @@ test('the file option shares the full GPX through the Web Share API', async ({ p
   expect(shared.size).toBeGreaterThan(500); // the whole track, not a stub
 });
 
+// ---- Custom layers -------------------------------------------------------
+const CUSTOM_TILES = 'https://tiles.example.org/{z}/{x}/{y}.png';
+
+async function addCustomLayer(page, name, url, type, opts = {}) {
+  // The editor is a collapsed <details>: opening it twice would close it.
+  const panel = page.locator('#custom-layers');
+  if (!(await panel.evaluate((n) => n.open))) await page.click('details.custom-layers > summary');
+  await page.fill('#cl-name', name);
+  await page.fill('#cl-url', url);
+  if (type) await page.selectOption('#cl-type', type);
+  const options = Object.entries(opts);
+  if (options.length) {
+    const adv = page.locator('.cl-adv');
+    if (!(await adv.evaluate((n) => n.open))) await adv.locator('summary').click();
+    for (const [field, value] of options) await page.fill(`#cl-${field}`, String(value));
+  }
+  await page.click('#cl-add');
+}
+
+test('a custom overlay joins the layers control and survives a reload', async ({ page }) => {
+  await addCustomLayer(page, 'Pentes', CUSTOM_TILES);
+  await expect(page.locator('#toast')).toContainText('added');
+  await expect(page.locator('#cl-list .cl-item')).toHaveCount(1);
+  await expect(page.locator('#cl-empty')).toBeHidden();
+
+  // Listed in the control's overlays, and enabled right away.
+  const entry = page.locator('.leaflet-control-layers-overlays label', { hasText: 'Pentes' });
+  await expect(entry.locator('input')).toBeChecked();
+
+  await page.reload();
+  await page.click('details.custom-layers > summary');
+  await expect(page.locator('#cl-list .cl-item')).toContainText('Pentes');
+  // Still the active overlay: the selection is remembered by its own key.
+  await expect(
+    page.locator('.leaflet-control-layers-overlays label', { hasText: 'Pentes' }).locator('input')
+  ).toBeChecked();
+
+  // Removing it empties the list, in the control too, and for good.
+  await page.click('#cl-list .cl-del');
+  await expect(page.locator('#toast')).toContainText('removed');
+  await expect(page.locator('#cl-empty')).toBeVisible();
+  await expect(page.locator('.leaflet-control-layers-overlays label', { hasText: 'Pentes' }))
+    .toHaveCount(0);
+  await page.reload();
+  await page.click('details.custom-layers > summary');
+  await expect(page.locator('#cl-list .cl-item')).toHaveCount(0);
+});
+
+test('a custom base map replaces the visible one', async ({ page }) => {
+  await addCustomLayer(page, 'Mon fond', CUSTOM_TILES, 'base');
+  const bases = page.locator('.leaflet-control-layers-base label');
+  await expect(bases.filter({ hasText: 'Mon fond' }).locator('input')).toBeChecked();
+  // Exactly one base map stays selected.
+  await expect(bases.locator('input:checked')).toHaveCount(1);
+});
+
+test('an unusable tile URL is refused with a targeted error', async ({ page }) => {
+  await addCustomLayer(page, 'Sans variables', 'https://tiles.example.org/preview.png');
+  await expect(page.locator('#toast')).toContainText('{z}');
+  await expect(page.locator('#cl-list .cl-item')).toHaveCount(0);
+
+  await addCustomLayer(page, 'En clair', 'http://tiles.example.org/{z}/{x}/{y}.png');
+  await expect(page.locator('#toast')).toContainText('https://');
+  await expect(page.locator('#cl-list .cl-item')).toHaveCount(0);
+});
+
+test('the zoom and opacity options reach the tile layer', async ({ page }) => {
+  const tiles = [];
+  await page.route('https://tiles.example.org/**', (route) => {
+    tiles.push(new URL(route.request().url()).pathname);
+    return route.abort();
+  });
+
+  await addCustomLayer(page, 'Pentes', CUSTOM_TILES, 'overlay', {
+    minzoom: 1, maxzoom: 19, nativezoom: 15, opacity: 0.5,
+  });
+  await expect(page.locator('#cl-list .cl-item small')).toContainText('z1–19 (15)');
+  await expect(page.locator('#cl-list .cl-item small')).toContainText('50 %');
+
+  // The overlay is drawn at the requested opacity.
+  await expect
+    .poll(() => page.evaluate(() => [...document.querySelectorAll('.leaflet-tile-pane .leaflet-layer')]
+      .map((l) => l.style.opacity)))
+    .toContain('0.5');
+
+  // Past the native level, Leaflet upscales z15 tiles instead of asking the
+  // source for levels it does not serve (the fixture map starts at zoom 12).
+  tiles.length = 0;
+  // One step at a time: clicks during the zoom animation are swallowed.
+  for (const zoom of [13, 14, 15, 16, 17]) {
+    await page.click('.leaflet-control-zoom-in');
+    await expect.poll(() => page.url()).toContain(`#map=${zoom}/`);
+  }
+  const levels = [...new Set(tiles.map((p) => Number(p.split('/')[1])))];
+  expect(levels).toContain(15);
+  expect(Math.max(...levels)).toBe(15);
+});
+
+test('a custom layer can be edited in place, or the edit cancelled', async ({ page }) => {
+  await addCustomLayer(page, 'Pentes', CUSTOM_TILES, 'overlay', { opacity: 0.5 });
+
+  // Cancelling restores the "add" mode and changes nothing.
+  await page.click('#cl-list .cl-edit');
+  await expect(page.locator('#cl-name')).toHaveValue('Pentes');
+  await expect(page.locator('#cl-opacity')).toHaveValue('0.5');
+  await page.fill('#cl-name', 'Jeté');
+  await page.click('#cl-cancel');
+  await expect(page.locator('#cl-name')).toHaveValue('');
+  await expect(page.locator('#cl-list .cl-item b')).toHaveText('Pentes');
+
+  // Saving renames the layer, keeps it enabled and persists the change.
+  await page.click('#cl-list .cl-edit');
+  await page.fill('#cl-name', 'Pentes hiver');
+  await page.fill('#cl-opacity', '0.9');
+  await page.click('#cl-add'); // labelled "Save" in edit mode
+  await expect(page.locator('#toast')).toContainText('updated');
+  await expect(page.locator('#cl-list .cl-item')).toHaveCount(1);
+  await expect(page.locator('#cl-list .cl-item b')).toHaveText('Pentes hiver');
+  await expect(page.locator('#cl-list .cl-item small')).toContainText('90 %');
+  await expect(
+    page.locator('.leaflet-control-layers-overlays label', { hasText: 'Pentes hiver' })
+      .locator('input')
+  ).toBeChecked();
+  await expect(page.locator('#cl-cancel')).toBeHidden();
+
+  await page.reload();
+  await page.click('details.custom-layers > summary');
+  await expect(page.locator('#cl-list .cl-item b')).toHaveText('Pentes hiver');
+});
+
+test('editing a layer can turn an overlay into a base map', async ({ page }) => {
+  await addCustomLayer(page, 'Pentes', CUSTOM_TILES);
+  await page.click('#cl-list .cl-edit');
+  await page.selectOption('#cl-type', 'base');
+  await page.click('#cl-add');
+
+  await expect(page.locator('.leaflet-control-layers-overlays label', { hasText: 'Pentes' }))
+    .toHaveCount(0);
+  const bases = page.locator('.leaflet-control-layers-base label');
+  await expect(bases.filter({ hasText: 'Pentes' }).locator('input')).toBeChecked();
+  await expect(bases.locator('input:checked')).toHaveCount(1);
+});
+
+test('the layers control links to the custom-layers editor', async ({ page }) => {
+  // The control only shows its list (and the link) once expanded.
+  await page.hover('.leaflet-control-layers');
+  await page.click('.leaflet-control-layers .cl-open');
+  await expect(page.locator('#custom-layers')).toHaveAttribute('open', '');
+  await expect(page.locator('#cl-name')).toBeFocused();
+});
+
 test('the about section links to the GitHub repository', async ({ page }) => {
   // On the dev server the link is derived from the canonical URL injected
   // at build time (package.json homepage).
