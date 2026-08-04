@@ -325,3 +325,81 @@ test('a multi-track GPX warns that the tracks were concatenated', async ({ page 
   });
   await expect(page.locator('#toast')).toContainText('contains 2 tracks');
 });
+
+// 1×1 transparent PNG, stands in for a radar tile.
+const PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=',
+  'base64'
+);
+
+// Shape of RainViewer's weather-maps.json: observed scans, then the nowcast.
+const RAINVIEWER_INDEX = {
+  version: '2.0',
+  host: 'https://tilecache.rainviewer.com',
+  radar: {
+    past: [
+      { time: 1700000000, path: '/v2/radar/1700000000' },
+      { time: 1700000600, path: '/v2/radar/1700000600' },
+    ],
+    nowcast: [{ time: 1700001200, path: '/v2/radar/nowcast_abc123' }],
+  },
+};
+
+/** Mock RainViewer and return the tile URLs the map asks for. */
+async function mockRadar(page) {
+  const tiles = [];
+  // Registered after the beforeEach catch-all, so these win.
+  await page.route('https://api.rainviewer.com/**', (route) =>
+    route.fulfill({ json: RAINVIEWER_INDEX })
+  );
+  await page.route('https://tilecache.rainviewer.com/**', (route) => {
+    tiles.push(route.request().url());
+    return route.fulfill({ body: PNG, contentType: 'image/png' });
+  });
+  return tiles;
+}
+
+/** Toggle an overlay from the (collapsed) Leaflet layers control. */
+async function toggleOverlay(page, name, on) {
+  await page.hover('.leaflet-control-layers');
+  const label = page.locator('.leaflet-control-layers-overlays label', { hasText: name });
+  await label.locator('input[type=checkbox]').setChecked(on);
+}
+
+test('the radar overlay paints the latest observed frame and credits RainViewer', async ({ page }) => {
+  const tiles = await mockRadar(page);
+
+  await toggleOverlay(page, 'Rain radar', true);
+
+  // Tiles of the most recent *observed* frame, not the nowcast one, and never
+  // past zoom 7: the free radar serves a placeholder image beyond that, so
+  // Leaflet must upscale the z7 tiles instead (the default view is at z12).
+  await expect.poll(() => tiles.length).toBeGreaterThan(0);
+  for (const url of tiles) {
+    expect(url).toMatch(
+      /^https:\/\/tilecache\.rainviewer\.com\/v2\/radar\/1700000600\/256\/7\/\d+\/\d+\/2\/1_1\.png$/
+    );
+  }
+
+  // The credit line carries the time of the frame on screen.
+  const attribution = page.locator('.leaflet-control-attribution');
+  await expect(attribution).toContainText('RainViewer');
+  await expect(attribution).toContainText(/\d{1,2}:\d{2}/);
+
+  // Turning it off drops the tiles and the credit.
+  await toggleOverlay(page, 'Rain radar', false);
+  await expect(attribution).not.toContainText('RainViewer');
+});
+
+test('the radar overlay is restored on reload, and survives an unreachable API', async ({ page }) => {
+  await mockRadar(page);
+  await toggleOverlay(page, 'Rain radar', true);
+  await expect(page.locator('.leaflet-control-attribution')).toContainText('RainViewer');
+
+  // The overlay selection is persisted: it comes back enabled, and a failing
+  // index is reported without breaking the map.
+  await page.route('https://api.rainviewer.com/**', (route) => route.abort());
+  await page.reload();
+  await expect(page.locator('#toast')).toContainText('Weather radar unavailable');
+  await expect(page.locator('#map')).toBeVisible();
+});

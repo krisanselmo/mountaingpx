@@ -78,9 +78,11 @@
     "osm": "OpenStreetMap",
     "satellite": "Satellite",
     "trails": "Sentiers (waymarked)",
-    "water": "Points d'eau"
+    "water": "Points d'eau",
+    "weather": "Pluie (radar)"
   },
   "water": { "default": "Point d'eau", "zoomIn": "Zoomez pour charger les points d'eau" },
+  "weather": { "forecast": "prévision", "error": "Radar météo indisponible" },
   "share": {
     "btn": "Partager",
     "title": "Partager la trace et ses waypoints par lien ou fichier GPX — rien n'est envoyé sur un serveur.",

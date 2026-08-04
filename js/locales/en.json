@@ -78,9 +78,11 @@
     "osm": "OpenStreetMap",
     "satellite": "Satellite",
     "trails": "Trails (waymarked)",
-    "water": "Water points"
+    "water": "Water points",
+    "weather": "Rain radar"
   },
   "water": { "default": "Water point", "zoomIn": "Zoom in to load water points" },
+  "weather": { "forecast": "forecast", "error": "Weather radar unavailable" },
   "share": {
     "btn": "Share",
     "title": "Share the track and its waypoints by link or GPX file — nothing is sent to a server.",

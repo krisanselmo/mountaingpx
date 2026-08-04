@@ -19,6 +19,7 @@ import * as Overpass from './overpass.js';
 import * as Profile from './profile.js';
 import * as Roadbook from './roadbook.js';
 import * as Water from './water.js';
+import * as Weather from './weather.js';
 import { POI, GROUPS, DEFAULT_WITH_NAME, DEFAULT_NO_NAME, GENERIC_TYPE, poiTypeFrom } from './poi.js';
 import {
   t, translateDom, detectLang, getLang, setLang, saveLang,
@@ -39,6 +40,7 @@ const state = {
   userSeq: 0,   // id sequence for user waypoints (override keys)
   map: null,
   milestoneLayer: null, // distance / D+ markers along the track
+  weather: null, // live weather overlay controller (see weather.js)
   layers: {},
   trackLayer: null,
   markerLayer: null,
@@ -254,9 +256,12 @@ function initMap() {
     { key: 'osm', i18n: 'layers.osm', layer: osm },
     { key: 'satellite', i18n: 'layers.satellite', layer: sat },
   ];
+  state.weather = initWeatherOverlay(map);
+
   state.overlayLayers = [
     { key: 'trails', i18n: 'layers.trails', layer: cycl },
     { key: 'water', i18n: 'layers.water', layer: initWaterOverlay(map) },
+    { key: 'weather', i18n: 'layers.weather', layer: state.weather.layer },
   ];
 
   state.map = map;
@@ -403,6 +408,45 @@ function initWaterOverlay(map) {
       return marker;
     },
     onTooWide: () => toast(t('water.zoomIn'), 'warn'),
+  });
+}
+
+// ---- Live weather overlay ----------------------------------------------
+// Everything source-specific lives in the provider descriptor picked here, so
+// replacing RainViewer with another feed (DWD, MétéoSuisse, OpenWeatherMap…)
+// is a one-line change plus a descriptor in weather.js.
+const WEATHER_PROVIDER = Weather.RAINVIEWER;
+
+/** Credit line of a frame, with the time it was captured (or forecast for). */
+function weatherAttribution(provider, frame) {
+  if (!frame.time) return provider.attribution;
+  const time = new Date(frame.time)
+    .toLocaleTimeString(getLang(), { hour: '2-digit', minute: '2-digit' });
+  const when = frame.forecast ? `${time} (${t('weather.forecast')})` : time;
+  return `${provider.attribution} — ${when}`;
+}
+
+function initWeatherOverlay(map) {
+  return Weather.createWeatherOverlay({
+    map,
+    layer: L.layerGroup(),
+    provider: WEATHER_PROVIDER,
+    // The frame index is a small JSON refreshed every few minutes: never
+    // serve it from a cache, or the map would show yesterday's radar.
+    fetchIndex: async (url) => {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    makeTileLayer: (frame, provider) =>
+      L.tileLayer(frame.url, {
+        ...provider.tile,
+        attribution: weatherAttribution(provider, frame),
+      }),
+    onError: (err) => {
+      console.warn('Overlay météo :', err.message || err);
+      toast(t('weather.error'), 'warn');
+    },
   });
 }
 
@@ -1541,6 +1585,7 @@ function setLanguage(lang) {
   applyLanguage();
   buildPoiPanel();
   buildLayersControl();
+  if (state.weather) state.weather.redraw(); // localized frame time
   if (state.route) {
     drawRoute(false); // refresh start/end labels without moving the view
     drawProfile();

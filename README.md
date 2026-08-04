@@ -37,8 +37,14 @@ requête personnalisée, distance d'accrochage réglable, inversion du sens.
 perpendiculaire sur le segment.
 
 **Carte** — Leaflet (OpenTopoMap / OpenStreetMap / satellite Esri, overlays
-sentiers et points d'eau), popups des tags OSM, renommage et suppression des
-waypoints (annulable depuis le toast).
+sentiers, points d'eau et radar de pluie), popups des tags OSM, renommage et
+suppression des waypoints (annulable depuis le toast).
+
+**Météo en direct** — overlay radar de précipitations (RainViewer, sans clé
+API), rafraîchi toutes les 5 min tant qu'il est affiché ; l'heure de l'image
+est indiquée dans les crédits de la carte. La source est décrite par un
+*provider* dans `js/weather.js` : en changer (DWD, MétéoSuisse,
+OpenWeatherMap…) tient en un descripteur.
 
 **Waypoints manuels** — clic droit (appui long sur mobile) pour ajouter un
 waypoint nommé et typé (ravitaillement, rendez-vous…).
@@ -63,7 +69,8 @@ interpolés sur les points insérés) et TCX (parcours Garmin, `CoursePoint`
 typés) importable dans Garmin Connect.
 
 **PWA installable** — écran d'accueil ou app de bureau, fonctionne
-hors-ligne (app, tuiles carto déjà consultées, réponses Overpass).
+hors-ligne (app, tuiles carto déjà consultées, réponses Overpass ; le radar,
+lui, a besoin du réseau).
 
 Préférences mémorisées dans `localStorage`.
 
@@ -108,6 +115,7 @@ sur n'importe quel hébergeur statique.
     ├── profile.js      # profil altimétrique SVG
     ├── roadbook.js     # lignes du roadbook (liste des waypoints au km)
     ├── water.js        # overlay « points d'eau » à la demande
+    ├── weather.js      # overlay météo (tuiles radar), sources interchangeables
     └── app.js          # carte Leaflet, UI, orchestration
 ```
 
@@ -117,6 +125,14 @@ sur n'importe quel hébergeur statique.
   est découpée en segments interrogés en parallèle, chaque requête étant
   relancée sur une autre instance après 8 s sans réponse.
 - Marqueurs en `L.divIcon` SVG générés par `js/icons.js` — aucun asset image.
+- L'API publique RainViewer est gratuite et sans clé, en usage non commercial,
+  avec attribution obligatoire (affichée dans les crédits de la carte). Ses
+  tuiles radar s'arrêtent au zoom 7 (au-delà, le service renvoie une image de
+  remplacement) : l'overlay plafonne donc son `maxNativeZoom` et laisse Leaflet
+  agrandir les dernières tuiles réelles, plutôt que d'en demander d'autres. Ses
+  tuiles sont horodatées donc immuables : le service worker les garde une
+  heure au maximum, pour qu'un radar périmé ne passe jamais pour du direct.
+  L'index des images, lui, n'est jamais mis en cache.
 - `scripts/build-lang-pages.mjs` génère une page d'entrée par langue
   (`en.html`, `de.html`…) — meta, JSON-LD et texte statique traduits depuis
   `js/locales/<lang>.json`, donc indexable sans exécuter le JS — plus

@@ -78,9 +78,11 @@
     "osm": "OpenStreetMap",
     "satellite": "Satellit",
     "trails": "Wege (waymarked)",
-    "water": "Wasserstellen"
+    "water": "Wasserstellen",
+    "weather": "Regenradar"
   },
   "water": { "default": "Wasserstelle", "zoomIn": "Zoomen Sie hinein, um Wasserstellen zu laden" },
+  "weather": { "forecast": "Vorhersage", "error": "Wetterradar nicht verfügbar" },
   "share": {
     "btn": "Teilen",
     "title": "Track und Wegpunkte per Link oder GPX-Datei teilen — nichts wird an einen Server gesendet.",
